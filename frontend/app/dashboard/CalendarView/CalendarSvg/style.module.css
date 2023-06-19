@@ -1,0 +1,8 @@
+
+.calendarRect {
+    stroke-width:0
+}
+.calendarRect:hover {
+    stroke-width: 1;
+    stroke:black
+}

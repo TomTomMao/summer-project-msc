@@ -1,8 +1,9 @@
 'use client';
 
 import * as d3 from "d3";
-import { useEffect } from "react";
-
+import { CSSProperties, MouseEvent, useEffect, useState } from "react";
+import styles from './style.module.css'
+import CalendarTooltip, { ITooltipLocation, ITooltipValue } from "../CalendarTooltip/CalendarTooltip";
 export interface ICalendarSvgData {
     date: Date,
     colour: string,
@@ -21,8 +22,23 @@ export interface IcalendarSvgConfig {
     marginTop: number,
     marginBottom: number,
     containerWidth: number,
-    containerHeight: number
+    containerHeight: number,
 }
+
+const values1: ITooltipValue[] = [{
+    targetDomain: 'x',
+    sourceDomain: 'week number',
+    sourceDomainValue: 1
+}, {
+    targetDomain: 'y',
+    sourceDomain: 'day in week',
+    sourceDomainValue: 2
+}, {
+    targetDomain: 'colour',
+    sourceDomain: 'total amount of transaction',
+    sourceDomainValue: 105
+}]
+
 export function CalendarSvg({ calendarSvgDataArr, calendarSvgConfig }:
     { calendarSvgDataArr: ICalendarSvgData[], calendarSvgConfig: IcalendarSvgConfig }): React.ReactNode {
     /**
@@ -30,39 +46,60 @@ export function CalendarSvg({ calendarSvgDataArr, calendarSvgConfig }:
      * render a calendarSvg based on calendarData
      */
     // ref: https://codesandbox.io/s/github/UBC-InfoVis/2021-436V-examples/tree/master/d3-interactive-line-chart?file=/js/linechart.js
+    const [tooltipLocation, setTooltipLocation] = useState<null | ITooltipLocation>(null);
+    const [hoveredRectKey, setHoveredRectKey] = useState<null | ICalendarSvgData['id']>(null);
+    function handleMouseEnter(id: ICalendarSvgData['id'], e: MouseEvent<SVGRectElement, globalThis.MouseEvent>) {
+        setTooltipLocation({ x: e.pageX + 10, y: e.pageY + 10 })
+        setHoveredRectKey(id);
+    }
+    let tooltipValue: ITooltipValue[] = [];
+
+
 
     const width = calendarSvgConfig.containerWidth - calendarSvgConfig.marginLeft - calendarSvgConfig.marginRight;
     const height = calendarSvgConfig.containerHeight - calendarSvgConfig.marginTop - calendarSvgConfig.marginBottom;
-    const xBandScaleDomain = [];
+    const xBandScaleDomain: string[] = [];
     for (let i = 0; i <= 52; i++) {
         xBandScaleDomain.push(String(i))
     }
+    const monthScaleDomain: string[] = [];
+    for (let i = 1; i <= 12; i++) {
+        monthScaleDomain.push(String(i))
+    }
     const xBandScale = d3.scaleBand().domain(xBandScaleDomain).range([0, width]).paddingInner(0.1)
     const yBandScale = d3.scaleBand().domain(["1", "2", "3", "4", "5", "6", "0"]).range([0, height]).paddingInner(0.1)
-    const monthScale = d3.scaleBand().domain(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']).range([0,width]).paddingInner(0.1)
+    const monthScale = d3.scaleBand().domain(monthScaleDomain).range([0, width]).paddingInner(0.1)
+
+
     const dataPoints = calendarSvgDataArr.map((calendarSvgData) => {
         const week: number = getWeek(calendarSvgData.date);
         const dateOfWeek: number = calendarSvgData.date.getDay()
         return <rect
+            className={styles.calendarRect}
             key={calendarSvgData.id}
             x={xBandScale(String(week))}
             y={yBandScale(String(dateOfWeek))}
             width={xBandScale.bandwidth()}
             height={yBandScale.bandwidth()}
             fill={calendarSvgData.colour}
-            onMouseEnter={() => console.log(calendarSvgData.id)}></rect>
+            onMouseOver={(e) => handleMouseEnter(calendarSvgData.id, e)}></rect>
     })
     return (
-        <svg width={calendarSvgConfig.containerWidth} height={calendarSvgConfig.containerHeight}>
-            <g transform={`translate(${calendarSvgConfig.marginLeft},${calendarSvgConfig.marginTop})`}>
-                {/* drawing area */}
-                {dataPoints}
+        <div>
+            <CalendarTooltip values={values1} location={tooltipLocation}></CalendarTooltip>
+            <svg width={calendarSvgConfig.containerWidth} height={calendarSvgConfig.containerHeight}>
+                <g transform={`translate(${calendarSvgConfig.marginLeft},${calendarSvgConfig.marginTop})`}>
+                    {/* drawing area */}
+                    {dataPoints}
+                    <g>
 
-                {/* <CalendarAxisY></>
+                    </g>
+                    {/* <CalendarAxisY></>
                 <CalendarAxisX></> */}
 
-            </g>
-        </svg>
+                </g>
+            </svg>
+        </div>
     )
 }
 

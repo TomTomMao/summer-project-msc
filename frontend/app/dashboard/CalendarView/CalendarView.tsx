@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CTransaction } from "../Transaction";
 import { CalendarSvg, ICalendarSvgData } from "./CalendarSvg/CalendarSvg";
 import { getCalendarSvgTestData } from "./calenderSvgTestData"
+import { CalendarController } from "./CalendarController/CalendarController";
 
 const randomSvgData:ICalendarSvgData[] = getCalendarSvgTestData()
 const defaultSvgConfig = {
@@ -25,6 +26,7 @@ export default function CalendarView({ transactions }: { transactions: CTransact
             <br></br>
             number of transaction record: {transactions.length}
             <CalendarSvg calendarSvgDataArr={svgData} calendarSvgConfig={svgConfig} ></CalendarSvg>
+            <CalendarController></CalendarController>
         </div>
     )
 }
