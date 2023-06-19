@@ -44,6 +44,7 @@ export function CalendarSvg({ calendarSvgDataArr, calendarSvgConfig }:
     /**
      * @param {calendarSvgDataArr} ICalendarData[] assume no duplicate date
      * render a calendarSvg based on calendarData
+     * this render should only be responsable for render the encoded data
      */
     // ref: https://codesandbox.io/s/github/UBC-InfoVis/2021-436V-examples/tree/master/d3-interactive-line-chart?file=/js/linechart.js
     const [tooltipLocation, setTooltipLocation] = useState<null | ITooltipLocation>(null);
@@ -104,7 +105,7 @@ export function CalendarSvg({ calendarSvgDataArr, calendarSvgConfig }:
 }
 
 const getWeek = function (d: Date) {
-    //https://weeknumber.com/how-to/javascript#:~:text=To%20get%20the%20ISO%20week,getWeekYear()%20.
+    //ref: https://weeknumber.com/how-to/javascript#:~:text=To%20get%20the%20ISO%20week,getWeekYear()%20.
     var date = new Date(d.getTime());
     date.setHours(0, 0, 0, 0);
     // Thursday in current week decides the year.

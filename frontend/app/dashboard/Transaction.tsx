@@ -1,8 +1,18 @@
 'use client';
-
-
+export enum ETransactionVariable {
+    transactionNumber = 'transactionNumber',
+    date = 'date',
+    transactionType = 'transactionType',
+    transactionDescription = 'transactionDescription',
+    debitAmount = 'debitAmount',
+    creditAmount = 'creditAmount',
+    balance = 'balance',
+    category = 'category',
+    locationCity = 'locationCity',
+    locationCountry = 'locationCountry'
+}
 export class CTransaction {
-    readonly date: Date|null;
+    readonly date: Date | null;
     readonly transactionNumber: string;
     readonly transactionType: string;
     readonly transactionDescription: string;
@@ -15,7 +25,7 @@ export class CTransaction {
 
     constructor(
         transactionNumber: string,
-        date: Date|null,
+        date: Date | null,
         transactionType: string,
         transactionDescription: string,
         debitAmount: number,
@@ -37,25 +47,40 @@ export class CTransaction {
         this.locationCountry = locationCountry;
     }
 
-    get year(): number|null {
-        return this.date==null ? null : this.date.getFullYear()
+    get year(): number | null {
+        return this.date == null ? null : this.date.getFullYear()
     }
-    get month(): number|null {
-        return this.date==null ? null : this.date.getMonth()
+    get month(): number | null {
+        return this.date == null ? null : this.date.getMonth()
     }
-    get dayOfMonth(): number|null {
-        return this.date==null ? null : this.date.getDate()
+    get dayOfMonth(): number | null {
+        return this.date == null ? null : this.date.getDate()
     }
-    get dayOfWeek(): number|null {
-        return this.date==null ? null : this.date.getDay()
+    get dayOfWeek(): number | null {
+        return this.date == null ? null : this.date.getDay()
     }
     get direction(): string {
-        if (this.debitAmount==0) {
+        if (this.debitAmount == 0) {
             return 'credit';
-        } else if (this.creditAmount==0){
+        } else if (this.creditAmount == 0) {
             return 'debit';
         } else {
             throw new Error(`both credit amount and debit amount is 0, transactionNumber=${this.transactionNumber}`);
         }
+    }
+
+    get attributes(): ETransactionVariable[] {
+        return [
+            ETransactionVariable.transactionNumber,
+            ETransactionVariable.date,
+            ETransactionVariable.transactionType,
+            ETransactionVariable.transactionDescription,
+            ETransactionVariable.debitAmount,
+            ETransactionVariable.creditAmount,
+            ETransactionVariable.balance,
+            ETransactionVariable.category,
+            ETransactionVariable.locationCity,
+            ETransactionVariable.locationCountry
+        ]
     }
 }

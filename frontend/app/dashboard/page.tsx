@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, StrictMode } from "react"
+import { useState, useEffect, StrictMode,useContext } from "react"
 import { timeParse } from 'd3'
 import { CTransaction } from "./Transaction";
 import CalendarView from "./CalendarView/CalendarView";
