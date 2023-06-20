@@ -21,9 +21,8 @@ interface ITransactionData {
 
 export default function Page() {
     const [data, setData] = useState<Array<CTransaction> | null>(null)
-    const [loading, setLoading] = useState<boolean>(true);
 
-    console.log('init state: ', data, loading)
+    console.log('init state: ', data)
 
     useEffect(() => {
         // https://blog.logrocket.com/modern-api-data-fetching-methods-react/
@@ -31,15 +30,16 @@ export default function Page() {
             .then(res => res.json())
             // clean data
             .then(fetchedData => {
-                let dataWithTimeFormat = fetchedData.map(cleanFetchedData);
+                let dataWithTimeFormat:CTransaction[] = fetchedData.map(cleanFetchedData);
                 setData(dataWithTimeFormat)
-                setLoading(false)
             })
             .catch((err) => {
                 console.log(err)
             })
     }, [])
-
+    if (data===null) {
+        return <>loading...</>
+    }
     return (<>
         hello data
         <CalendarView transactions={data}></CalendarView>

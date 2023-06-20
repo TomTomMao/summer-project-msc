@@ -83,4 +83,5 @@ export class CTransaction {
             ETransactionVariable.locationCountry
         ]
     }
+
 }

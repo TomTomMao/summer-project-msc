@@ -13,6 +13,12 @@ export interface ICalendarSvgData {
     texture: string,
     id: string
 }
+export const defaultSvgDataPoint = {
+    colour: 'default',
+    size: -1,
+    shape: 'default',
+    texture: 'default'
+}
 export interface IcalendarSvgConfig {
     /**
      * all numbers in pixels

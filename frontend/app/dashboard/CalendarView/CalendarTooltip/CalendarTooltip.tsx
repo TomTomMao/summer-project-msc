@@ -8,13 +8,13 @@ const values1: ITooltipValue[] = [{
 export interface ITooltipValue {
     targetDomain: string,
     sourceDomain: string,
-    sourceDomainValue: string|number|Date
+    sourceDomainValue: string | number | Date
 }
 export interface ITooltipLocation {
     x: number,
     y: number
 }
-export default function CalendarTooltip({values, location}: {values: ITooltipValue[], location: ITooltipLocation|null}) {
+export default function CalendarTooltip({ values, location }: { values: ITooltipValue[], location: ITooltipLocation | null }) {
     let style: CSSProperties | undefined;
     if (location == null) {
         style = {
@@ -29,16 +29,16 @@ export default function CalendarTooltip({values, location}: {values: ITooltipVal
     return (
         <div className={`${styles.calendarTooltipContainer}`} style={style}>
             <table>
-                {values.map((value)=>{
-                    return (
-                        <tr>
-                            {/* <td>{value.targetDomain}-{">"}</td> */}
-                            <td>{value.sourceDomain}:</td>
-                            <td>{String(value.sourceDomainValue)}</td>
-                            {JSON.stringify(style)}
-                        </tr>
-                    )
-                })}
+                <tbody>
+                    {values.map((value) => {
+                        return (
+                            <tr key={value.sourceDomain}>
+                                <td>{value.sourceDomain}:</td>
+                                <td>{String(value.sourceDomainValue)}</td>
+                            </tr>
+                        )
+                    })}
+                </tbody>
             </table>
         </div>
     )
