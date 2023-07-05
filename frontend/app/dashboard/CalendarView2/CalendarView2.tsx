@@ -19,26 +19,25 @@ Date.prototype.getWeek = function () {
 }
 // a comonent, has the knowledge: 
 export default function CalendarView2({ rawData, startDate }: { rawData: TransactionData[], startDate: Date }) {
-    const [donutWidth, setDonutWidth] = useState<number>(200);
-
-
     return (<div className="m-1 bg-red-300 p-1">
         <h1>This is the calendar view container</h1>
-        <TestDateGetWeek></TestDateGetWeek>
-        donut width: <input value={donutWidth} type="number" onChange={e => setDonutWidth(e.target.value)}></input>
-        <DonutChart data={DONUTDATA2} width={donutWidth}></DonutChart>
-        
+        <Test>dategetweek<br></br><TestDateGetWeek></TestDateGetWeek></Test>
+        <Test>donut<DonutChart data={DONUTDATA2} width={200}></DonutChart></Test>
     </div>)
 }
 function TestDateGetWeek() {
     const [date, setDate] = useState(new Date())
-    return <div className="m-1 bg-orange-500 p-1">
-        <h1>test Date.getWeek</h1>
+    return <>
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         number of week: {' ' + new Date(date).getWeek()}
-    </div>
+    </>
 }
-
+function Test({children}) {
+    return (<div className="m-1 bg-orange-500 p-1">
+        <h1>testing</h1>
+        {children}
+    </div>)
+}
 
 // https://observablehq.com/@d3/donut-chart/2?intent=fork
 function DonutChart({ data = DONUTDATA2, width }: {
@@ -130,10 +129,9 @@ function DonutChart({ data = DONUTDATA2, width }: {
         //         .text(d => d.data.value.toLocaleString("en-US")));
     }
     return (
-        <div className="m-1 bg-orange-500 p-1">
-            <h1>test donut</h1>
+        <>
             <svg ref={ref}></svg>
-        </div>
+        </>
     )
 }
 
