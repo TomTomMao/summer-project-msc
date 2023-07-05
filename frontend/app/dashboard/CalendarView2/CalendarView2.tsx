@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TransactionData } from "../Transaction";
 import * as d3 from "d3";
+import styles from './styles.module.css'
 
 const NumberWeeks = 12;
 const NumberDays = 5;
@@ -17,12 +18,76 @@ Date.prototype.getWeek = function () {
     }
     return 1 + Math.ceil((firstThursday - target) / 604800000);
 }
+
+
 // a comonent, has the knowledge: 
-export default function CalendarView2({ rawData, startDate }: { rawData: TransactionData[], startDate: Date }) {
+export default function CalendarView2({ rawData, startDate, CALENDARVIEWCONFIG }: { rawData: TransactionData[], startDate: Date, CALENDARVIEWCONFIG: any }) {
+    // transfer data from rawdata to the data like this: {weekday: 'monday', weeknumber:'w48', month:'december', }
+    const [donutWidth, setDonutWidth] = useState(80)
+    const [highLightName, setHighLightName] = useState('all')
+    const categories = ['all', ...CATEGORIES]
+
+
+    const categoryOptions = categories.map(category => {
+        return (
+            <option key={category}>{category}</option>
+        )
+    }
+    )
     return (<div className="m-1 bg-red-300 p-1">
-        <h1>This is the calendar view container</h1>
-        <Test>dategetweek<br></br><TestDateGetWeek></TestDateGetWeek></Test>
-        <Test>donut<DonutChart data={DONUTDATA2} width={200}></DonutChart></Test>
+        This is the calendar view's top level div
+        <Test><h1>This is the container for testing calendar view</h1>
+            highLightCategory:
+            <select name="" id="" value={highLightName} onChange={(e) => setHighLightName(e.target.value)}>
+                {categoryOptions}
+            </select>
+            <table>
+                <tr>
+                    {/* years and months */}
+                    <td className={styles.emptyYearCell}></td>
+                    <td className={styles.yearMonthCell}>2020</td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}>2021</td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}></td>
+                    <td className={styles.yearMonthCell}></td>
+                </tr>
+                <tr>
+                    <td className={styles.emptyWeekdayCell}></td>
+                    <td className={styles.weekCell}>W49</td>
+                    <td className={styles.weekCell}>W50</td>
+                    <td className={styles.weekCell}>W51</td>
+                    <td className={styles.weekCell}>W52</td>
+                    <td className={styles.weekCell}>W1</td>
+                    <td className={styles.weekCell}>W2</td>
+                    <td className={styles.weekCell}>W3</td>
+                    <td className={styles.weekCell}>W4</td>
+                    <td className={styles.weekCell}>W5</td>
+                    <td className={styles.weekCell}>W6</td>
+                    <td className={styles.weekCell}>W7</td>
+                    <td className={styles.weekCell}>W8</td>
+                </tr>
+                {WEEKDAYS.map(weekday => {
+                    return (
+                        <tr key={weekday}>
+                            <td className={styles.weekdayCell}>{weekday.slice(0, 3)}</td>
+                            {DonutsData.get(weekday).map(donutData => {
+                                return (
+                                    <td className={styles.glyphCell}><DonutChart highLightName={highLightName} data={donutData} width={donutWidth}></DonutChart></td>
+                                )
+                            })}
+                        </tr>
+                    )
+                })}
+            </table></Test>
+        <Test>This is the container for test dateGetWeek function<br></br><TestDateGetWeek></TestDateGetWeek></Test>
+        <Test>This is the container for test donut<DonutChart data={DONUTDATA2} width={50}></DonutChart></Test>
     </div>)
 }
 function TestDateGetWeek() {
@@ -32,7 +97,7 @@ function TestDateGetWeek() {
         number of week: {' ' + new Date(date).getWeek()}
     </>
 }
-function Test({children}) {
+function Test({ children }) {
     return (<div className="m-1 bg-orange-500 p-1">
         <h1>testing</h1>
         {children}
@@ -40,7 +105,7 @@ function Test({children}) {
 }
 
 // https://observablehq.com/@d3/donut-chart/2?intent=fork
-function DonutChart({ data = DONUTDATA2, width }: {
+function DonutChart({ data = DONUTDATA2, width, highLightName }: {
     data: {
         name: string;
         outerValue: number;
@@ -48,17 +113,17 @@ function DonutChart({ data = DONUTDATA2, width }: {
         lineValue: number;
         outerDot: boolean;
         innerDot: boolean;
-    }[], width: number
+    }[], width: number, highLightName: string
 }) {
     // https://www.pluralsight.com/guides/drawing-charts-in-react-with-d3
     const ref = useRef(null);
-    useEffect(() => { draw(); return clear }, [data, width]);
+    useEffect(() => { draw(); return clear }, [data, width, highLightName]);
     const height = Math.min(width, 500);
     const radius = Math.min(width, height) / 2
 
     const arc = d3.arc()
-        .innerRadius(radius * 0.67)
-        .outerRadius(radius - 1);
+        .innerRadius(radius * 0.8) // magic numbers to remove
+        .outerRadius(radius - 1);// magic numbers to remove
 
     const pie = d3.pie()
         .padAngle(1 / radius)
@@ -66,13 +131,13 @@ function DonutChart({ data = DONUTDATA2, width }: {
         .value(d => 1);
 
     const innerArc = d3.arc()
-        .innerRadius(radius * 0.67 / 2)
-        .outerRadius(radius * 0.67 - 1);
+        .innerRadius(radius * 0.6)// magic numbers to remove
+        .outerRadius(radius * 0.8 - 1);// magic numbers to remove
 
     const innerPie = d3.pie()
         .padAngle(1 / radius)
         .sort(null)
-        .value(d => 1);
+        .value(d => 1); // constant angle
 
     console.log(pie(data))
 
@@ -84,30 +149,64 @@ function DonutChart({ data = DONUTDATA2, width }: {
     const draw = () => {
         // update scale, draw elements
         const color = d3.scaleSequential()
-            .domain(data.map(d => [d.innerValue,d.outerValue]).flat())
+            .domain(data.map(d => [d.innerValue, d.outerValue]).flat())
             .range(d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), data.length).reverse());
         const svg = d3.select(ref.current)
             .attr("width", width)
             .attr("height", height)
             .attr("viewBox", [-width / 2, -height / 2, width, height])
             .attr("style", "max-width: 100%; height: auto;");
-        svg.append("g")
-            .selectAll()
-            .data(pie(data))
-            .join("path")
-            .attr("fill", d => color(d.data.outerValue))
-            .attr("d", arc)
+        if (highLightName === 'all') {
+
+            svg.append("g")
+                .selectAll()
+                .data(pie(data))
+                .join("path")
+                .attr("fill", d => color(d.data.outerValue))
+                .attr("d", arc)
             // .append("title")
             // .text(d => `${d.data.name}: ${d.data.value.toLocaleString()}`);
 
-        svg.append("g")
-            .selectAll()
-            .data(innerPie(data))
-            .join("path")
-            .attr("fill", d => color(d.data.innerValue))
-            .attr("d", innerArc)
+            svg.append("g")
+                .selectAll()
+                .data(innerPie(data))
+                .join("path")
+                .attr("fill", d => color(d.data.innerValue))
+                .attr("d", innerArc)
             // .append("title")
             // .text(d => `${d.data.name}: ${d.data.value.toLocaleString()}`);
+        } else {
+            console.log('highLighted:', highLightName)
+            svg.append("g")
+                .selectAll()
+                .data(pie(data))
+                .join("path")
+                .attr("fill", d => {
+                    if (d.data.name === highLightName) {
+                        return color(d.data.outerValue)
+                    } else {
+                        return '#CAC7C7'
+                    }
+                })
+                .attr("d", arc)
+            // .append("title")
+            // .text(d => `${d.data.name}: ${d.data.value.toLocaleString()}`);
+
+            svg.append("g")
+                .selectAll()
+                .data(innerPie(data))
+                .join("path")
+                .attr("fill", d => {
+                    if (d.data.name === highLightName) {
+                        return color(d.data.innerValue)
+                    } else {
+                        return '#CAC7C7'
+                    }
+                })
+                .attr("d", innerArc)
+            // .append("title")
+            // .text(d => `${d.data.name}: ${d.data.value.toLocaleString()}`);
+        }
 
         // append text
         // svg.append("g")
@@ -135,6 +234,7 @@ function DonutChart({ data = DONUTDATA2, width }: {
     )
 }
 
+// function CalendarColumn({data})
 const DONUTDATA2 = [
     {
         "name": "Savings",
@@ -385,3 +485,21 @@ const DONUTDATA2 = [
         "innerDot": true
     }
 ]
+const CATEGORIES = Array.from(DONUTDATA2.map(d => d.name))
+function getRandomDonutData() {
+    return DONUTDATA2.map(d => {
+        return {
+            ...d,
+            outerValue: d.outerValue * Math.random(),
+            innerValue: d.innerValue * Math.random()
+        }
+    })
+}
+const DonutsData = new Map()
+const WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+WEEKDAYS.forEach(weekday => {
+    DonutsData.set(weekday, [])
+    for (let i = 0; i < 12; i++) {
+        DonutsData.get(weekday).push(getRandomDonutData())
+    }
+})
