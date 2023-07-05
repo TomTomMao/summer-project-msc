@@ -1,0 +1,19 @@
+{
+  "name": "money_vis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "csv": "^6.3.1",
+    "d3": "^7.8.5",
+    "express": "^4.18.2",
+    "jquery-csv": "^1.0.21",
+    "nodemon": "^2.0.22"
+  }
+}

@@ -11,6 +11,40 @@ export enum ETransactionVariable {
     locationCity = 'locationCity',
     locationCountry = 'locationCountry'
 }
+export class TransactionData {
+    readonly date: Date | null;
+    readonly transactionNumber: string;
+    readonly transactionType: string;
+    readonly transactionDescription: string;
+    readonly debitAmount: number;
+    readonly creditAmount: number;
+    readonly balance: number;
+    readonly category: string;
+    readonly locationCity: string;
+    readonly locationCountry: string; constructor(
+        transactionNumber: string,
+        date: Date | null,
+        transactionType: string,
+        transactionDescription: string,
+        debitAmount: number,
+        creditAmount: number,
+        balance: number,
+        category: string,
+        locationCity: string,
+        locationCountry: string) {
+
+        this.transactionNumber = transactionNumber;
+        this.date = date;
+        this.transactionType = transactionType;
+        this.transactionDescription = transactionDescription;
+        this.debitAmount = debitAmount;
+        this.creditAmount = creditAmount;
+        this.balance = balance;
+        this.category = category;
+        this.locationCity = locationCity;
+        this.locationCountry = locationCountry;
+    }
+}
 export class CTransaction {
     readonly date: Date | null;
     readonly transactionNumber: string;
