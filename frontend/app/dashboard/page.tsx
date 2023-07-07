@@ -4,6 +4,7 @@ import { timeParse } from 'd3'
 import { CTransaction, TransactionData } from "./Transaction";
 import CalendarView from "./CalendarView2/CalendarView2";
 import CalendarView2 from "./CalendarView2/CalendarView2";
+import CalendarView3 from "./CalendarView3/CalendarView3";
 
 const parseTime = timeParse('%d/%m/%Y')
 
@@ -45,6 +46,7 @@ export default function Page() {
         hello data
         {/* <CalendarView transactions={data}></CalendarView> */}
         <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2>
+        <CalendarView3 rawData={data} currentYear={2016}></CalendarView3>
     </>
     )
 
@@ -111,8 +113,6 @@ function cleanFetchedData(returnType: string) {
         default:
             break;
     }
-    if (returnType === 'CTransaction') {
-
-    }
+    
 }
 
