@@ -1,4 +1,4 @@
-import { CTransaction, ETransactionVariable } from "./Transaction";
+import { CTransaction, ETransactionVariable } from "./DataObject";
 
 class Filter {
     constructor() {

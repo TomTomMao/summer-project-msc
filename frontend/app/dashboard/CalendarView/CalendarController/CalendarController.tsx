@@ -1,4 +1,4 @@
-import { ETransactionVariable } from "../../Transaction";
+import { ETransactionVariable } from "../../DataObject";
 import { ECalendarViewVisualVariables, IMapping } from "../CalendarView";
 import MappingController from "./MappingController/MappingController";
 import YearController from "./YearController/YearController";

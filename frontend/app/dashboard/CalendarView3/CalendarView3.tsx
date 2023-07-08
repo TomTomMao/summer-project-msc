@@ -1,11 +1,11 @@
 import { useContext, useRef, useState } from "react"
-import { TransactionData } from "../Transaction"
+import { RFMData, TransactionData } from "../DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import { YearContext } from "./YearContext";
-import * as d3 from 'd3'
 
-export default function CalendarView3({ rawData, currentYear }: { rawData: TransactionData[], currentYear: number }) {
+export default function CalendarView3({ transactionDataArr, currentYear, RFMDataArr }: { transactionDataArr: TransactionData[], currentYear: number, RFMDataArr: RFMData[] }) {
     const [detailDay, setDetailDay] = useState<null | Date>(null);
+
     function handleDetail(month: number) {
         // month is the number, if Jan, then 1, if Feb then 2.etc.
         return function (day: number) {
@@ -24,7 +24,7 @@ export default function CalendarView3({ rawData, currentYear }: { rawData: Trans
                 <tbody>
                     <YearContext.Provider value={currentYear}>
                         {MONTHS.map((month, i) => <MonthView month={i + 1}
-                            monthData={rawData.filter(d => d.date?.getMonth() === i && d.date.getFullYear() === currentYear)}
+                            monthData={transactionDataArr.filter(d => d.date?.getMonth() === i && d.date.getFullYear() === currentYear)}
                             handleDetail={handleDetail}
                             key={i + 1} />)}
                     </YearContext.Provider>
@@ -53,7 +53,7 @@ function DayView({ day, dayData, handleDetail }: { day: number, dayData: Transac
 
     return (
         <td>
-            <button onClick={() => { handleDetail(day); console.log('clicked'); console.log(dayData) }}>{dayData.length}</button>
+            <button onClick={() => { handleDetail(day); console.log(dayData) }}>{dayData.length}</button>
 
         </td>
     )

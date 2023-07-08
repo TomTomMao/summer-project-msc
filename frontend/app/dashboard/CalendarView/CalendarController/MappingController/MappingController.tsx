@@ -1,4 +1,4 @@
-import { ETransactionVariable } from "@/app/dashboard/Transaction"
+import { ETransactionVariable } from "@/app/dashboard/DataObject"
 import { ECalendarViewVisualVariables, IMapping } from "../../CalendarView"
 import CalendarControllerRow from "../CalendarControllerRow"
 import { useMemo } from "react"

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from "react";
-import { TransactionData } from "../Transaction";
+import { TransactionData } from "../DataObject";
 import * as d3 from "d3";
 import styles from './styles.module.css'
 
