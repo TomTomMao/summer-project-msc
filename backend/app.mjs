@@ -1,10 +1,13 @@
 import express from "express";
 import cors from "cors";
-import { parse } from "csv-parse";
-import * as fs from 'fs';
+import { getRFMData } from "./getRFMData.mjs";
+import { getTransactionData } from "./getTransactionData.mjs";
+
 
 const app = express();
 const port = 3030;
+const transactionDataArrCache = await getTransactionData();
+const RFMDataCache = getRFMData(transactionDataArrCache);
 
 app.use(cors());
 app.options("*", cors()); //pre-flight across-the-board
@@ -18,35 +21,9 @@ app.listen(port, () => {
 });
 
 app.get("/transactionData", async (req, res) => {
-  let csvData = await getTransactionData();
-
-  res.json(csvData);
+  res.json(transactionDataArrCache);
 });
 
-async function getTransactionData() {
-  const csvPromise = new Promise((resolve, reject) => {
-    fs.readFile(
-      "../data/transaction_cleaned.csv",
-      (err, fileData) => {
-        parse(fileData, {}, function (err, rows) {
-          // console.log("rows", rows, err);
-          resolve(rows);
-        });
-      }
-    );
-  });
-  let csvArrays = await csvPromise;
-  let csvObjects = []
-  const headers = csvArrays[0]
-  for (let i = 1; i < csvArrays.length; i ++) {
-    let obj = {};
-    for (let j = 0; j < headers.length; j++) {
-      let colName = headers[j];
-      let val = csvArrays[i][j];
-      obj[colName] = val;
-    }
-    csvObjects.push(obj)
-  }
-  return csvObjects;
-}
-
+app.get("/transactionData/rfm", async (req, res) => {
+  res.json(RFMDataCache);
+});
