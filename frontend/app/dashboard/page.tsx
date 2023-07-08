@@ -45,7 +45,7 @@ export default function Page() {
     return (<>
         hello data
         {/* <CalendarView transactions={data}></CalendarView> */}
-        <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2>
+        {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
         <CalendarView3 rawData={data} currentYear={2016}></CalendarView3>
     </>
     )
