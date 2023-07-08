@@ -22,8 +22,8 @@ interface ITransactionData {
 }
 
 export default function Page() {
-    const [data, setData] = useState<Array<CTransaction> | null>(null)
-
+    const [data, setData] = useState<Array<TransactionData> | null>(null)
+    
     console.log('init state: ', data)
 
     useEffect(() => {
@@ -33,7 +33,7 @@ export default function Page() {
             // clean data
             .then(fetchedData => {
                 let dataWithTimeFormat = fetchedData.map(cleanFetchedData('TransactionData'));
-                setData(dataWithTimeFormat)
+                setData(dataWithTimeFormat);
             })
             .catch((err) => {
                 console.log(err)
@@ -46,17 +46,17 @@ export default function Page() {
         hello data
         {/* <CalendarView transactions={data}></CalendarView> */}
         {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
-        <CalendarView3 rawData={data} currentYear={2016}></CalendarView3>
+        <CalendarView3 rawData={data} currentYear={2016} ></CalendarView3>
     </>
     )
 
 
 }
 
-function cleanFetchedData(returnType: string) {
+function cleanFetchedData(returnType: string): ((d: ITransactionData) => CTransaction) | ((d: ITransactionData) => TransactionData) {
     switch (returnType) {
         case 'CTransaction':
-            return function (d: ITransactionData):CTransaction {
+            return function (d: ITransactionData): CTransaction {
                 /**
                  * take an ITransactionData object, return a CTransaction object 
                  */
@@ -83,7 +83,7 @@ function cleanFetchedData(returnType: string) {
                 return transaction;
             }
         case 'TransactionData':
-            return function (d: ITransactionData):TransactionData {
+            return function (d: ITransactionData): TransactionData {
                 /**
                  * take an ITransactionData object, return a TransactionData object 
                  */
@@ -111,8 +111,9 @@ function cleanFetchedData(returnType: string) {
             }
 
         default:
-            break;
+            throw new Error(`returnType is wrong, should be CTransaction or TransactionData, but given ${returnType}`);
+
     }
-    
+
 }
 
