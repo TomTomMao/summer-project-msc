@@ -60,11 +60,11 @@ function MonthView({ month, monthData, handleDetail }: { month: number, monthDat
  * @param day the number of the day in the month
  * @param dayData transactionData of the day
  * @param handleDetail event handler that tell the parents what has been selected
- * @returns void
  */
 function DayView({ day, dayData, handleDetail }: { day: number, dayData: TransactionData[], handleDetail: (arg0: number) => void }) {
     const RFMDataArr = useContext(RFMDataArrContext);
     const RFMDataMap = useContext(RFMDataMapContext);
+    const [showPopWindow, setShowPopWindow] = useState(false)
     if (RFMDataArr === undefined || RFMDataMap === undefined) {
         return <td>error</td>
     }
@@ -80,21 +80,20 @@ function DayView({ day, dayData, handleDetail }: { day: number, dayData: Transac
         }
         else {
             return {
-                timeToday: dayData.filter(d => d.transactionDescription === transactionDescription).length,
+                transactionDescription: transactionDescription,
+                monetaryAvgDay: RFMDataRecord.frequencyAvgDay,
+                frequencyAvgDay: RFMDataRecord.monetaryAvgDay,
                 amountToday: dayData.filter(d => d.transactionDescription === transactionDescription).reduce((a, b) => a + (b.isCredit() ? b.creditAmount : b.debitAmount), 0),
-                monetaryAvgWeek: RFMDataRecord.frequencyAvgWeek,
-                frequencyAvgWeek: RFMDataRecord.monetaryAvgWeek,
+                timeToday: dayData.filter(d => d.transactionDescription === transactionDescription).length,
                 isCredit: dayData.filter(d=>d.transactionDescription === transactionDescription)[0].isCredit()
             }
         }
-    })
-
-
+    });
+    
 
     return (
         <td>
-            <button onClick={() => { handleDetail(day); console.log(dayData) }}>{dayData.length}</button>
-
+            <button onClick={() => { handleDetail(day); console.log(dayData);console.log(dataPerTransactionDescription) }}>{dayData.length}</button>
         </td>
     )
 }
