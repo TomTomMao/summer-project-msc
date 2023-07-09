@@ -5,10 +5,25 @@ import { YearContext } from "./Contexts/YearContext";
 import { RFMDataArrContext, RFMDataMapContext } from "./Contexts/RFMDataArrContext";
 import { AssertionError } from "assert";
 
+interface DataPerTransactionDescription {
+    transactionDescription: string
+    monetaryAvgDay: number
+    frequencyAvgDay: number
+    amountToday: number
+    timeToday: number
+    isCredit: boolean
+}
+
 export default function CalendarView3({ transactionDataArr, currentYear, RFMDataArr }: { transactionDataArr: TransactionData[], currentYear: number, RFMDataArr: RFMData[] }) {
     const [detailDay, setDetailDay] = useState<null | Date>(null);
     const RFMDataMap: Map<String, number> = useMemo(() => getRFMDataMapFromArr(RFMDataArr), [RFMDataArr])
-    
+    const calendarScatterMapping = {
+        x: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.monetaryAvgDay,
+        y: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.frequencyAvgDay,
+        colour: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.amountToday,
+        size: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.timeToday,
+        shape: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.isCredit
+    }
     function handleDetail(month: number) {
         // month is the number, if Jan, then 1, if Feb then 2.etc.
         return function (day: number) {
@@ -21,7 +36,7 @@ export default function CalendarView3({ transactionDataArr, currentYear, RFMData
                 <thead>
                     <tr>
                         <td>{currentYear}</td>
-                        {(Array.from(Array(31).keys())).map(i => <td key={i+1}>{i + 1}</td>)}
+                        {(Array.from(Array(31).keys())).map(i => <td key={i + 1}>{i + 1}</td>)}
                     </tr>
                 </thead>
                 <tbody>
@@ -64,7 +79,7 @@ function MonthView({ month, monthData, handleDetail }: { month: number, monthDat
 function DayView({ day, dayData, handleDetail }: { day: number, dayData: TransactionData[], handleDetail: (arg0: number) => void }) {
     const RFMDataArr = useContext(RFMDataArrContext);
     const RFMDataMap = useContext(RFMDataMapContext);
-    const [showPopWindow, setShowPopWindow] = useState(false)
+
     if (RFMDataArr === undefined || RFMDataMap === undefined) {
         return <td>error</td>
     }
@@ -72,7 +87,7 @@ function DayView({ day, dayData, handleDetail }: { day: number, dayData: Transac
     const transactionDescriptions = Array.from(new Set(dayData.map((transactionData: TransactionData) => transactionData.transactionDescription))); // O(N)
 
     // aggregate data to transaction description level; O(N^2), can be optimised
-    const dataPerTransactionDescription = transactionDescriptions.map(transactionDescription => {
+    const dataPerTransactionDescriptionArr: DataPerTransactionDescription[] = transactionDescriptions.map(transactionDescription => {
         const RFMDataRecord: RFMData | undefined = getRFMData(transactionDescription, RFMDataMap, RFMDataArr);
         if (RFMDataRecord === undefined) {
             console.log(transactionDescription, RFMDataMap, RFMDataArr)
@@ -85,15 +100,13 @@ function DayView({ day, dayData, handleDetail }: { day: number, dayData: Transac
                 frequencyAvgDay: RFMDataRecord.monetaryAvgDay,
                 amountToday: dayData.filter(d => d.transactionDescription === transactionDescription).reduce((a, b) => a + (b.isCredit() ? b.creditAmount : b.debitAmount), 0),
                 timeToday: dayData.filter(d => d.transactionDescription === transactionDescription).length,
-                isCredit: dayData.filter(d=>d.transactionDescription === transactionDescription)[0].isCredit()
+                isCredit: dayData.filter(d => d.transactionDescription === transactionDescription)[0].isCredit()
             }
         }
     });
-    
-
     return (
         <td>
-            <button onClick={() => { handleDetail(day); console.log(dayData);console.log(dataPerTransactionDescription) }}>{dayData.length}</button>
+            <button onClick={() => { handleDetail(day); console.log(dayData); console.log(dataPerTransactionDescriptionArr) }}>{dayData.length}</button>
         </td>
     )
 }
@@ -113,5 +126,5 @@ function getRFMDataMapFromArr(RFMDataArr: RFMData[]): Map<String, number> {
 
 const getRFMData = (transactionDescription: String, RFMDataMap: Map<String, number>, RFMDataArr: RFMData[]): RFMData | undefined => {
     const index: number | undefined = RFMDataMap.get(transactionDescription)
-    return index!==undefined ? RFMDataArr[index] : undefined
+    return index !== undefined ? RFMDataArr[index] : undefined
 }
