@@ -27,7 +27,7 @@ export default function Page() {
         hello data
         {/* <CalendarView transactions={data}></CalendarView> */}
         {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
-        <CalendarView3 transactionDataArr={transactionDataArr} currentYear={2016} RFMDataArr={RFMDataArr}></CalendarView3>
+        <CalendarView3 transactionDataArr={transactionDataArr} initCurrentYear={2016} RFMDataArr={RFMDataArr}></CalendarView3>
         <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr}></TableView>
     </>
     )
