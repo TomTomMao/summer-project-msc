@@ -5,6 +5,7 @@ import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFM
 import CalendarView from "./CalendarView2/CalendarView2";
 import CalendarView2 from "./CalendarView2/CalendarView2";
 import CalendarView3 from "./CalendarView3/CalendarView3";
+import TableView from "./TableView/TableView";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
@@ -27,6 +28,7 @@ export default function Page() {
         {/* <CalendarView transactions={data}></CalendarView> */}
         {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
         <CalendarView3 transactionDataArr={transactionDataArr} currentYear={2016} RFMDataArr={RFMDataArr}></CalendarView3>
+        <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr}></TableView>
     </>
     )
 

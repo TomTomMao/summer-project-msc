@@ -62,9 +62,11 @@ export function getRFMData(transactionDataArr) {
     .map((d) => {
       return {
         recency: d.recency,
+        monetaryAvgDay: d.monetary.avgDay,
         monetaryAvgWeek: d.monetary.avgWeek,
         monetaryAvgMonth: d.monetary.avgMonth,
         monetaryAvgYear: d.monetary.avgYear,
+        frequencyAvgDay: d.frequency.avgDay,
         frequencyAvgWeek: d.frequency.avgWeek,
         frequencyAvgMonth: d.frequency.avgMonth,
         frequencyAvgYear: d.frequency.avgYear,
@@ -152,9 +154,17 @@ function getInfoMap(transactions) {
   };
   return infoMap;
 }
-function getDateDiff(oldDate, newDate = new Date()) {
+function getDateDiff(oldDate, newDate) {
   //https://www.javatpoint.com/javascript-date-difference
-  return Math.floor((newDate - oldDate) / (1000 * 60 * 60 * 24));
+  const dateDiff = Math.floor((newDate - oldDate) / (1000 * 60 * 60 * 24));
+  if (dateDiff === 0) {
+    return 1
+  } else{
+    return dateDiff
+  }
+}
+function countNumDay(oldDate, newDate) {
+  return getDateDiff(oldDate, newDate) 
 }
 function countNumWeek(oldDate, newDate = new Date()) {
   return getDateDiff(oldDate, newDate) / WEEK;
@@ -174,13 +184,15 @@ function getRFMFromInfo(infoChild) {
   // },
   // return an object like this: {
   // recency: int,
-  // frequency: {avgWeek: float, avgMonth: float, avgYear: float},
+  // frequency: {avgWeek: float, avgMonth: float, avgYear: float, avgDay},
   // monetary: float
   // }
   const transactionCount = infoChild.transactionCount;
   const totalAmount = infoChild.totalAmount;
+  // console.log(infoChild.latestDay)
+  console.log(countNumMonth(infoChild.earlestDay, infoChild.latestDay))
   return {
-    recency: getDateDiff(infoChild.latestDay),
+    recency: getDateDiff(infoChild.latestDay, new Date()),
     frequency: {
       avgWeek:
         transactionCount /
@@ -192,6 +204,7 @@ function getRFMFromInfo(infoChild) {
         transactionCount /
         countNumYear(infoChild.earlestDay, infoChild.latestDay),
       total: transactionCount,
+      avgDay: transactionCount/getDateDiff(infoChild.earlestDay, infoChild.latestDay)
     },
     monetary: {
       avgWeek:
@@ -201,28 +214,7 @@ function getRFMFromInfo(infoChild) {
       avgYear:
         totalAmount / countNumYear(infoChild.earlestDay, infoChild.latestDay),
       total: totalAmount,
+      avgDay: totalAmount/getDateDiff(infoChild.earlestDay, infoChild.latestDay)
     },
   };
-}
-
-function getRFMData2(transactionDataArr) {
-  const transactionDataArr = transactionDataArr.map((d) => {
-    return {
-      ...d,
-      Balance: parseFloat(d["Balance"]),
-      "Debit Amount":
-        d["Debit Amount"] == "" ? 0 : parseFloat(d["Debit Amount"]),
-      "Credit Amount":
-        d["Credit Amount"] == "" ? 0 : parseFloat(d["Credit Amount"]),
-      date: parseTime(d["Transaction Date"]),
-    };
-  });
-  transactionDataArr.forEach((d) => {
-    return {};
-  });
-  const transactionDescriptionMapCredit = new Map();
-  const transactionDescriptionMapDebit = new Map();
-  transactionDataArr.forEach((transactionData) => {
-    transactionData["Credit Amount"];
-  });
 }

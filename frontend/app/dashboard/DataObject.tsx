@@ -14,6 +14,21 @@ export enum ETransactionVariable {
     locationCity = 'locationCity',
     locationCountry = 'locationCountry'
 }
+/**
+ * transaction data fetched from the server should look like this
+ */
+export interface ITransactionDataFromAPI {
+    'Transaction Number': string,
+    'Transaction Date': string,
+    'Transaction Type': string,
+    'Transaction Description': string,
+    'Debit Amount': string,
+    'Credit Amount': string,
+    'Balance': string,
+    'Category': string,
+    'Location City': string,
+    'Location Country': string
+}
 export class TransactionData {
     readonly date: Date | null;
     readonly transactionNumber: string;
@@ -131,20 +146,44 @@ export class CTransaction {
     }
 
 }
+
+/**
+ * RFM data fetched from the server should look like this
+ */
+export interface IRFMDataFromAPI {
+    recency: number;
+    monetaryAvgDay: number;
+    monetaryAvgWeek: number;
+    monetaryAvgMonth: number;
+    monetaryAvgYear: number;
+    frequencyAvgDay: number;
+    frequencyAvgWeek: number;
+    frequencyAvgMonth: number;
+    frequencyAvgYear: number;
+    transactionDescription: string;
+    isCredit: boolean;
+}
 export class RFMData {
     readonly recency: number;
-    readonly monetary: { avgWeek: number; avgMonth: number; avgYear: number; };
-    readonly frequency: { avgWeek: number; avgMonth: number; avgYear: number; };
+    readonly monetary: {avgDay:number, avgWeek: number; avgMonth: number; avgYear: number; };
+    readonly frequency: {avgDay:number, avgWeek: number; avgMonth: number; avgYear: number; };
     readonly transactionDescription: string;
-    constructor(recency: number, monetary: { avgWeek: number, avgMonth: number, avgYear: number },
-        frequency: { avgWeek: number, avgMonth: number, avgYear: number },
-        transactionDescription: string) {
+    readonly isCredit: boolean;
+    constructor(recency: number,
+         monetary: { avgDay:number, avgWeek: number, avgMonth: number, avgYear: number },
+        frequency: { avgDay:number, avgWeek: number, avgMonth: number, avgYear: number },
+        transactionDescription: string,
+        isCredit: boolean) {
         this.recency = recency;
         this.monetary = monetary;
         this.frequency = frequency;
         this.transactionDescription = transactionDescription;
+        this.isCredit = isCredit;
     }
 
+    public get monetaryAvgDay(): number {
+        return this.monetary.avgDay;
+    }
     public get monetaryAvgWeek(): number {
         return this.monetary.avgWeek;
     }
@@ -155,6 +194,9 @@ export class RFMData {
         return this.monetary.avgYear;
     }
 
+    public get frequencyAvgDay(): number {
+        return this.frequency.avgDay;
+    }
     public get frequencyAvgWeek(): number {
         return this.frequency.avgWeek;
     }
@@ -166,45 +208,15 @@ export class RFMData {
     }
 
 }
-
-/**
- * transaction data fetched from the server should look like this
- */
-export interface ITransactionData {
-    'Transaction Number': string,
-    'Transaction Date': string,
-    'Transaction Type': string,
-    'Transaction Description': string,
-    'Debit Amount': string,
-    'Credit Amount': string,
-    'Balance': string,
-    'Category': string,
-    'Location City': string,
-    'Location Country': string
-}
-/**
- * RFM data fetched from the server should look like this
- */
-export interface IRFMData {
-    recency: number;
-    monetaryAvgWeek: number;
-    monetaryAvgMonth: number;
-    monetaryAvgYear: number;
-    frequencyAvgWeek: number;
-    frequencyAvgMonth: number;
-    frequencyAvgYear: number;
-    transactionDescription: string;
-}
-
 /**
  * 
  * @param returnType CTransaction or TransactionData
  * @returns a function that can convert ITransactionData, which is the data fetched from the server, to the type defined by returnType.
  */
-export function curryCleanFetchedTransactionData(returnType: string, parseTime: (arg0: string) => Date | null): ((d: ITransactionData) => CTransaction) | ((d: ITransactionData) => TransactionData) {
+export function curryCleanFetchedTransactionData(returnType: string, parseTime: (arg0: string) => Date | null): ((d: ITransactionDataFromAPI) => CTransaction) | ((d: ITransactionDataFromAPI) => TransactionData) {
     switch (returnType) {
         case 'CTransaction':
-            return function (d: ITransactionData): CTransaction {
+            return function (d: ITransactionDataFromAPI): CTransaction {
                 /**
                  * take an ITransactionData object, return a CTransaction object 
                  */
@@ -231,7 +243,7 @@ export function curryCleanFetchedTransactionData(returnType: string, parseTime: 
                 return transaction;
             }
         case 'TransactionData':
-            return function (d: ITransactionData): TransactionData {
+            return function (d: ITransactionDataFromAPI): TransactionData {
                 /**
                  * take an ITransactionData object, return a TransactionData object 
                  */
@@ -271,14 +283,14 @@ export function curryCleanFetchedTransactionData(returnType: string, parseTime: 
  * @returns A function that accepts the fetched RFMData and returns a clean RFMData object.
  * @throws Error if the returnType is invalid.
  */
-export function curryCleanFetchedRFMData(returnType: string): (fetchedRFMData: IRFMData) => RFMData {
+export function curryCleanFetchedRFMData(returnType: string): (fetchedRFMData: IRFMDataFromAPI) => RFMData {
     switch (returnType) {
         case 'RFMData':
-            return function (fetchedRFMData: IRFMData): RFMData {
+            return function (fetchedRFMData: IRFMDataFromAPI): RFMData {
                 return new RFMData(fetchedRFMData.recency,
-                    { avgWeek: fetchedRFMData.monetaryAvgWeek, avgMonth: fetchedRFMData.monetaryAvgMonth, avgYear: fetchedRFMData.monetaryAvgYear },
-                    { avgWeek: fetchedRFMData.frequencyAvgWeek, avgMonth: fetchedRFMData.frequencyAvgMonth, avgYear: fetchedRFMData.frequencyAvgYear },
-                    fetchedRFMData.transactionDescription)
+                    {avgDay: fetchedRFMData.monetaryAvgDay, avgWeek: fetchedRFMData.monetaryAvgWeek, avgMonth: fetchedRFMData.monetaryAvgMonth, avgYear: fetchedRFMData.monetaryAvgYear },
+                    {avgDay: fetchedRFMData.frequencyAvgDay, avgWeek: fetchedRFMData.frequencyAvgWeek, avgMonth: fetchedRFMData.frequencyAvgMonth, avgYear: fetchedRFMData.frequencyAvgYear },
+                    fetchedRFMData.transactionDescription, fetchedRFMData.isCredit)
             }
         default:
             throw new Error(`invalid parameter 'returnType': ${returnType}, must be 'RFMData`);
