@@ -1,4 +1,7 @@
 'use client';
+
+import { AssertionError } from "assert";
+
 export enum ETransactionVariable {
     transactionNumber = 'transactionNumber',
     date = 'date',
@@ -43,6 +46,15 @@ export class TransactionData {
         this.category = category;
         this.locationCity = locationCity;
         this.locationCountry = locationCountry;
+    }
+    public isCredit() {
+        if (this.creditAmount === 0 && this.debitAmount >= 0) {
+            return false
+        } else if (this.creditAmount >= 0 && this.debitAmount === 0) {
+            return true
+        } else {
+            throw new Error('both creditamount and debit amount is greater than 0');
+        }
     }
 }
 export class CTransaction {
@@ -142,7 +154,7 @@ export class RFMData {
     public get monetaryAvgYear(): number {
         return this.monetary.avgYear;
     }
-    
+
     public get frequencyAvgWeek(): number {
         return this.frequency.avgWeek;
     }
@@ -182,8 +194,8 @@ export interface IRFMData {
     frequencyAvgMonth: number;
     frequencyAvgYear: number;
     transactionDescription: string;
-  }
-  
+}
+
 /**
  * 
  * @param returnType CTransaction or TransactionData

@@ -1,6 +1,6 @@
-import { timeParse } from 'd3';
+import { timeParse } from "d3";
 
-const parseTime = timeParse('%d/%m/%Y');
+const parseTime = timeParse("%d/%m/%Y");
 const WEEK = 7;
 const MONTH = 30.437; // https://www.britannica.com/science/time/Lengths-of-years-and-months
 const YEAR = 365.25;
@@ -18,14 +18,15 @@ const YEAR = 365.25;
       }
  */
 export function getRFMData(transactionDataArr) {
-
   // convert date and number from string to int and data.
   transactionDataArr = transactionDataArr.map((d) => {
     return {
       ...d,
       Balance: parseFloat(d["Balance"]),
-      "Debit Amount": d["Debit Amount"] == "" ? 0 : parseFloat(d["Debit Amount"]),
-      "Credit Amount": d["Credit Amount"] == "" ? 0 : parseFloat(d["Credit Amount"]),
+      "Debit Amount":
+        d["Debit Amount"] == "" ? 0 : parseFloat(d["Debit Amount"]),
+      "Credit Amount":
+        d["Credit Amount"] == "" ? 0 : parseFloat(d["Credit Amount"]),
       date: parseTime(d["Transaction Date"]),
     };
   });
@@ -68,6 +69,7 @@ export function getRFMData(transactionDataArr) {
         frequencyAvgMonth: d.frequency.avgMonth,
         frequencyAvgYear: d.frequency.avgYear,
         transactionDescription: d.transactionDescription,
+        isCredit: d.credit > 0,
       };
     });
   return flattenRFMData;
@@ -83,10 +85,12 @@ function getInfoMap(transactions) {
     // get values
     const transactionDescription = transaction["Transaction Description"];
     const date = transaction["date"];
-    const transactionType = transaction["Credit Amount"] == 0 ? "debit" : "credit";
-    const transactionAmount = transactionType == "credit"
-      ? transaction["Credit Amount"]
-      : transaction["Debit Amount"];
+    const transactionType =
+      transaction["Credit Amount"] == 0 ? "debit" : "credit";
+    const transactionAmount =
+      transactionType == "credit"
+        ? transaction["Credit Amount"]
+        : transaction["Debit Amount"];
     const transactionNumber = transaction["Transaction Number"];
 
     // add empty information into the temp Map
@@ -111,7 +115,8 @@ function getInfoMap(transactions) {
       });
     }
     const oldData = infoMap.get(transactionDescription);
-    const objToUpdate = transactionType == "credit" ? oldData.credit : oldData.debit;
+    const objToUpdate =
+      transactionType == "credit" ? oldData.credit : oldData.debit;
     // update the earlestDay and latest Day
     if (objToUpdate.earlestDay == null || objToUpdate.earlestDay > date) {
       objToUpdate.earlestDay = date;
@@ -177,16 +182,47 @@ function getRFMFromInfo(infoChild) {
   return {
     recency: getDateDiff(infoChild.latestDay),
     frequency: {
-      avgWeek: transactionCount / countNumWeek(infoChild.earlestDay),
-      avgMonth: transactionCount / countNumMonth(infoChild.earlestDay),
-      avgYear: transactionCount / countNumYear(infoChild.earlestDay),
+      avgWeek:
+        transactionCount /
+        countNumWeek(infoChild.earlestDay, infoChild.latestDay),
+      avgMonth:
+        transactionCount /
+        countNumMonth(infoChild.earlestDay, infoChild.latestDay),
+      avgYear:
+        transactionCount /
+        countNumYear(infoChild.earlestDay, infoChild.latestDay),
       total: transactionCount,
     },
     monetary: {
-      avgWeek: totalAmount / countNumWeek(infoChild.earlestDay),
-      avgMonth: totalAmount / countNumMonth(infoChild.earlestDay),
-      avgYear: totalAmount / countNumYear(infoChild.earlestDay),
+      avgWeek:
+        totalAmount / countNumWeek(infoChild.earlestDay, infoChild.latestDay),
+      avgMonth:
+        totalAmount / countNumMonth(infoChild.earlestDay, infoChild.latestDay),
+      avgYear:
+        totalAmount / countNumYear(infoChild.earlestDay, infoChild.latestDay),
       total: totalAmount,
     },
   };
+}
+
+function getRFMData2(transactionDataArr) {
+  const transactionDataArr = transactionDataArr.map((d) => {
+    return {
+      ...d,
+      Balance: parseFloat(d["Balance"]),
+      "Debit Amount":
+        d["Debit Amount"] == "" ? 0 : parseFloat(d["Debit Amount"]),
+      "Credit Amount":
+        d["Credit Amount"] == "" ? 0 : parseFloat(d["Credit Amount"]),
+      date: parseTime(d["Transaction Date"]),
+    };
+  });
+  transactionDataArr.forEach((d) => {
+    return {};
+  });
+  const transactionDescriptionMapCredit = new Map();
+  const transactionDescriptionMapDebit = new Map();
+  transactionDataArr.forEach((transactionData) => {
+    transactionData["Credit Amount"];
+  });
 }
