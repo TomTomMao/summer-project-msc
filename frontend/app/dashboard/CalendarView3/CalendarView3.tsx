@@ -2,11 +2,13 @@ import { useContext, useEffect, useMemo, useRef, useState } from "react"
 import { RFMData, TransactionData } from "../DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import { YearContext } from "./Contexts/YearContext";
-import { AssertionError } from "assert";
 import * as d3 from 'd3'
 import { GroupedDataPerTransactionDescriptionContext } from "./Contexts/GroupedDataPerTransactionDescriptionContext";
 import { ScaleContext } from "./Contexts/ScaleContext";
 import { DataPerTransactionDescription } from "./DataPerTransactionDescription";
+import { ValueGetterContext } from "./Contexts/ValueGetterContext";
+import { getDataPerTransactionDescription } from "./getDataPerTransactionDescription";
+import { getRFMDataMapFromArr } from "./getRFMDataMapFromArr";
 
 
 const calendarValueGetter = {
@@ -16,14 +18,15 @@ const calendarValueGetter = {
     size: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.timeToday,
     shape: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.isCredit
 }
-const DayViewSvgSize = 40;
+const DayViewSvgSize = 30;
 const PI = 3.14159;
 
 export default function CalendarView3({ transactionDataArr, initCurrentYear, RFMDataArr }: { transactionDataArr: TransactionData[], initCurrentYear: number, RFMDataArr: RFMData[] }) {
     const [detailDay, setDetailDay] = useState<null | Date>(null);
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const RFMDataMap: Map<string, number> = useMemo(() => getRFMDataMapFromArr(RFMDataArr), [RFMDataArr])
-    const valueGetter = { ...calendarValueGetter }
+    const valueGetter = useContext(ValueGetterContext);
+    
     const [k, setK] = useState(1);
     const [x, setX] = useState(0);
     const [y, setY] = useState(0);
@@ -151,7 +154,7 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
     const groupedDataPerTransactionDescription = useContext(GroupedDataPerTransactionDescriptionContext);
     const { scaleX, scaleY, scaleColour, scaleShape, scaleSize } = useContext(ScaleContext);
     const ref = useRef(null)
-    const valueGetter = calendarValueGetter;
+    const valueGetter = useContext(ValueGetterContext);
     const { width, height } = svgSize;
     const { k, setK, x, setX, y, setY } = zoomingInfo;
 
@@ -175,6 +178,8 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
     const draw = () => {
         const svg = d3.select(ref.current)
 
+
+        // add points
         svg.select('g').selectAll('circle').data(dayData, d => { return `${d.transactionDescription}` }).join('circle')
             .attr('cx', (d: DataPerTransactionDescription) => scaleX(valueGetter.x(d)))
             .attr('cy', (d: DataPerTransactionDescription) => scaleY(valueGetter.y(d)))
@@ -208,55 +213,5 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
 
 
 
-/**
- * 
- * @param RFMDataArr an array of RFMDataArr
- * @returns a map where the key is transactionDescription and value is the index of the RFMDataArr
- */
-function getRFMDataMapFromArr(RFMDataArr: RFMData[]): Map<string, number> {
-    const RFMDataMap: Map<string, number> = new Map();
-    RFMDataArr.forEach((currRFMData, index) => {
-        RFMDataMap.set(currRFMData.transactionDescription, index)
-    })
-    return RFMDataMap
-}
-/**
- * helper function for getDataPerTransactionDescription
- * @param transactionDescription 
- * @param RFMDataArr an array of RFMData
- * @param RFMDataMap a map where the key is the transactionDescription in RFMDataArr, and the value is the index of the item, whose transactionDescription = the key, in the RFMDataArr.
- * @returns an RFMData of the transactionDescription or undefined if not found
- */
-const getRFMData = (transactionDescription: string, RFMDataMap: Map<string, number>, RFMDataArr: RFMData[]): RFMData | undefined => {
-    const index: number | undefined = RFMDataMap.get(transactionDescription)
-    return index !== undefined ? RFMDataArr[index] : undefined
-}
 
-/**
- * aggregated the data
- * @param transactionDataArr an array of data
- * @param RFMDataArr an array of RFMData
- * @param RFMDataMap a map where the key is the transactionDescription in RFMDataArr, and the value is the index of the item, whose transactionDescription = the key, in the RFMDataArr.
- * @return return an array of DataPerTransactionDescription
- */
-function getDataPerTransactionDescription(transactionDataArr: TransactionData[], RFMDataArr: RFMData[], RFMDataMap: Map<string, number>): DataPerTransactionDescription[] {
-    const transactionDescriptions = Array.from(new Set(transactionDataArr.map((transactionData: TransactionData) => transactionData.transactionDescription))); // O(N)
-    // aggregate data to transaction description level; O(N^2), can be optimised
-    const dataPerTransactionDescriptionArr: DataPerTransactionDescription[] = transactionDescriptions.map(transactionDescription => {
-        const RFMDataRecord: RFMData | undefined = getRFMData(transactionDescription, RFMDataMap, RFMDataArr);
-        if (RFMDataRecord === undefined) {
-            // console.log(transactionDescription, RFMDataMap, RFMDataArr)
-            throw new AssertionError({ message: `RFM Data of ${transactionDescription} not found` });
-        }
-        else {
-            const monetaryAvgDay = RFMDataRecord.monetaryAvgDay;
-            const frequencyAvgDay = RFMDataRecord.frequencyAvgDay;
-            const amountToday = transactionDataArr.filter(d => d.transactionDescription === transactionDescription).reduce((a, b) => a + (b.isCredit() ? b.creditAmount : b.debitAmount), 0);
-            const timeToday = transactionDataArr.filter(d => d.transactionDescription === transactionDescription).length;
-            const isCredit = transactionDataArr.filter(d => d.transactionDescription === transactionDescription)[0].isCredit();
-            return new DataPerTransactionDescription(transactionDescription, monetaryAvgDay, frequencyAvgDay, amountToday, timeToday, isCredit)
-        }
-    });
-    return dataPerTransactionDescriptionArr;
-}
 
