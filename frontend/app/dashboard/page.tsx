@@ -181,7 +181,6 @@ function ClusterView({ transactionDataArr, RFMDataArr, height, width }:
                 <g ref={yAxisRef}></g>
                 <g ref={pointsAreaRef}></g>
             </g>
-
         </svg>
     </div>
     )
