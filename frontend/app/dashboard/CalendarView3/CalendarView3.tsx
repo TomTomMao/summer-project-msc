@@ -1,4 +1,4 @@
-import { useContext, useMemo, useRef, useState } from "react"
+import { useContext, useEffect, useMemo, useRef, useState } from "react"
 import { RFMData, TransactionData } from "../DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import { YearContext } from "./Contexts/YearContext";
@@ -73,10 +73,10 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
         if (sizeDomainMax === undefined) {
             throw new Error("invalid sizeDomainMax value");
         }
-        const scaleX = d3.scaleLinear().domain([xDomainMin, xDomainMax * 0.01]).range([10, 30]);
-        const scaleY = d3.scaleLinear().domain([yDomainMin, yDomainMax]).range([30, 10]);
-        const scaleColour = d3.scaleLinear().domain([colourDomainMin, colourDomainMax]).range(["white", "blue"]);
-        const scaleSize = d3.scaleLinear().domain([sizeDomainMin, sizeDomainMax]).range([30, 50]);
+        const scaleX = d3.scaleLinear().domain([xDomainMin, xDomainMax]).range([0, DayViewSvgSize]);
+        const scaleY = d3.scaleLinear().domain([yDomainMin, yDomainMax]).range([DayViewSvgSize, 0]);
+        const scaleColour = d3.scaleLinear().domain([colourDomainMin, colourDomainMax]).range(["blue", "red"]);
+        const scaleSize = d3.scaleLinear().domain([sizeDomainMin, sizeDomainMax]).range([1, 5]);
         const scaleShape = (shapeValue: boolean) => (shapeValue ? 'circle' : 'rect');
 
         const scales: {
@@ -138,47 +138,48 @@ function MonthView({ month, }: { month: number }) {
 /**
  * @param day the number of the day in the month
  * @param month the number of the month in the year
- * @param handleDetail event handler that tell the parents what has been selected
  */
-function DayView({ day, month }: { day: number, month: number }) {
+function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayViewSvgSize } }: { day: number, month: number, svgSize: { width: number, height: number } }) {
     const currentYear = useContext(YearContext);
     const groupedDataPerTransactionDescription = useContext(GroupedDataPerTransactionDescriptionContext);
     const { scaleX, scaleY, scaleColour, scaleShape, scaleSize } = useContext(ScaleContext);
+    const ref = useRef(null)
     const valueGetter = calendarValueGetter;
+    const { width, height } = svgSize;
 
     if (groupedDataPerTransactionDescription === null || currentYear === undefined
         || scaleX === undefined || scaleY === undefined || scaleColour === undefined || scaleShape === undefined || scaleSize === undefined) {
         return <td>loading</td>
     }
+    const dayData: DataPerTransactionDescription[] | undefined = groupedDataPerTransactionDescription.get(String(currentYear))?.get(String(month))?.get(String(day))
+    const draw = () => {
+        const svg = d3.select(ref.current)
 
-    const dayData = groupedDataPerTransactionDescription.get(String(currentYear))?.get(String(month))?.get(String(day))
-    let visualData: { x: number; y: number; size: number; colour: number; shape: "circle" | "rect"; }[] = []
-    if (dayData !== undefined) {
-        visualData = dayData.map(transactionDescriptionData => {
-            return {
-                x: scaleX(valueGetter.x(transactionDescriptionData)),
-                y: scaleY(valueGetter.y(transactionDescriptionData)),
-                size: scaleSize(valueGetter.size(transactionDescriptionData)),
-                colour: scaleColour(valueGetter.colour(transactionDescriptionData)),
-                shape: scaleShape(valueGetter.shape(transactionDescriptionData))
-            }
-        })
-    } else {
-        return <td className={`border-2 border-indigo-600 bg-zinc-950`}></td>
+        svg.select('g').selectAll('circle').data(dayData, d => { return `${d.transactionDescription}` }).join('circle')
+            .attr('cx', (d: DataPerTransactionDescription) => scaleX(valueGetter.x(d)))
+            .attr('cy', (d: DataPerTransactionDescription) => scaleY(valueGetter.y(d)))
+            .attr('r', (d: DataPerTransactionDescription) => scaleSize(valueGetter.size(d)))
+            .style('fill', (d: DataPerTransactionDescription) => scaleColour(valueGetter.colour(d)));
     }
 
-    const points = visualData.map((d, i) => {
-        const radius = Math.sqrt(d.size / PI)
-        return <circle cx={d.x} cy={d.y} r={radius} key={`${dayData[i].transactionDescription}`} fill={d.colour}
-        ></circle>
-    })
-    return (
-        <td className={`border-2 border-indigo-600 ${visualData.length === 0 && 'bg-zinc-950'}`}>
-            <svg width={`${DayViewSvgSize}px`} height={`${DayViewSvgSize}px`}>
-                {points}
+    useEffect(() => dayData && draw(), [day, month, currentYear])
+
+    // highlight the day without transaction
+    if (dayData === undefined) {
+        return <td className={`border-2 border-indigo-600 bg-zinc-950`} style={{ width: width, height: height }}>
+            <svg ref={ref} width={width} height={height}>
             </svg>
         </td>
-    )
+    }
+    else {
+        return (
+            <td className={`border-2 border-indigo-600`} style={{ width: width, height: height }}>
+                <svg ref={ref} width={width} height={height}>
+                    <g></g>
+                </svg>
+            </td>
+        )
+    }
 }
 
 
