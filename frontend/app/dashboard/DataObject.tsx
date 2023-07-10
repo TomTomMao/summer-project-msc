@@ -29,6 +29,9 @@ export interface ITransactionDataFromAPI {
     'Location City': string,
     'Location Country': string
 }
+/**
+ * a class represent a record of transaction
+ */
 export class TransactionData {
     readonly date: Date | null;
     readonly transactionNumber: string;
@@ -71,6 +74,13 @@ export class TransactionData {
             throw new Error('both creditamount and debit amount is greater than 0');
         }
     }
+}
+
+/**
+ * a class represent transactiondata plus it's rfm infomation (monetaryAvgDay, frequencyAvgDay, recency)
+ */
+export class TransactionDataWithRFMInfo extends TransactionData {
+    
 }
 export class CTransaction {
     readonly date: Date | null;
@@ -163,17 +173,23 @@ export interface IRFMDataFromAPI {
     transactionDescription: string;
     isCredit: boolean;
 }
+
+/**
+ * a class represent RFMData
+ */
+
 export class RFMData {
     readonly recency: number;
-    readonly monetary: {avgDay:number, avgWeek: number; avgMonth: number; avgYear: number; };
-    readonly frequency: {avgDay:number, avgWeek: number; avgMonth: number; avgYear: number; };
+    readonly monetary: { avgDay: number, avgWeek: number; avgMonth: number; avgYear: number; };
+    readonly frequency: { avgDay: number, avgWeek: number; avgMonth: number; avgYear: number; };
     readonly transactionDescription: string;
     readonly isCredit: boolean;
     constructor(recency: number,
-         monetary: { avgDay:number, avgWeek: number, avgMonth: number, avgYear: number },
-        frequency: { avgDay:number, avgWeek: number, avgMonth: number, avgYear: number },
+        monetary: { avgDay: number, avgWeek: number, avgMonth: number, avgYear: number },
+        frequency: { avgDay: number, avgWeek: number, avgMonth: number, avgYear: number },
         transactionDescription: string,
         isCredit: boolean) {
+        /** @readonly **/
         this.recency = recency;
         this.monetary = monetary;
         this.frequency = frequency;
@@ -181,28 +197,41 @@ export class RFMData {
         this.isCredit = isCredit;
     }
 
+    /**
+     * (total transaction amount) / (last date - first date + 1)
+     */
     public get monetaryAvgDay(): number {
         return this.monetary.avgDay;
     }
+
+    /** @deprecated */
     public get monetaryAvgWeek(): number {
         return this.monetary.avgWeek;
     }
+    /** @deprecated */
     public get monetaryAvgMonth(): number {
         return this.monetary.avgMonth;
     }
+    /** @deprecated */
     public get monetaryAvgYear(): number {
         return this.monetary.avgYear;
     }
 
+     /**
+     * (times of transaction) / (last date - first date + 1)
+     */
     public get frequencyAvgDay(): number {
         return this.frequency.avgDay;
     }
+    /** @deprecated */
     public get frequencyAvgWeek(): number {
         return this.frequency.avgWeek;
     }
+    /** @deprecated */
     public get frequencyAvgMonth(): number {
         return this.frequency.avgMonth;
     }
+    /** @deprecated */
     public get frequencyAvgYear(): number {
         return this.frequency.avgYear;
     }
@@ -288,8 +317,8 @@ export function curryCleanFetchedRFMData(returnType: string): (fetchedRFMData: I
         case 'RFMData':
             return function (fetchedRFMData: IRFMDataFromAPI): RFMData {
                 return new RFMData(fetchedRFMData.recency,
-                    {avgDay: fetchedRFMData.monetaryAvgDay, avgWeek: fetchedRFMData.monetaryAvgWeek, avgMonth: fetchedRFMData.monetaryAvgMonth, avgYear: fetchedRFMData.monetaryAvgYear },
-                    {avgDay: fetchedRFMData.frequencyAvgDay, avgWeek: fetchedRFMData.frequencyAvgWeek, avgMonth: fetchedRFMData.frequencyAvgMonth, avgYear: fetchedRFMData.frequencyAvgYear },
+                    { avgDay: fetchedRFMData.monetaryAvgDay, avgWeek: fetchedRFMData.monetaryAvgWeek, avgMonth: fetchedRFMData.monetaryAvgMonth, avgYear: fetchedRFMData.monetaryAvgYear },
+                    { avgDay: fetchedRFMData.frequencyAvgDay, avgWeek: fetchedRFMData.frequencyAvgWeek, avgMonth: fetchedRFMData.frequencyAvgMonth, avgYear: fetchedRFMData.frequencyAvgYear },
                     fetchedRFMData.transactionDescription, fetchedRFMData.isCredit)
             }
         default:
