@@ -157,18 +157,36 @@ function ClusterView({ transactionDataArr, RFMDataArr, height, width }:
     const xAxisRef = useRef(null);// x axis ref
     const yAxisRef = useRef(null);// x axis ref
     const pointsAreaRef = useRef(null)//points ref
+
     useEffect(() => draw(), [dataPerTransactionDescriptionArr, valueGetter]);
+
+    const [k, setK] = useState(1);
+    const [x, setX] = useState(0);
+    const [y, setY] = useState(0);
+    // useEffect(() => {
+    //     const zoom = d3.zoom().on("zoom", (event) => {
+    //         const { x, y, k } = event.transform;
+    //         setK(k);
+    //         setX(x);
+    //         setY(y);
+    //     });
+    //     d3.select(svgRef.current).call(zoom);
+    // }, []);
+
     const draw = () => {
-        const svg = d3.select(svgRef.current)
+        const svg = d3.select(svgRef.current);
+        const chartG = d3.select(pointsAreaRef.current);
+        const xAxisG = d3.select(xAxisRef.current);
+        const yAxisG = d3.select(yAxisRef.current);
 
         // add x axis
-        const xAxisG = d3.select(xAxisRef.current)
-        xAxisG.call(d3.axisBottom(scales.scaleX));
+        const xAxis = d3.axisBottom(scales.scaleX)
+        xAxisG.call(xAxis);
         // add y axis
-        const yAxisG = d3.select(yAxisRef.current)
-
+        const yAxis = d3.axisLeft(scales.scaleY)
+        yAxisG.call(yAxis);
         // add points
-        d3.select(pointsAreaRef.current).selectAll('circle').data(dataPerTransactionDescriptionArr, d => { return `${d.transactionDescription}` }).join('circle')
+        chartG.selectAll('circle').data(dataPerTransactionDescriptionArr, d => { return `${d.transactionDescription}` }).join('circle')
             .attr('cx', (d: DataPerTransactionDescription) => scales.scaleX(valueGetter.x(d)))
             .attr('cy', (d: DataPerTransactionDescription) => scales.scaleY(valueGetter.y(d)))
             .attr('r', (d: DataPerTransactionDescription) => scales.scaleSize(valueGetter.size(d)))
@@ -176,11 +194,15 @@ function ClusterView({ transactionDataArr, RFMDataArr, height, width }:
     }
     return (<div>
         <svg ref={svgRef} width={width + margin.left + margin.right} height={height + margin.top + margin.bottom}>
+
             <g transform={`translate(${margin.left},${margin.top})`}>
+                <g transform={`translate(${x},${y})scale(${k})`}>
+                    <g ref={pointsAreaRef}></g>
+                </g>
                 <g ref={xAxisRef} transform={`translate(0,${height})`}></g>
                 <g ref={yAxisRef}></g>
-                <g ref={pointsAreaRef}></g>
             </g>
+
         </svg>
     </div>
     )
