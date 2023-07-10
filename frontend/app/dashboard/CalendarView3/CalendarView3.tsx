@@ -24,6 +24,10 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const RFMDataMap: Map<string, number> = useMemo(() => getRFMDataMapFromArr(RFMDataArr), [RFMDataArr])
     const valueGetter = { ...calendarValueGetter }
+    const [k, setK] = useState(1);
+    const [x, setX] = useState(0);
+    const [y, setY] = useState(0);
+    const zoomingInfo = { k: k, setK: setK, x: x, setX: setX, y: y, setY: setY };// pass to the DayView
     /**
      * A map: year->month->day->DataPerTransactionDescription[]
      * the getDataPerTransactionDescription function specify how the data looks like
@@ -112,25 +116,26 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
                         <GroupedDataPerTransactionDescriptionContext.Provider value={groupedDataPerTransactionDescription}>
                             <ScaleContext.Provider value={scales}>
                                 {MONTHS.map((month, i) => <MonthView month={i + 1}
-                                    key={i + 1} />)}
+                                    key={i + 1} zoomingInfo={zoomingInfo} />)}
                             </ScaleContext.Provider>
                         </GroupedDataPerTransactionDescriptionContext.Provider>
                     </YearContext.Provider>
                 </tbody>
             </table>
             {detailDay ? <div>selected Day: {detailDay.toString()}</div> : <div></div>}
-        </div>
+            <button className="rounded-sm bg-zinc-400" onClick={() => {setK(1);setX(0);setY(0)}}>reset Zooming</button>
+        </div >
     )
 }
 
-function MonthView({ month, }: { month: number }) {
+function MonthView({ month, zoomingInfo }: { month: number }) {
     // month: jan for 1, feb for 2, etc. 
     const year = useContext(YearContext);
     if (typeof (year) === 'number') {
         return (<tr>
             <td>{MONTHS[month - 1]}</td>
             {(Array.from(Array(getNumberOfDaysInMonth(year, month)).keys())).map(i =>
-                <DayView day={i + 1} month={month} />)}
+                <DayView day={i + 1} month={month} zoomingInfo={zoomingInfo} />)}
         </tr>)
     } else {
         throw new Error("year is undefined");
@@ -141,13 +146,26 @@ function MonthView({ month, }: { month: number }) {
  * @param day the number of the day in the month
  * @param month the number of the month in the year
  */
-function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayViewSvgSize } }: { day: number, month: number, svgSize: { width: number, height: number } }) {
+function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayViewSvgSize }, zoomingInfo }: { day: number, month: number, svgSize: { width: number, height: number } }) {
     const currentYear = useContext(YearContext);
     const groupedDataPerTransactionDescription = useContext(GroupedDataPerTransactionDescriptionContext);
     const { scaleX, scaleY, scaleColour, scaleShape, scaleSize } = useContext(ScaleContext);
     const ref = useRef(null)
     const valueGetter = calendarValueGetter;
     const { width, height } = svgSize;
+    const { k, setK, x, setX, y, setY } = zoomingInfo;
+
+    // zoom effect reference: https://codepen.io/likr/pen/vYmBEPE
+    // allows zoom in
+    useEffect(() => {
+        const zoom = d3.zoom().on("zoom", (event) => {
+            const { x, y, k } = event.transform;
+            setK(k);
+            setX(x);
+            setY(y);
+        });
+        d3.select(ref.current).call(zoom);
+    }, [])
 
     if (groupedDataPerTransactionDescription === null || currentYear === undefined
         || scaleX === undefined || scaleY === undefined || scaleColour === undefined || scaleShape === undefined || scaleSize === undefined) {
@@ -177,7 +195,7 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
         return (
             <td className={`border-2 border-indigo-600`} style={{ width: width, height: height }}>
                 <svg ref={ref} width={width} height={height}>
-                    <g></g>
+                    <g transform={`translate(${x},${y})scale(${k})`}></g>
                 </svg>
             </td>
         )
