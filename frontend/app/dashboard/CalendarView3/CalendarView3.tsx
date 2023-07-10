@@ -15,11 +15,12 @@ const calendarValueGetter = {
     size: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.timeToday,
     shape: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.isCredit
 }
+const DayViewSvgSize = 40;
+const PI = 3.14159;
 
 export default function CalendarView3({ transactionDataArr, initCurrentYear, RFMDataArr }: { transactionDataArr: TransactionData[], initCurrentYear: number, RFMDataArr: RFMData[] }) {
     const [detailDay, setDetailDay] = useState<null | Date>(null);
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-
     const RFMDataMap: Map<string, number> = useMemo(() => getRFMDataMapFromArr(RFMDataArr), [RFMDataArr])
     const valueGetter = { ...calendarValueGetter }
     /**
@@ -37,7 +38,9 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
     // get flatten data
     const groupedDataPerTransactionDescriptionFlat: DataPerTransactionDescription[] = useMemo(() => {
         const d = d3.flatRollup(transactionDataArr, r => getDataPerTransactionDescription(r, RFMDataArr, RFMDataMap),
-            d => `${d.date?.getFullYear()}`, d => `${d.date?.getMonth() + 1}`, d => `${d.date?.getDate()}`).map(x => x[3]);
+            d => `${d.date?.getFullYear()}`,
+            d => `${d.date?.getMonth() + 1}`,
+            d => `${d.date?.getDate()}`).map(x => x[3]);
         return d.flat()
     }, [transactionDataArr, RFMDataArr])
     console.log(groupedDataPerTransactionDescriptionFlat)
@@ -70,7 +73,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
         if (sizeDomainMax === undefined) {
             throw new Error("invalid sizeDomainMax value");
         }
-        const scaleX = d3.scaleLinear().domain([xDomainMin, xDomainMax*0.01]).range([10, 30]);
+        const scaleX = d3.scaleLinear().domain([xDomainMin, xDomainMax * 0.01]).range([10, 30]);
         const scaleY = d3.scaleLinear().domain([yDomainMin, yDomainMax]).range([30, 10]);
         const scaleColour = d3.scaleLinear().domain([colourDomainMin, colourDomainMax]).range(["white", "blue"]);
         const scaleSize = d3.scaleLinear().domain([sizeDomainMin, sizeDomainMax]).range([30, 50]);
@@ -98,7 +101,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
             <table>
                 <thead>
                     <tr>
-                        <td><input className="w-14" type="number" value={currentYear}  onChange={(e)=>setCurrentYear(parseInt(e.target.value))}/></td>
+                        <td><input className="w-14" type="number" value={currentYear} onChange={(e) => e.target.value != '2014' && e.target.value != '2023' && setCurrentYear(parseInt(e.target.value))} /></td>
                         {(Array.from(Array(31).keys())).map(i => <td key={i + 1}>{i + 1}</td>)}
                     </tr>
                 </thead>
@@ -107,7 +110,6 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
                         <GroupedDataPerTransactionDescriptionContext.Provider value={groupedDataPerTransactionDescription}>
                             <ScaleContext.Provider value={scales}>
                                 {MONTHS.map((month, i) => <MonthView month={i + 1}
-                                    handleDetail={handleDetail}
                                     key={i + 1} />)}
                             </ScaleContext.Provider>
                         </GroupedDataPerTransactionDescriptionContext.Provider>
@@ -119,14 +121,14 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
     )
 }
 
-function MonthView({ month, handleDetail }: { month: number, handleDetail: (arg0: number) => ((arg0: number) => void) }) {
+function MonthView({ month, }: { month: number }) {
     // month: jan for 1, feb for 2, etc. 
     const year = useContext(YearContext);
     if (typeof (year) === 'number') {
         return (<tr>
             <td>{MONTHS[month - 1]}</td>
             {(Array.from(Array(getNumberOfDaysInMonth(year, month)).keys())).map(i =>
-                <DayView day={i + 1} month={month} handleDetail={handleDetail(month)} key={i + 1} />)}
+                <DayView day={i + 1} month={month} />)}
         </tr>)
     } else {
         throw new Error("year is undefined");
@@ -138,12 +140,12 @@ function MonthView({ month, handleDetail }: { month: number, handleDetail: (arg0
  * @param month the number of the month in the year
  * @param handleDetail event handler that tell the parents what has been selected
  */
-function DayView({ day, month, handleDetail }: { day: number, month: number, handleDetail: (arg0: number) => void }) {
+function DayView({ day, month }: { day: number, month: number }) {
     const currentYear = useContext(YearContext);
     const groupedDataPerTransactionDescription = useContext(GroupedDataPerTransactionDescriptionContext);
     const { scaleX, scaleY, scaleColour, scaleShape, scaleSize } = useContext(ScaleContext);
     const valueGetter = calendarValueGetter;
-    // console.log(scales);
+
     if (groupedDataPerTransactionDescription === null || currentYear === undefined
         || scaleX === undefined || scaleY === undefined || scaleColour === undefined || scaleShape === undefined || scaleSize === undefined) {
         return <td>loading</td>
@@ -161,26 +163,20 @@ function DayView({ day, month, handleDetail }: { day: number, month: number, han
                 shape: scaleShape(valueGetter.shape(transactionDescriptionData))
             }
         })
+    } else {
+        return <td className={`border-2 border-indigo-600 bg-zinc-950`}></td>
     }
-    console.log(visualData)
-    const points = visualData.map((d,i) => {
-        const radius = Math.sqrt(d.size / 3.1416)
-        return <circle cx={d.x} cy={d.y} r={radius} key={`${dayData[i].transactionDescription}`} fill={d.colour}></circle>
-        // if(d.shape==='rect') {
-        //     const width = Math.sqrt(d.size);
-        //     const height = width;
-        //     return <rect x={d.x-width/2} y={d.y-height/2} width={width} height={height}></rect>
-        // } else{
-        //     const radius = Math.sqrt(d.size/3.1416)
-        //     return <circle cx={d.x} cy={d.y} r={radius}></circle>
-        // }
+
+    const points = visualData.map((d, i) => {
+        const radius = Math.sqrt(d.size / PI)
+        return <circle cx={d.x} cy={d.y} r={radius} key={`${dayData[i].transactionDescription}`} fill={d.colour}
+        ></circle>
     })
     return (
-        <td className="border-2 border-indigo-600">
-            <svg width='40px' height='40px'>
+        <td className={`border-2 border-indigo-600 ${visualData.length === 0 && 'bg-zinc-950'}`}>
+            <svg width={`${DayViewSvgSize}px`} height={`${DayViewSvgSize}px`}>
                 {points}
             </svg>
-            {/* <button onClick={() => { handleDetail(day); console.log(dayData); console.log(visualData) }}>{dayData ? dayData.length : 0}</button> */}
         </td>
     )
 }
