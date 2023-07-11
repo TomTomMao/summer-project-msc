@@ -1,18 +1,26 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TransactionData, RFMData } from "../DataObject";
 
-export default function TableView({ transactionDataArr, RFMDataArr }: { transactionDataArr: TransactionData[], RFMDataArr: RFMData[] }) {
-    const [filteredTransactionNumbers, setFilteredTransactionNumbers] = useState<Set<string>>(new Set(transactionDataArr.map(transactionData => transactionData.transactionNumber)))
-    const [descriptionQuery, setDescriptionQuery] = useState<string>('')
-    function handleSearch() {
-        const nextFilteredTransactionNumbers: Set<string> = new Set(
-            transactionDataArr.filter(transactionData => transactionData.transactionDescription.includes(descriptionQuery)).
-                map(transactionData => transactionData.transactionNumber));
+export interface DescriptionAndIsCredit {
+    transactionDescription: string;
+    isCredit: boolean;
+}
+
+/**
+ * show the filtered transactions based on filteredDescriptionAndIsCreditArr
+ */
+export default function TableView({ transactionDataArr, RFMDataArr, filteredDescriptionAndIsCreditArr }:
+    {
+        transactionDataArr: TransactionData[], RFMDataArr: RFMData[], filteredDescriptionAndIsCreditArr: DescriptionAndIsCredit[]
+    }) {
+    // initially, just copy the transaction numbers into a set
+    const [filteredTransactionNumbers, setFilteredTransactionNumbers] = useState<Set<TransactionData['transactionNumber']>>(new Set(transactionDataArr.map(transactionData => transactionData.transactionNumber)))
+    // when the component mount or the filteredDescriptionAndIsCreditArr Changes, change it. the time complexity is transactionDataArr.length * filteredDescriptionAndIsCreditArr; can be improved in the future.[performance improvement]
+    useEffect(() => {
+        const nextFilteredTransactionNumbers = getFilteredTransactionNumbers(transactionDataArr, filteredDescriptionAndIsCreditArr);
         setFilteredTransactionNumbers(nextFilteredTransactionNumbers);
-    }
-    const filteredTransactionDataArr = useMemo(() => {
-        return transactionDataArr.filter(transactionDataArr => filteredTransactionNumbers.has(transactionDataArr.transactionNumber));
-    }, [filteredTransactionNumbers])
+    }, [filteredDescriptionAndIsCreditArr])
+    const filteredTransactionDataArr = transactionDataArr.filter(transactionData => filteredTransactionNumbers.has(transactionData.transactionNumber));
     const transactionRows = useMemo(() => {
         return (
             filteredTransactionDataArr.map(transactionData => {
@@ -34,8 +42,6 @@ export default function TableView({ transactionDataArr, RFMDataArr }: { transact
 
     return (
         <div>
-            <input type="text" value={descriptionQuery} onChange={(e) => setDescriptionQuery(e.target.value)} />
-            <button onClick={handleSearch}>search</button>
             number of results: {filteredTransactionDataArr.length}
             <table>
                 <thead>
@@ -57,4 +63,28 @@ export default function TableView({ transactionDataArr, RFMDataArr }: { transact
             </table>
         </div>
     )
+}
+
+// help functions
+
+/**
+ * return transactionNumber of those transactionData whose transactionDescription and isCredit() in the filteredDescriptionAndIsCreditArr array 
+ * @param transactionDataArr an array of transactionData
+ * @param filteredDescriptionAndIsCreditArr conditions to contains
+ * @return a set of transactionData.transactionNumber
+ * time complexity: O(n*k) where n is transactionDataArr.length and k is filteredDescriptionAndIsCreditArr.length
+ * can be improved in the future
+ */
+function getFilteredTransactionNumbers(transactionDataArr: TransactionData[], filteredDescriptionAndIsCreditArr: DescriptionAndIsCredit[]): Set<TransactionData['transactionNumber']> {
+    const transactionNumberSet = new Set<TransactionData['transactionNumber']>();
+    for (let i = 0; i < transactionDataArr.length; i++) {
+        for (let j = 0; j < filteredDescriptionAndIsCreditArr.length; j++) {
+            const currTransactionData = transactionDataArr[i];
+            const currDescriptionAndIsCredit = filteredDescriptionAndIsCreditArr[j];
+            if (currTransactionData.transactionDescription === currDescriptionAndIsCredit.transactionDescription && currTransactionData.isCredit() === currDescriptionAndIsCredit.isCredit) {
+                transactionNumberSet.add(currTransactionData.transactionNumber);
+            }
+        }
+    }
+    return transactionNumberSet;
 }

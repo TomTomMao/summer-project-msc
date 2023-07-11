@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useContext, useMemo } from "react"
 import { timeParse } from 'd3'
 import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData } from "./DataObject";
 import CalendarView3 from "./CalendarView3/CalendarView3";
-import TableView from "./TableView/TableView";
+import TableView, { DescriptionAndIsCredit } from "./TableView/TableView";
 import { ValueGetterContext, initValueGetter } from "./CalendarView3/Contexts/ValueGetterContext";
 import * as d3 from 'd3';
 import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
@@ -20,7 +20,12 @@ export default function Page() {
     const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
     const [RFMDataArr, setRFMDataArr] = useState<Array<RFMData> | null>(null)
     const [valueGetter, setValueGetter] = useState(initValueGetter);
+    const [selectedDescriptionAndIsCreditArr, setSelectedDescriptionAndIsCreditArr] = useState<DescriptionAndIsCredit[]>([])
 
+    function handleSelect(transactionDescription: TransactionData['transactionDescription'], isCredit: boolean) {
+        const nextSelectedDescriptionAndIsCreditArr = [{ transactionDescription: transactionDescription, isCredit: isCredit }];
+        setSelectedDescriptionAndIsCreditArr(nextSelectedDescriptionAndIsCreditArr);
+    }
     transactionDataArr && console.log('transactionDataArr fetched and cleaned:', transactionDataArr);
     RFMDataArr && console.log('RFMData fetched and cleaned:', RFMDataArr);
     useEffect(() => {
@@ -45,9 +50,11 @@ export default function Page() {
         {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
         <ValueGetterContext.Provider value={valueGetter}>
             <CalendarView3 transactionDataArr={transactionDataArr} initCurrentYear={2016} RFMDataArr={RFMDataArr}></CalendarView3>
-            <ClusterView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} height={ClusterViewHeight} width={ClusterViewWidth}></ClusterView>
+            <ClusterView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr}
+                height={ClusterViewHeight} width={ClusterViewWidth}
+                onSelect={handleSelect} selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></ClusterView>
         </ValueGetterContext.Provider>
-        <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr}></TableView>
+        <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
     </div>
     )
 
@@ -92,12 +99,14 @@ async function fetchData(parseTime: (dateString: string) => Date | null) {
  * render a cluster view using scatter plot
  * 
  */
-function ClusterView({ transactionDataArr, RFMDataArr, height, width }:
+function ClusterView({ transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr }:
     {
         transactionDataArr: TransactionData[],
         RFMDataArr: RFMData[],
         height: number,
-        width: number
+        width: number,
+        onSelect: (transactionDescription: TransactionData['transactionDescription'], isCredit: boolean) => void,
+        selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[]
     }) {
     const margin = { top: 10, right: 30, bottom: 30, left: 30 }
     const valueGetter = useContext(ValueGetterContext);
@@ -139,14 +148,26 @@ function ClusterView({ transactionDataArr, RFMDataArr, height, width }:
         const yAxis = d3.axisLeft(scaleY)
         yAxisG.call(yAxis);
         // add points
-        chartG.selectAll('circle').data(dataPerTransactionDescriptionArr, d => { return `${d.transactionDescription}` }).join('circle')
+        chartG.selectAll('circle')
+            .data(dataPerTransactionDescriptionArr, d => { return `${d.transactionDescription}` })
+            .join('circle')
+            .attr('stroke', (d: DataPerTransactionDescription) => {
+                const isSelected = selectedDescriptionAndIsCreditArr.filter((descriptionAndIsCredit) => {
+                    return d.transactionDescription === descriptionAndIsCredit.transactionDescription && d.isCredit == descriptionAndIsCredit.isCredit
+                }).length >= 1;
+                return (isSelected ? "black" : null)
+            })
+            .transition()
+            .duration(500)
             .attr('cx', (d: DataPerTransactionDescription) => scaleX(valueGetter.x(d)))
             .attr('cy', (d: DataPerTransactionDescription) => scaleY(valueGetter.y(d)))
             .attr('r', (d: DataPerTransactionDescription) => scaleSize(valueGetter.size(d)))
             .style('fill', (d: DataPerTransactionDescription) => scaleColour(valueGetter.colour(d)))
+
+        chartG.selectAll('circle').on('click', (event, d) => onSelect(d.transactionDescription, d.isCredit))
     }
     // update the charts when the scale domain Lims changed
-    useEffect(draw, [xLim, yLim, colourLim, sizeLim])
+    useEffect(draw, [xLim, yLim, colourLim, sizeLim, selectedDescriptionAndIsCreditArr])
     return (<div>
         <svg ref={svgRef} width={width + margin.left + margin.right} height={height + margin.top + margin.bottom}>
             <g transform={`translate(${margin.left},${margin.top})`}>
@@ -156,21 +177,22 @@ function ClusterView({ transactionDataArr, RFMDataArr, height, width }:
             </g>
         </svg>
         <div>
-            x limit min: <input type="number" value={xLim.min} onChange={e=>setXLim({...xLim, min:parseFloat(e.target.value)})} />
-            x limit max: <input type="number" value={xLim.max} onChange={e=>setXLim({...xLim, max:parseFloat(e.target.value)})}/>
-            <button onClick={()=>setXLim({min:xDomainMin, max:xDomainMax})}>reset</button>
+            x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
+            x limit max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} />
+            <button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button>
             <br />
-            y limit min: <input type="number" value={yLim.min} onChange={e=>setYLim({...yLim, min:parseFloat(e.target.value)})}/>
-            y limit max: <input type="number" value={yLim.max} onChange={e=>setYLim({...yLim, max:parseFloat(e.target.value)})}/>
-            <button onClick={()=>setYLim({min:yDomainMin, max:yDomainMax})}>reset</button>
+            y limit min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} />
+            y limit max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} />
+            <button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button>
             <br />
-            colour limit min: <input type="number" value={colourLim.min} onChange={e=>setColourLim({...colourLim, min:parseFloat(e.target.value)})}/>
-            colour limit max: <input type="number" value={colourLim.max} onChange={e=>setColourLim({...colourLim, max:parseFloat(e.target.value)})}/>
-            <button onClick={()=>setColourLim({min:colourDomainMin, max:colourDomainMax})}>reset</button>
+            colour limit min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} />
+            colour limit max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} />
+            <button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button>
             <br />
-            size limit min: <input type="number" value={sizeLim.min} onChange={e=>setSizeLim({...sizeLim, min:parseFloat(e.target.value)})}/>
-            size limit max: <input type="number" value={sizeLim.max} onChange={e=>setSizeLim({...sizeLim, max:parseFloat(e.target.value)})}/>
-            <button onClick={()=>setSizeLim({min:sizeDomainMin, max:sizeDomainMax})}>reset</button>
+            <b>DONT USE THIS</b>
+            size limit min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} />
+            size limit max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} />
+            <button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button>
             <br />
         </div>
     </div>
