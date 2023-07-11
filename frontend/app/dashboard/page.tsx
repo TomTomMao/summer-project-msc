@@ -89,6 +89,8 @@ async function fetchData(parseTime: (dateString: string) => Date | null) {
         return { transactionDataArr, RFMDataArr }
     } catch (error) {
         console.log(error);
+        throw error;
+        
     }
 }
 
