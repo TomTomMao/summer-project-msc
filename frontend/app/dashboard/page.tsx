@@ -107,71 +107,24 @@ function ClusterView({ transactionDataArr, RFMDataArr, height, width }:
         const d = getDataPerTransactionDescription(transactionDataArr, RFMDataArr, RFMDataMap);
         return d
     }, [transactionDataArr, RFMDataArr])
+    // extract the min max value at x,y,colour,and size domain
+    const { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax } = getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr, valueGetter)
+    const [xLim, setXLim] = useState<{ min: number, max: number }>({ min: xDomainMin, max: xDomainMax });
+    const [yLim, setYLim] = useState<{ min: number, max: number }>({ min: yDomainMin, max: yDomainMax });
+    const [colourLim, setColourLim] = useState<{ min: number, max: number }>({ min: colourDomainMin, max: colourDomainMax });
+    const [sizeLim, setSizeLim] = useState<{ min: number, max: number }>({ min: sizeDomainMin, max: sizeDomainMax });
 
-    const scales = useMemo(() => {
-        // create scales, the getter is in valueGetter.
-        const xDomainMin = 0
-        const xDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.x);
-        const yDomainMin = 0;
-        const yDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.y);
-        const colourDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.colour);
-        const colourDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.colour);
-        const sizeDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.size);
-        const sizeDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.size);
-        const shapeDomain = [true, false];
-        if (xDomainMax === undefined) {
-            throw new Error("invalid xDomainMax value");
-        }
-        if (yDomainMax === undefined) {
-            throw new Error("invalid yDomainMax value");
-        }
-        if (colourDomainMin === undefined) {
-            throw new Error("invalid colourDomainMin value");
-        }
-        if (colourDomainMax === undefined) {
-            throw new Error("invalid colourDomainMax value");
-        }
-        if (sizeDomainMin === undefined) {
-            throw new Error("invalid sizeDomainMin value");
-        }
-        if (sizeDomainMax === undefined) {
-            throw new Error("invalid sizeDomainMax value");
-        }
-        const scaleX = d3.scaleLinear().domain([xDomainMin, xDomainMax]).range([0, width]);
-        const scaleY = d3.scaleLinear().domain([yDomainMin, yDomainMax]).range([height, 0]);
-        const scaleColour = d3.scaleLinear().domain([colourDomainMin, colourDomainMax]).range(["blue", "red"]);
-        const scaleSize = d3.scaleLinear().domain([sizeDomainMin, sizeDomainMax]).range([5, 20]);
-        const scaleShape = (shapeValue: boolean) => (shapeValue ? 'circle' : 'rect');
-
-        const scales: {
-            scaleX: d3.ScaleLinear<number, number, never>;
-            scaleY: d3.ScaleLinear<number, number, never>;
-            scaleColour: number[] & d3.ScaleLinear<number, number, never>;
-            scaleSize: d3.ScaleLinear<number, number, never>;
-            scaleShape: (shapeValue: boolean) => "circle" | "rect";
-        } = { scaleX: scaleX, scaleY: scaleY, scaleColour: scaleColour, scaleSize: scaleSize, scaleShape: scaleShape }
-        return scales;
-    }, [dataPerTransactionDescriptionArr, valueGetter])
+    // set the scales based on the Lims state
+    const scaleX = d3.scaleLinear().domain([xLim.min, xLim.max]).range([0, width]);
+    const scaleY = d3.scaleLinear().domain([yLim.min, yLim.max]).range([height, 0]);
+    const scaleColour = d3.scaleLinear().domain([colourLim.min, colourLim.max]).range(["blue", "red"]);
+    const scaleSize = d3.scaleLinear().domain([sizeLim.min, sizeLim.max]).range([5, 20]);
+    const scaleShape = (shapeValue: boolean) => (shapeValue ? 'circle' : 'rect');
 
     const svgRef = useRef(null);//svg ref
     const xAxisRef = useRef(null);// x axis ref
     const yAxisRef = useRef(null);// x axis ref
     const pointsAreaRef = useRef(null)//points ref
-
-    useEffect(() => draw(), [dataPerTransactionDescriptionArr, valueGetter]);
-
-    const [k, setK] = useState(1);
-    const [x, setX] = useState(0);
-    const [y, setY] = useState(0);
-    // useEffect(() => {
-    //     const zoom = d3.zoom().on("zoom", (event) => {
-    //         const { x, y, k } = event.transform;
-    //         setK(k);
-    //         setX(x);
-    //         setY(y);
-    //     });
-    //     d3.select(svgRef.current).call(zoom);
-    // }, []);
 
     const draw = () => {
         const svg = d3.select(svgRef.current);
@@ -180,31 +133,94 @@ function ClusterView({ transactionDataArr, RFMDataArr, height, width }:
         const yAxisG = d3.select(yAxisRef.current);
 
         // add x axis
-        const xAxis = d3.axisBottom(scales.scaleX)
+        const xAxis = d3.axisBottom(scaleX)
         xAxisG.call(xAxis);
         // add y axis
-        const yAxis = d3.axisLeft(scales.scaleY)
+        const yAxis = d3.axisLeft(scaleY)
         yAxisG.call(yAxis);
         // add points
         chartG.selectAll('circle').data(dataPerTransactionDescriptionArr, d => { return `${d.transactionDescription}` }).join('circle')
-            .attr('cx', (d: DataPerTransactionDescription) => scales.scaleX(valueGetter.x(d)))
-            .attr('cy', (d: DataPerTransactionDescription) => scales.scaleY(valueGetter.y(d)))
-            .attr('r', (d: DataPerTransactionDescription) => scales.scaleSize(valueGetter.size(d)))
-            .style('fill', (d: DataPerTransactionDescription) => scales.scaleColour(valueGetter.colour(d)));
+            .attr('cx', (d: DataPerTransactionDescription) => scaleX(valueGetter.x(d)))
+            .attr('cy', (d: DataPerTransactionDescription) => scaleY(valueGetter.y(d)))
+            .attr('r', (d: DataPerTransactionDescription) => scaleSize(valueGetter.size(d)))
+            .style('fill', (d: DataPerTransactionDescription) => scaleColour(valueGetter.colour(d)))
     }
+    // update the charts when the scale domain Lims changed
+    useEffect(draw, [xLim, yLim, colourLim, sizeLim])
     return (<div>
         <svg ref={svgRef} width={width + margin.left + margin.right} height={height + margin.top + margin.bottom}>
-
             <g transform={`translate(${margin.left},${margin.top})`}>
-                <g transform={`translate(${x},${y})scale(${k})`}>
-                    <g ref={pointsAreaRef}></g>
-                </g>
+                <g ref={pointsAreaRef}></g>
                 <g ref={xAxisRef} transform={`translate(0,${height})`}></g>
                 <g ref={yAxisRef}></g>
             </g>
-
         </svg>
+        <div>
+            x limit min: <input type="number" value={xLim.min} onChange={e=>setXLim({...xLim, min:parseFloat(e.target.value)})} />
+            x limit max: <input type="number" value={xLim.max} onChange={e=>setXLim({...xLim, max:parseFloat(e.target.value)})}/>
+            <button onClick={()=>setXLim({min:xDomainMin, max:xDomainMax})}>reset</button>
+            <br />
+            y limit min: <input type="number" value={yLim.min} onChange={e=>setYLim({...yLim, min:parseFloat(e.target.value)})}/>
+            y limit max: <input type="number" value={yLim.max} onChange={e=>setYLim({...yLim, max:parseFloat(e.target.value)})}/>
+            <button onClick={()=>setYLim({min:yDomainMin, max:yDomainMax})}>reset</button>
+            <br />
+            colour limit min: <input type="number" value={colourLim.min} onChange={e=>setColourLim({...colourLim, min:parseFloat(e.target.value)})}/>
+            colour limit max: <input type="number" value={colourLim.max} onChange={e=>setColourLim({...colourLim, max:parseFloat(e.target.value)})}/>
+            <button onClick={()=>setColourLim({min:colourDomainMin, max:colourDomainMax})}>reset</button>
+            <br />
+            size limit min: <input type="number" value={sizeLim.min} onChange={e=>setSizeLim({...sizeLim, min:parseFloat(e.target.value)})}/>
+            size limit max: <input type="number" value={sizeLim.max} onChange={e=>setSizeLim({...sizeLim, max:parseFloat(e.target.value)})}/>
+            <button onClick={()=>setSizeLim({min:sizeDomainMin, max:sizeDomainMax})}>reset</button>
+            <br />
+        </div>
     </div>
     )
 }
 
+/**
+ * returns the min and max values of x,y,colour,size domains; 
+ * @param dataPerTransactionDescriptionArr this object provide an array of data
+ * @param valueGetter this object provide the valueGetter functions include x, y, colour and size getter.
+ * @returns min max domain values like this: { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax }
+ */
+function getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr: DataPerTransactionDescription[], valueGetter: {
+    x: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
+    y: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
+    colour: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
+    size: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
+    shape: (dataPerTransactionDescription: DataPerTransactionDescription) => boolean;
+}): { xDomainMin: number, xDomainMax: number, yDomainMin: number, yDomainMax: number, colourDomainMin: number, colourDomainMax: number, sizeDomainMin: number, sizeDomainMax: number } {
+    const xDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.x);
+    const xDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.x);
+    const yDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.y);
+    const yDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.y);
+    const colourDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.colour);
+    const colourDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.colour);
+    const sizeDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.size);
+    const sizeDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.size);
+    if (xDomainMin === undefined) {
+        throw new Error("invalid xDomainMin value");
+    }
+    if (xDomainMax === undefined) {
+        throw new Error("invalid xDomainMax value");
+    }
+    if (yDomainMin === undefined) {
+        throw new Error("invalid yDomainMin value");
+    }
+    if (yDomainMax === undefined) {
+        throw new Error("invalid yDomainMax value");
+    }
+    if (colourDomainMin === undefined) {
+        throw new Error("invalid colourDomainMin value");
+    }
+    if (colourDomainMax === undefined) {
+        throw new Error("invalid colourDomainMax value");
+    }
+    if (sizeDomainMin === undefined) {
+        throw new Error("invalid sizeDomainMin value");
+    }
+    if (sizeDomainMax === undefined) {
+        throw new Error("invalid sizeDomainMax value");
+    }
+    return { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax };
+}
