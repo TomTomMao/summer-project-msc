@@ -1,23 +1,90 @@
 'use client'
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { timeParse } from 'd3'
 import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData } from "./DataObject";
 import CalendarView3 from "./CalendarView3/CalendarView3";
 import TableView, { DescriptionAndIsCredit } from "./TableView/TableView";
 import { ValueGetterContext, initValueGetter } from "./CalendarView3/Contexts/ValueGetterContext";
-import { ClusterView } from "./ClusterView";
+import { ClusterView, getDomainValueFromDataPerTransactionDescription } from "./ClusterView";
+import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
+import { getDataPerTransactionDescription } from "./CalendarView3/getDataPerTransactionDescription";
+import { getRFMDataMapFromArr } from "./CalendarView3/getRFMDataMapFromArr";
+import assert from "assert";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
 const ClusterViewHeight = 300;
 const ClusterViewWidth = 300;
 
-
+export interface DomainLimits {
+    min: number;
+    max: number;
+}
 export default function Page() {
     const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
     const [RFMDataArr, setRFMDataArr] = useState<Array<RFMData> | null>(null)
     const [valueGetter, setValueGetter] = useState(initValueGetter);
     const [selectedDescriptionAndIsCreditArr, setSelectedDescriptionAndIsCreditArr] = useState<DescriptionAndIsCredit[]>([])
+
+
+
+    const [xLim, setXLim] = useState<DomainLimits | null>(null);
+    const [yLim, setYLim] = useState<DomainLimits | null>(null);
+    const [colourLim, setColourLim] = useState<DomainLimits | null>(null);
+    const [sizeLim, setSizeLim] = useState<DomainLimits | null>(null);
+
+    const limitsInitialised = xLim !== null && yLim !== null && colourLim !== null && sizeLim !== null;
+
+    // get the data domain of the aggregated data when the data is loaded or the data is updated
+    const { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax }: {
+        xDomainMin: number,
+        xDomainMax: number,
+        yDomainMin: number,
+        yDomainMax: number,
+        colourDomainMin: number,
+        colourDomainMax: number,
+        sizeDomainMin: number,
+        sizeDomainMax: number
+    } | {
+        xDomainMin: null,
+        xDomainMax: null,
+        yDomainMin: null,
+        yDomainMax: null,
+        colourDomainMin: null,
+        colourDomainMax: null,
+        sizeDomainMin: null,
+        sizeDomainMax: null
+    } = useMemo(() => {
+        // rollup by year, month, day, reduce to transactionDescription.
+        if (transactionDataArr !== null && RFMDataArr !== null) {
+            const RFMDataMap: Map<string, number> = getRFMDataMapFromArr(RFMDataArr);
+            const dataPerTransactionDescriptionArr = getDataPerTransactionDescription(transactionDataArr, RFMDataArr, RFMDataMap);
+            const domains = getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr, valueGetter);
+            return {
+                ...domains
+            };
+        } else {
+            return {
+                xDomainMin: null,
+                xDomainMax: null,
+                yDomainMin: null,
+                yDomainMax: null,
+                colourDomainMin: null,
+                colourDomainMax: null,
+                sizeDomainMin: null,
+                sizeDomainMax: null
+            }
+        }
+    }, [transactionDataArr, RFMDataArr, valueGetter]);
+    // then set the limit of each domains based on the domain
+    useEffect(() => {
+        if (xDomainMin !== null && xDomainMax !== null && yDomainMin !== null && yDomainMax !== null && colourDomainMin !== null && colourDomainMax !== null && sizeDomainMin !== null && sizeDomainMax !== null) {
+            setXLim({ min: xDomainMin, max: xDomainMax });
+            setYLim({ min: yDomainMin, max: yDomainMax });
+            setColourLim({ min: colourDomainMin, max: colourDomainMax });
+            setSizeLim({ min: sizeDomainMin, max: sizeDomainMax });
+        }
+    }, [xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax])
 
     function handleSelect(transactionDescription: TransactionData['transactionDescription'], isCredit: boolean) {
         const nextSelectedDescriptionAndIsCreditArr = [{ transactionDescription: transactionDescription, isCredit: isCredit }];
@@ -41,20 +108,44 @@ export default function Page() {
     if (transactionDataArr === null || RFMDataArr === null) {
         return <>loading...</>
     }
-    return (<div>
-        hello data
-        {/* <CalendarView transactions={data}></CalendarView> */}
-        {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
-        <ValueGetterContext.Provider value={valueGetter}>
-            <CalendarView3 transactionDataArr={transactionDataArr} initCurrentYear={2016} RFMDataArr={RFMDataArr}></CalendarView3>
-            <ClusterView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr}
-                height={ClusterViewHeight} width={ClusterViewWidth}
-                onSelect={handleSelect} selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></ClusterView>
-        </ValueGetterContext.Provider>
-        <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
-    </div>
-    )
-
+    if (xDomainMin === null || !limitsInitialised) {
+        return <>initialising</>
+    } else {
+        return (
+            <div>
+                hello data
+                {/* <CalendarView transactions={data}></CalendarView> */}
+                {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
+                <ValueGetterContext.Provider value={valueGetter}>
+                    <CalendarView3 transactionDataArr={transactionDataArr} initCurrentYear={2016} RFMDataArr={RFMDataArr}></CalendarView3>
+                    <ClusterView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr}
+                        height={ClusterViewHeight} width={ClusterViewWidth}
+                        onSelect={handleSelect} selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
+                        domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}></ClusterView>
+                </ValueGetterContext.Provider>
+                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
+                <div>
+                    x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
+                    x limit max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} />
+                    <button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button>
+                    <br />
+                    y limit min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} />
+                    y limit max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} />
+                    <button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button>
+                    <br />
+                    colour limit min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} />
+                    colour limit max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} />
+                    <button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button>
+                    <br />
+                    <b>DONT USE THIS</b>
+                    size limit min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} />
+                    size limit max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} />
+                    <button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button>
+                    <br />
+                </div>
+            </div>
+        )
+    }
 
 }
 
@@ -90,7 +181,7 @@ async function fetchData(parseTime: (dateString: string) => Date | null) {
     } catch (error) {
         console.log(error);
         throw error;
-        
+
     }
 }
 

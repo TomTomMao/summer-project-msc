@@ -7,18 +7,20 @@ import * as d3 from 'd3';
 import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
 import { getDataPerTransactionDescription } from "./CalendarView3/getDataPerTransactionDescription";
 import { getRFMDataMapFromArr } from "./CalendarView3/getRFMDataMapFromArr";
+import { DomainLimits } from "./page";
 
 /**
  * render a cluster view using scatter plot
  *
  */
-export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr }: {
+export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr, domainLimitsObj }: {
     transactionDataArr: TransactionData[];
     RFMDataArr: RFMData[];
     height: number;
     width: number;
     onSelect: (transactionDescription: TransactionData['transactionDescription'], isCredit: boolean) => void;
     selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[];
+    domainLimitsObj: { xLim: DomainLimits, yLim: DomainLimits, colourLim: DomainLimits, sizeLim: DomainLimits }
 }) {
     const margin = { top: 10, right: 30, bottom: 30, left: 30 };
     const valueGetter = useContext(ValueGetterContext);
@@ -28,13 +30,7 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
         const d = getDataPerTransactionDescription(transactionDataArr, RFMDataArr, RFMDataMap);
         return d;
     }, [transactionDataArr, RFMDataArr]);
-    // extract the min max value at x,y,colour,and size domain
-    const { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax } = getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr, valueGetter);
-    const [xLim, setXLim] = useState<{ min: number; max: number; }>({ min: xDomainMin, max: xDomainMax });
-    const [yLim, setYLim] = useState<{ min: number; max: number; }>({ min: yDomainMin, max: yDomainMax });
-    const [colourLim, setColourLim] = useState<{ min: number; max: number; }>({ min: colourDomainMin, max: colourDomainMax });
-    const [sizeLim, setSizeLim] = useState<{ min: number; max: number; }>({ min: sizeDomainMin, max: sizeDomainMax });
-
+    const { xLim, yLim, colourLim, sizeLim } = domainLimitsObj;
     // set the scales based on the Lims state
     const scaleX = d3.scaleLinear().domain([xLim.min, xLim.max]).range([0, width]);
     const scaleY = d3.scaleLinear().domain([yLim.min, yLim.max]).range([height, 0]);
@@ -88,7 +84,7 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
                 <g ref={yAxisRef}></g>
             </g>
         </svg>
-        <div>
+        {/* <div>
             x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
             x limit max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} />
             <button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button>
@@ -106,7 +102,7 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
             size limit max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} />
             <button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button>
             <br />
-        </div>
+        </div> */}
     </div>
     );
 }
@@ -116,7 +112,7 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
  * @param valueGetter this object provide the valueGetter functions include x, y, colour and size getter.
  * @returns min max domain values like this: { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax }
  */
-function getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr: DataPerTransactionDescription[], valueGetter: {
+export function getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr: DataPerTransactionDescription[], valueGetter: {
     x: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
     y: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
     colour: (dataPerTransactionDescription: DataPerTransactionDescription) => number;

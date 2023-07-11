@@ -44,7 +44,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
     }, [transactionDataArr, RFMDataArr])
 
     // calculate scales based on calendarScatterMapping and groupedDataPerTransactionDescription
-    // get flatten data, used for calculate the max and min value of each domain
+    // get flatten data of each day, used for calculate the max and min value of each domain
     const groupedDataPerTransactionDescriptionFlat: DataPerTransactionDescription[] = useMemo(() => {
         const d = d3.flatRollup(transactionDataArr, r => getDataPerTransactionDescription(r, RFMDataArr, RFMDataMap),
             d => `${d.date?.getFullYear()}`,
