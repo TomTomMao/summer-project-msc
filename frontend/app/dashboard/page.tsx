@@ -88,17 +88,14 @@ export default function Page() {
 
     function handleSelect(transactionDescription: TransactionData['transactionDescription'], isCredit: boolean) {
         if (selectedDescriptionAndIsCreditArr.filter(d => d.transactionDescription === transactionDescription && d.isCredit === isCredit).length >= 1) {
-            console.log('flag transaction: ', transactionDescription, 'isCredit',isCredit, 'exists')
             // transaction already exist, deep copy the list without the clicked transaction
             const nextSelectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[] = []
             selectedDescriptionAndIsCreditArr.forEach(d => {
                 if (d.transactionDescription !== transactionDescription || d.isCredit !== isCredit) {
                     // not the clicked one
-                    console.log('flag3',d.transactionDescription, transactionDescription, d.isCredit, isCredit)
                     nextSelectedDescriptionAndIsCreditArr.push({ ...d })
                 }
             })
-            console.log('flag123, nextSelectedDescriptionAndIsCreditArr: ', nextSelectedDescriptionAndIsCreditArr)
             setSelectedDescriptionAndIsCreditArr(nextSelectedDescriptionAndIsCreditArr)
         } else {
             // transaction not exist, deep copy the list and push the new transaction
