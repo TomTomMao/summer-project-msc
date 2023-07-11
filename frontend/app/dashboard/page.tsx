@@ -23,7 +23,7 @@ export interface DomainLimits {
 export default function Page() {
     const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
     const [RFMDataArr, setRFMDataArr] = useState<Array<RFMData> | null>(null)
-    const [valueGetter, setValueGetter] = useState(initValueGetter);
+    const [valueGetter, setValueGetter] = useState(initValueGetter); // used for get the domain, and used for get the data in the charts
     const [selectedDescriptionAndIsCreditArr, setSelectedDescriptionAndIsCreditArr] = useState<DescriptionAndIsCredit[]>([])
 
 
@@ -117,13 +117,18 @@ export default function Page() {
                 {/* <CalendarView transactions={data}></CalendarView> */}
                 {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
                 <ValueGetterContext.Provider value={valueGetter}>
-                    <CalendarView3 transactionDataArr={transactionDataArr} initCurrentYear={2016} RFMDataArr={RFMDataArr}></CalendarView3>
-                    <ClusterView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr}
-                        height={ClusterViewHeight} width={ClusterViewWidth}
-                        onSelect={handleSelect} selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
+                    <CalendarView3 transactionDataArr={transactionDataArr}
+                        initCurrentYear={2016}
+                        RFMDataArr={RFMDataArr}
+                        domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}></CalendarView3>
+                    <ClusterView transactionDataArr={transactionDataArr}
+                        RFMDataArr={RFMDataArr}
+                        height={ClusterViewHeight}
+                        width={ClusterViewWidth}
+                        onSelect={handleSelect}
+                        selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
                         domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}></ClusterView>
                 </ValueGetterContext.Provider>
-                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
                 <div>
                     x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
                     x limit max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} />
@@ -143,6 +148,8 @@ export default function Page() {
                     <button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button>
                     <br />
                 </div>
+                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
+
             </div>
         )
     }

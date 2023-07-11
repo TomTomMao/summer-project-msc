@@ -9,6 +9,7 @@ import { DataPerTransactionDescription } from "./DataPerTransactionDescription";
 import { ValueGetterContext } from "./Contexts/ValueGetterContext";
 import { getDataPerTransactionDescription } from "./getDataPerTransactionDescription";
 import { getRFMDataMapFromArr } from "./getRFMDataMapFromArr";
+import { DomainLimits } from "../page";
 
 
 const calendarValueGetter = {
@@ -21,12 +22,15 @@ const calendarValueGetter = {
 const DayViewSvgSize = 30;
 const PI = 3.14159;
 
-export default function CalendarView3({ transactionDataArr, initCurrentYear, RFMDataArr }: { transactionDataArr: TransactionData[], initCurrentYear: number, RFMDataArr: RFMData[] }) {
+export default function CalendarView3({ transactionDataArr, initCurrentYear, RFMDataArr, domainLimitsObj }:
+    { transactionDataArr: TransactionData[], initCurrentYear: number, RFMDataArr: RFMData[], domainLimitsObj: { xLim: DomainLimits, yLim: DomainLimits, colourLim: DomainLimits, sizeLim: DomainLimits } }) {
     const [detailDay, setDetailDay] = useState<null | Date>(null);
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const RFMDataMap: Map<string, number> = useMemo(() => getRFMDataMapFromArr(RFMDataArr), [RFMDataArr])
     const valueGetter = useContext(ValueGetterContext);
-    
+
+    const { xLim, yLim, colourLim, sizeLim } = domainLimitsObj;
+
     const [k, setK] = useState(1);
     const [x, setX] = useState(0);
     const [y, setY] = useState(0);
@@ -55,37 +59,11 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
     console.log(groupedDataPerTransactionDescriptionFlat)
     const scales = useMemo(() => {
         // create scales, the getter is in valueGetter.
-        const xDomainMin = 0
-        const xDomainMax = d3.max(groupedDataPerTransactionDescriptionFlat, valueGetter.x);
-        const yDomainMin = 0;
-        const yDomainMax = d3.max(groupedDataPerTransactionDescriptionFlat, valueGetter.y);
-        const colourDomainMin = d3.min(groupedDataPerTransactionDescriptionFlat, valueGetter.colour);
-        const colourDomainMax = d3.max(groupedDataPerTransactionDescriptionFlat, valueGetter.colour);
-        const sizeDomainMin = d3.min(groupedDataPerTransactionDescriptionFlat, valueGetter.size);
-        const sizeDomainMax = d3.max(groupedDataPerTransactionDescriptionFlat, valueGetter.size);
-        const shapeDomain = [true, false];
-        if (xDomainMax === undefined) {
-            throw new Error("invalid xDomainMax value");
-        }
-        if (yDomainMax === undefined) {
-            throw new Error("invalid yDomainMax value");
-        }
-        if (colourDomainMin === undefined) {
-            throw new Error("invalid colourDomainMin value");
-        }
-        if (colourDomainMax === undefined) {
-            throw new Error("invalid colourDomainMax value");
-        }
-        if (sizeDomainMin === undefined) {
-            throw new Error("invalid sizeDomainMin value");
-        }
-        if (sizeDomainMax === undefined) {
-            throw new Error("invalid sizeDomainMax value");
-        }
-        const scaleX = d3.scaleLinear().domain([xDomainMin, xDomainMax]).range([0, DayViewSvgSize]);
-        const scaleY = d3.scaleLinear().domain([yDomainMin, yDomainMax]).range([DayViewSvgSize, 0]);
-        const scaleColour = d3.scaleLinear().domain([colourDomainMin, colourDomainMax]).range(["blue", "red"]);
-        const scaleSize = d3.scaleLinear().domain([sizeDomainMin, sizeDomainMax]).range([1, 5]);
+
+        const scaleX = d3.scaleLinear().domain([xLim.min, xLim.max]).range([0, DayViewSvgSize]);
+        const scaleY = d3.scaleLinear().domain([yLim.min, yLim.max]).range([DayViewSvgSize, 0]);
+        const scaleColour = d3.scaleLinear().domain([colourLim.min, colourLim.max]).range(["blue", "red"]);
+        const scaleSize = d3.scaleLinear().domain([sizeLim.min, sizeLim.max]).range([1, 10]);
         const scaleShape = (shapeValue: boolean) => (shapeValue ? 'circle' : 'rect');
 
         const scales: {
@@ -96,7 +74,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
             scaleShape: (shapeValue: boolean) => "circle" | "rect";
         } = { scaleX: scaleX, scaleY: scaleY, scaleColour: scaleColour, scaleSize: scaleSize, scaleShape: scaleShape }
         return scales;
-    }, [groupedDataPerTransactionDescriptionFlat, valueGetter])
+    }, [groupedDataPerTransactionDescriptionFlat, valueGetter, domainLimitsObj])
 
 
     function handleDetail(month: number) {
@@ -126,7 +104,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
                 </tbody>
             </table>
             {detailDay ? <div>selected Day: {detailDay.toString()}</div> : <div></div>}
-            <button className="rounded-sm bg-zinc-400" onClick={() => {setK(1);setX(0);setY(0)}}>reset Zooming</button>
+            <button className="rounded-sm bg-zinc-400" onClick={() => { setK(1); setX(0); setY(0) }}>reset Zooming</button>
         </div >
     )
 }
@@ -187,7 +165,7 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
             .style('fill', (d: DataPerTransactionDescription) => scaleColour(valueGetter.colour(d)));
     }
 
-    useEffect(() => dayData && draw(), [day, month, currentYear])
+    useEffect(() => dayData && draw(), [day, month, currentYear, scaleX, scaleY, scaleColour, scaleShape, scaleSize])
 
     // highlight the day without transaction
     if (dayData === undefined) {
