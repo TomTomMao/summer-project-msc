@@ -13,14 +13,18 @@ import { DomainLimits } from "./page";
  * render a cluster view using scatter plot
  *
  */
-export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr, domainLimitsObj, onChangeDomain }: {
-    transactionDataArr: TransactionData[];
-    RFMDataArr: RFMData[];
-    height: number;
-    width: number;
-    onSelect: (transactionDescription: TransactionData['transactionDescription'], isCredit: boolean) => void;
-    selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[];
-    domainLimitsObj: { xLim: DomainLimits, yLim: DomainLimits, colourLim: DomainLimits, sizeLim: DomainLimits }
+export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr, domainLimitsObj, handleChangeXYDomain }: {
+    transactionDataArr: TransactionData[],
+    RFMDataArr: RFMData[],
+    height: number,
+    width: number,
+    onSelect: (transactionDescription: TransactionData['transactionDescription'], isCredit: boolean) => void,
+    selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[],
+    domainLimitsObj: { xLim: DomainLimits, yLim: DomainLimits, colourLim: DomainLimits, sizeLim: DomainLimits },
+    handleChangeXYDomain: (newDomains: {
+        xDomain: [number, number],
+        yDomain: [number, number]
+    }) => void
 }) {
     const margin = { top: 10, right: 30, bottom: 30, left: 30 };
     const valueGetter = useContext(ValueGetterContext);
@@ -43,10 +47,13 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
     const yAxisRef = useRef(null); // x axis ref
     const pointsAreaRef = useRef(null); //points ref
 
-    const [resetFuc, setResetFuc] = useState<null|(()=>void)>(null)
-    const [k, setK] = useState(1);
-    const [x, setX] = useState(0);
-    const [y, setY] = useState(0);
+    const [resetFuc, setResetFuc] = useState<null | (() => void)>(null)
+    const [transform, setTransform] = useState<null | any>(null)
+    // x,y,k for transforming the axis
+    const { x, y, k } = transform === null ? { x: 0, y: 0, k: 1 } : transform;
+    // the axis min and max value
+    const zoomedXLim: null | [number, number] = transform === null ? null : transform.rescaleX(scaleX).domain()
+    const zoomedYLim: null | [number, number] = transform === null ? null : transform.rescaleY(scaleY).domain()
 
     const draw = () => {
         const svg = d3.select(svgRef.current);
@@ -84,17 +91,15 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
             .translateExtent([[-100, -100], [width + 90, height + 100]])
             .filter(filter)
             .on("zoom", zoomed);
-            
+
         svg.call(zoom)
-        function zoomed({ transform }) {
+        function zoomed(event) {
             // chartG.attr("transform", transform);
-            const { x, y, k } = transform;
-            setK(k);
-            setX(x);
-            setY(y);
+            const nextTransform = event.transform
+            setTransform(nextTransform)
             // onChangeDomain({xDomain: transform.rescaleX(scaleX).domain(), yDomain: transform.rescaleY(scaleY).domain()});
-            xAxisG.call(xAxis.scale(transform.rescaleX(scaleX)));
-            yAxisG.call(yAxis.scale(transform.rescaleY(scaleY)));
+            xAxisG.call(xAxis.scale(nextTransform.rescaleX(scaleX)));
+            yAxisG.call(yAxis.scale(nextTransform.rescaleY(scaleY)));
         }
 
         function reset() {
@@ -122,6 +127,8 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
                 <g ref={yAxisRef}></g>
             </g>
         </svg>
+
+        {(zoomedXLim !== null && zoomedYLim != null) && <button className="rounded-sm bg-zinc-400" onClick={() => handleChangeXYDomain({ xDomain: zoomedXLim, yDomain: zoomedYLim })}>change the domain to the current x-y axis's min and max</button>}
         {/* {resetFuc!==null && <button onChange={resetFuc}>reset cluster view's zoom</button>} */}
         {/* <div>
             x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />

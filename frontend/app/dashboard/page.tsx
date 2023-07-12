@@ -26,8 +26,6 @@ export default function Page() {
     const [valueGetter, setValueGetter] = useState(initValueGetter); // used for get the domain, and used for get the data in the charts
     const [selectedDescriptionAndIsCreditArr, setSelectedDescriptionAndIsCreditArr] = useState<DescriptionAndIsCredit[]>([])
 
-
-
     const [xLim, setXLim] = useState<DomainLimits | null>(null);
     const [yLim, setYLim] = useState<DomainLimits | null>(null);
     const [colourLim, setColourLim] = useState<DomainLimits | null>(null);
@@ -36,46 +34,19 @@ export default function Page() {
     const limitsInitialised = xLim !== null && yLim !== null && colourLim !== null && sizeLim !== null;
 
     // get the data domain of the aggregated data when the data is loaded or the data is updated
-    const { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax }: {
-        xDomainMin: number,
-        xDomainMax: number,
-        yDomainMin: number,
-        yDomainMax: number,
-        colourDomainMin: number,
-        colourDomainMax: number,
-        sizeDomainMin: number,
-        sizeDomainMax: number
-    } | {
-        xDomainMin: null,
-        xDomainMax: null,
-        yDomainMin: null,
-        yDomainMax: null,
-        colourDomainMin: null,
-        colourDomainMax: null,
-        sizeDomainMin: null,
-        sizeDomainMax: null
-    } = useMemo(() => {
-        // rollup by year, month, day, reduce to transactionDescription.
-        if (transactionDataArr !== null && RFMDataArr !== null) {
-            const RFMDataMap: Map<string, number> = getRFMDataMapFromArr(RFMDataArr);
-            const dataPerTransactionDescriptionArr = getDataPerTransactionDescription(transactionDataArr, RFMDataArr, RFMDataMap);
-            const domains = getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr, valueGetter);
-            return {
-                ...domains
-            };
-        } else {
-            return {
-                xDomainMin: null,
-                xDomainMax: null,
-                yDomainMin: null,
-                yDomainMax: null,
-                colourDomainMin: null,
-                colourDomainMax: null,
-                sizeDomainMin: null,
-                sizeDomainMax: null
-            }
-        }
-    }, [transactionDataArr, RFMDataArr, valueGetter]);
+    const { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax }:
+        { xDomainMin: number, xDomainMax: number, yDomainMin: number, yDomainMax: number, colourDomainMin: number, colourDomainMax: number, sizeDomainMin: number, sizeDomainMax: number } |
+        { xDomainMin: null, xDomainMax: null, yDomainMin: null, yDomainMax: null, colourDomainMin: null, colourDomainMax: null, sizeDomainMin: null, sizeDomainMax: null } = useMemo(() => {
+            // rollup by year, month, day, reduce to transactionDescription.
+            if (transactionDataArr !== null && RFMDataArr !== null) {
+                const RFMDataMap: Map<string, number> = getRFMDataMapFromArr(RFMDataArr);
+                const dataPerTransactionDescriptionArr = getDataPerTransactionDescription(transactionDataArr, RFMDataArr, RFMDataMap);
+                const domains = getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr, valueGetter);
+                return {
+                    ...domains
+                };
+            } else { return { xDomainMin: null, xDomainMax: null, yDomainMin: null, yDomainMax: null, colourDomainMin: null, colourDomainMax: null, sizeDomainMin: null, sizeDomainMax: null } }
+        }, [transactionDataArr, RFMDataArr, valueGetter]);
     // then set the limit of each domains based on the domain
     useEffect(() => {
         if (xDomainMin !== null && xDomainMax !== null && yDomainMin !== null && yDomainMax !== null && colourDomainMin !== null && colourDomainMax !== null && sizeDomainMin !== null && sizeDomainMax !== null) {
@@ -145,7 +116,7 @@ export default function Page() {
                         onSelect={handleSelect}
                         selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
                         domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}
-                        onChangeDomain={handleChangeDomain}></ClusterView>
+                        handleChangeXYDomain={handleChangeDomain}></ClusterView>
                 </ValueGetterContext.Provider>
                 <div>
                     x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
