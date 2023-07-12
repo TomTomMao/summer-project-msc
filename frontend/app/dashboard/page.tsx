@@ -121,51 +121,40 @@ export default function Page() {
                         </div>
                     </div>
                 </ValueGetterContext.Provider>
-                <div className="grid grid-col-4">
-                    control the domain limit
-                    <div className="col-span-2">
-                        table
-                        x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
-                        x limit max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} />
-                        <button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button>
-                        <br />
-                        y limit min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} />
-                        y limit max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} />
-                        <button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button>
-                        <br />
-                        colour limit min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} />
-                        colour limit max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} />
-                        <button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button>
-                        <br />
-                        <b>DONT USE THIS</b>
-                        size limit min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} />
-                        size limit max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} />
-                        <button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button>
-                        <br />
-                    </div>
-                    <div  className="col-span-2">
+                <div className="m-auto">
                         {/* infoTable from global.css */}
-                        <table className="infoTable"> 
+                        <table className="infoTable">
                             <tbody>
                                 <tr>
                                     <td>x</td>
                                     <td>monetaryAvgDay</td>
+                                    <td>min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} /></td>
+                                    <td>max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} /></td>
+                                    <td><button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button></td>
                                 </tr>
                                 <tr>
                                     <td>y</td>
                                     <td>frequencyAvgDay</td>
+                                    <td>min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} /></td>
+                                    <td>max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} /></td>
+                                    <td><button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button></td>
                                 </tr>
                                 <tr>
                                     <td>colour</td>
                                     <td>amount of the day or total amount</td>
+                                    <td>min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} /></td>
+                                    <td>max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} /></td>
+                                    <td><button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button></td>
                                 </tr>
                                 <tr>
                                     <td>size</td>
                                     <td>times of transaction of the day or the total times of transaction</td>
+                                    <td>min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} /></td>
+                                    <td>max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} /></td>
+                                    <td><button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button></td>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
                 </div>
 
                 <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
