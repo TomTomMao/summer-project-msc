@@ -13,7 +13,7 @@ import { DomainLimits } from "./page";
  * render a cluster view using scatter plot
  *
  */
-export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr, domainLimitsObj }: {
+export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr, domainLimitsObj, onChangeDomain }: {
     transactionDataArr: TransactionData[];
     RFMDataArr: RFMData[];
     height: number;
@@ -65,14 +65,43 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
                 }).length >= 1;
                 return (isSelected ? "black" : null);
             })
-            .transition()
-            .duration(500)
+            // .transition()
+            // .duration(500)
             .attr('cx', (d: DataPerTransactionDescription) => scaleX(valueGetter.x(d)))
             .attr('cy', (d: DataPerTransactionDescription) => scaleY(valueGetter.y(d)))
             .attr('r', (d: DataPerTransactionDescription) => scaleSize(valueGetter.size(d)))
             .style('fill', (d: DataPerTransactionDescription) => scaleColour(valueGetter.colour(d)));
 
         chartG.selectAll('circle').on('click', (event, d) => onSelect(d.transactionDescription, d.isCredit));
+        // zoom effect, ref: https://observablehq.com/@d3/pan-zoom-axes
+        const zoom = d3.zoom()
+            .scaleExtent([1, 40])
+            .translateExtent([[-100, -100], [width + 90, height + 100]])
+            .filter(filter)
+            .on("zoom", zoomed);
+        // return Object.assign(svg.call(zoom).node(), { reset });
+        svg.call(zoom)
+        function zoomed({ transform }) {
+            chartG.attr("transform", transform);
+            // onChangeDomain({xDomain: transform.rescaleX(scaleX).domain(), yDomain: transform.rescaleY(scaleY).domain()});
+            xAxisG.call(xAxis.scale(transform.rescaleX(scaleX)));
+            yAxisG.call(yAxis.scale(transform.rescaleY(scaleY)));
+        }
+
+        function reset() {
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, d3.zoomIdentity);
+        }
+
+        // prevent scrolling then apply the default filter
+        function filter(event) {
+            event.preventDefault();
+            return (!event.ctrlKey || event.type === 'wheel') && !event.button;
+        }
+        // zoom effect copy over.
+
+
     };
     // update the charts when the scale domain Lims changed
     useEffect(draw, [xLim, yLim, colourLim, sizeLim, selectedDescriptionAndIsCreditArr]);

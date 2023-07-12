@@ -103,8 +103,12 @@ export default function Page() {
             setSelectedDescriptionAndIsCreditArr([...nextSelectedDescriptionAndIsCreditArr, { transactionDescription: transactionDescription, isCredit: isCredit }])
         }
     }
-    transactionDataArr && console.log('transactionDataArr fetched and cleaned:', transactionDataArr);
-    RFMDataArr && console.log('RFMData fetched and cleaned:', RFMDataArr);
+    function handleChangeDomain(newDomains: { xDomain: [number, number], yDomain: [number, number] }): void {
+        setXLim({ min: newDomains.xDomain[0], max: newDomains.xDomain[1] });
+        setYLim({ min: newDomains.yDomain[0], max: newDomains.yDomain[1] });
+    }
+    // transactionDataArr && console.log('transactionDataArr fetched and cleaned:', transactionDataArr);
+    // RFMDataArr && console.log('RFMData fetched and cleaned:', RFMDataArr);
     useEffect(() => {
         // fetch the data and update the data state
         fetchData(parseTime).then(
@@ -140,7 +144,8 @@ export default function Page() {
                         width={ClusterViewWidth}
                         onSelect={handleSelect}
                         selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
-                        domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}></ClusterView>
+                        domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}
+                        onChangeDomain={handleChangeDomain}></ClusterView>
                 </ValueGetterContext.Provider>
                 <div>
                     x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />

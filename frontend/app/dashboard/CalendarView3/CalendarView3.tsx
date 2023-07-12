@@ -56,7 +56,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
             d => `${d.date?.getDate()}`).map(x => x[3]);
         return d.flat()
     }, [transactionDataArr, RFMDataArr])
-    console.log(groupedDataPerTransactionDescriptionFlat)
+    // console.log(groupedDataPerTransactionDescriptionFlat)
     const scales = useMemo(() => {
         // create scales, the getter is in valueGetter.
 
