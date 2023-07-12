@@ -19,7 +19,7 @@ const calendarValueGetter = {
     size: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.timeToday,
     shape: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.isCredit
 }
-const DayViewSvgSize = 30;
+const DayViewSvgSize = 20;
 const PI = 3.14159;
 
 export default function CalendarView3({ transactionDataArr, initCurrentYear, RFMDataArr, domainLimitsObj }:
@@ -63,7 +63,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
         const scaleX = d3.scaleLinear().domain([xLim.min, xLim.max]).range([0, DayViewSvgSize]);
         const scaleY = d3.scaleLinear().domain([yLim.min, yLim.max]).range([DayViewSvgSize, 0]);
         const scaleColour = d3.scaleLinear().domain([colourLim.min, colourLim.max]).range(["blue", "red"]);
-        const scaleSize = d3.scaleLinear().domain([sizeLim.min, sizeLim.max]).range([1, 10]);
+        const scaleSize = d3.scaleLinear().domain([sizeLim.min, sizeLim.max]).range([4, 10]);
         const scaleShape = (shapeValue: boolean) => (shapeValue ? 'circle' : 'rect');
 
         const scales: {
