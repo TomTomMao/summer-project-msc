@@ -104,7 +104,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
                 </tbody>
             </table>
             {detailDay ? <div>selected Day: {detailDay.toString()}</div> : <div></div>}
-            <button className="rounded-sm bg-zinc-400" onClick={() => { setK(1); setX(0); setY(0) }}>reset Zooming</button>
+            <button className="rounded-sm bg-zinc-400" onClick={() => { setK(1); setX(0); setY(0) }}>reset Calendar Zooming</button>
         </div >
     )
 }

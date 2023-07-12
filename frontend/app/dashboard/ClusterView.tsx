@@ -43,6 +43,11 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
     const yAxisRef = useRef(null); // x axis ref
     const pointsAreaRef = useRef(null); //points ref
 
+    const [resetFuc, setResetFuc] = useState<null|(()=>void)>(null)
+    const [k, setK] = useState(1);
+    const [x, setX] = useState(0);
+    const [y, setY] = useState(0);
+
     const draw = () => {
         const svg = d3.select(svgRef.current);
         const chartG = d3.select(pointsAreaRef.current);
@@ -65,8 +70,8 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
                 }).length >= 1;
                 return (isSelected ? "black" : null);
             })
-            // .transition()
-            // .duration(500)
+            .transition()
+            .duration(500)
             .attr('cx', (d: DataPerTransactionDescription) => scaleX(valueGetter.x(d)))
             .attr('cy', (d: DataPerTransactionDescription) => scaleY(valueGetter.y(d)))
             .attr('r', (d: DataPerTransactionDescription) => scaleSize(valueGetter.size(d)))
@@ -79,10 +84,14 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
             .translateExtent([[-100, -100], [width + 90, height + 100]])
             .filter(filter)
             .on("zoom", zoomed);
-        // return Object.assign(svg.call(zoom).node(), { reset });
+            
         svg.call(zoom)
         function zoomed({ transform }) {
-            chartG.attr("transform", transform);
+            // chartG.attr("transform", transform);
+            const { x, y, k } = transform;
+            setK(k);
+            setX(x);
+            setY(y);
             // onChangeDomain({xDomain: transform.rescaleX(scaleX).domain(), yDomain: transform.rescaleY(scaleY).domain()});
             xAxisG.call(xAxis.scale(transform.rescaleX(scaleX)));
             yAxisG.call(yAxis.scale(transform.rescaleY(scaleY)));
@@ -100,7 +109,7 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
             return (!event.ctrlKey || event.type === 'wheel') && !event.button;
         }
         // zoom effect copy over.
-
+        setResetFuc(reset)
 
     };
     // update the charts when the scale domain Lims changed
@@ -108,11 +117,12 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
     return (<div>
         <svg ref={svgRef} width={width + margin.left + margin.right} height={height + margin.top + margin.bottom}>
             <g transform={`translate(${margin.left},${margin.top})`}>
-                <g ref={pointsAreaRef}></g>
+                <g ref={pointsAreaRef} transform={`translate(${x},${y})scale(${k})`}></g>
                 <g ref={xAxisRef} transform={`translate(0,${height})`}></g>
                 <g ref={yAxisRef}></g>
             </g>
         </svg>
+        {/* {resetFuc!==null && <button onChange={resetFuc}>reset cluster view's zoom</button>} */}
         {/* <div>
             x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
             x limit max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} />
