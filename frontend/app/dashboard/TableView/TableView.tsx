@@ -9,9 +9,9 @@ export interface DescriptionAndIsCredit {
 /**
  * show the filtered transactions based on filteredDescriptionAndIsCreditArr
  */
-export default function TableView({ transactionDataArr, RFMDataArr, filteredDescriptionAndIsCreditArr }:
+export default function TableView({ transactionDataArr, RFMDataArr, filteredDescriptionAndIsCreditArr ,handleClearSelect}:
     {
-        transactionDataArr: TransactionData[], RFMDataArr: RFMData[], filteredDescriptionAndIsCreditArr: DescriptionAndIsCredit[]
+        transactionDataArr: TransactionData[], RFMDataArr: RFMData[], filteredDescriptionAndIsCreditArr: DescriptionAndIsCredit[], handleClearSelect: (()=>void)
     }) {
     // initially, just copy the transaction numbers into a set
     const [filteredTransactionNumbers, setFilteredTransactionNumbers] = useState<Set<TransactionData['transactionNumber']>>(new Set(transactionDataArr.map(transactionData => transactionData.transactionNumber)))
@@ -43,7 +43,7 @@ export default function TableView({ transactionDataArr, RFMDataArr, filteredDesc
 
     return (
         <div>
-            number of results: {filteredTransactionDataArr.length}
+            number of results: {filteredTransactionDataArr.length} <button onClick={handleClearSelect}>clear all</button>
             <table className="infoTable">
                 <thead>
                     <tr>

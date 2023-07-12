@@ -158,7 +158,7 @@ export default function Page() {
                     </table>
                 </div>
 
-                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
+                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} handleClearSelect={()=>setSelectedDescriptionAndIsCreditArr([])}></TableView>
 
             </div>
         )
