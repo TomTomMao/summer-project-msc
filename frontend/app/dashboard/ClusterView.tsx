@@ -39,7 +39,7 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
     const scaleX = d3.scaleLinear().domain([xLim.min, xLim.max]).range([0, width]);
     const scaleY = d3.scaleLinear().domain([yLim.min, yLim.max]).range([height, 0]);
     const scaleColour = d3.scaleLinear().domain([colourLim.min, colourLim.max]).range(["blue", "red"]);
-    const scaleSize = d3.scaleLinear().domain([sizeLim.min, sizeLim.max]).range([5, 20]);
+    const scaleSize = d3.scaleSqrt().domain([sizeLim.min, sizeLim.max]).range([5, 20]);
     const scaleShape = (shapeValue: boolean) => (shapeValue ? 'circle' : 'rect');
 
     const svgRef = useRef(null); //svg ref

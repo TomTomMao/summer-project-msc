@@ -63,14 +63,14 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
         const scaleX = d3.scaleLinear().domain([xLim.min, xLim.max]).range([0, DayViewSvgSize]);
         const scaleY = d3.scaleLinear().domain([yLim.min, yLim.max]).range([DayViewSvgSize, 0]);
         const scaleColour = d3.scaleLinear().domain([colourLim.min, colourLim.max]).range(["blue", "red"]);
-        const scaleSize = d3.scaleLinear().domain([sizeLim.min, sizeLim.max]).range([4, 10]);
+        const scaleSize = d3.scaleSqrt().domain([sizeLim.min, sizeLim.max]).range([4, 10]);
         const scaleShape = (shapeValue: boolean) => (shapeValue ? 'circle' : 'rect');
 
         const scales: {
             scaleX: d3.ScaleLinear<number, number, never>;
             scaleY: d3.ScaleLinear<number, number, never>;
             scaleColour: number[] & d3.ScaleLinear<number, number, never>;
-            scaleSize: d3.ScaleLinear<number, number, never>;
+            scaleSize: d3.ScalePower<number, number, never>;
             scaleShape: (shapeValue: boolean) => "circle" | "rect";
         } = { scaleX: scaleX, scaleY: scaleY, scaleColour: scaleColour, scaleSize: scaleSize, scaleShape: scaleShape }
         return scales;
