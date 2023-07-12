@@ -7,7 +7,7 @@ import * as d3 from 'd3';
 import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
 import { getDataPerTransactionDescription } from "./CalendarView3/getDataPerTransactionDescription";
 import { getRFMDataMapFromArr } from "./CalendarView3/getRFMDataMapFromArr";
-import { DomainLimits } from "./page";
+import { DomainLimits, isTransactionDescriptionSelected } from "./page";
 
 /**
  * render a cluster view using scatter plot
@@ -72,10 +72,8 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
             .data(dataPerTransactionDescriptionArr, d => { return `${d.transactionDescription}`; })
             .join('circle')
             .attr('stroke', (d: DataPerTransactionDescription) => {
-                const isSelected = selectedDescriptionAndIsCreditArr.filter((descriptionAndIsCredit) => {
-                    return d.transactionDescription === descriptionAndIsCredit.transactionDescription && d.isCredit == descriptionAndIsCredit.isCredit;
-                }).length >= 1;
-                return (isSelected ? "black" : null);
+                const isSelected = isTransactionDescriptionSelected(d, selectedDescriptionAndIsCreditArr)
+                return (isSelected ? "#3f4701" : null);
             })
             .transition()
             .duration(500)

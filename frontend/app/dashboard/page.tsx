@@ -117,44 +117,45 @@ export default function Page() {
                         <div className="col-span-5"><CalendarView3 transactionDataArr={transactionDataArr}
                             initCurrentYear={2016}
                             RFMDataArr={RFMDataArr}
+                            selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
                             domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}></CalendarView3>
                         </div>
                     </div>
                 </ValueGetterContext.Provider>
                 <div className="m-auto">
-                        {/* infoTable from global.css */}
-                        <table className="infoTable">
-                            <tbody>
-                                <tr>
-                                    <td>x</td>
-                                    <td>monetaryAvgDay</td>
-                                    <td>min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} /></td>
-                                    <td>max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} /></td>
-                                    <td><button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button></td>
-                                </tr>
-                                <tr>
-                                    <td>y</td>
-                                    <td>frequencyAvgDay</td>
-                                    <td>min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} /></td>
-                                    <td>max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} /></td>
-                                    <td><button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button></td>
-                                </tr>
-                                <tr>
-                                    <td>colour</td>
-                                    <td>amount of the day or total amount</td>
-                                    <td>min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} /></td>
-                                    <td>max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} /></td>
-                                    <td><button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button></td>
-                                </tr>
-                                <tr>
-                                    <td>size</td>
-                                    <td>times of transaction of the day or the total times of transaction</td>
-                                    <td>min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} /></td>
-                                    <td>max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} /></td>
-                                    <td><button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    {/* infoTable from global.css */}
+                    <table className="infoTable">
+                        <tbody>
+                            <tr>
+                                <td>x</td>
+                                <td>monetaryAvgDay</td>
+                                <td>min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} /></td>
+                                <td>max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} /></td>
+                                <td><button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button></td>
+                            </tr>
+                            <tr>
+                                <td>y</td>
+                                <td>frequencyAvgDay</td>
+                                <td>min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} /></td>
+                                <td>max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} /></td>
+                                <td><button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button></td>
+                            </tr>
+                            <tr>
+                                <td>colour</td>
+                                <td>amount of the day or total amount</td>
+                                <td>min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} /></td>
+                                <td>max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} /></td>
+                                <td><button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button></td>
+                            </tr>
+                            <tr>
+                                <td>size</td>
+                                <td>times of transaction of the day or the total times of transaction</td>
+                                <td>min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} /></td>
+                                <td>max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} /></td>
+                                <td><button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
@@ -201,3 +202,12 @@ async function fetchData(parseTime: (dateString: string) => Date | null) {
     }
 }
 
+export function isTransactionDescriptionSelected(dataPerTransactionDescription: DataPerTransactionDescription, selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[]): boolean {
+    const found = false;
+    for (let selectedDescriptionAndIsCredit of selectedDescriptionAndIsCreditArr) {
+        if (dataPerTransactionDescription.isCredit === selectedDescriptionAndIsCredit.isCredit && dataPerTransactionDescription.transactionDescription === selectedDescriptionAndIsCredit.transactionDescription) {
+            return true
+        }
+    }
+    return found
+}

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react"
+import { Dispatch, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { RFMData, TransactionData } from "../DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import { YearContext } from "./Contexts/YearContext";
@@ -9,8 +9,17 @@ import { DataPerTransactionDescription } from "./DataPerTransactionDescription";
 import { ValueGetterContext } from "./Contexts/ValueGetterContext";
 import { getDataPerTransactionDescription } from "./getDataPerTransactionDescription";
 import { getRFMDataMapFromArr } from "./getRFMDataMapFromArr";
-import { DomainLimits } from "../page";
+import { DomainLimits, isTransactionDescriptionSelected } from "../page";
+import { DescriptionAndIsCredit } from "../TableView/TableView";
 
+interface ZoomingInfo {
+    k: number,
+    setK: Dispatch<SetStateAction<number>>,
+    x: number,
+    setX: Dispatch<SetStateAction<number>>,
+    y: number,
+    setY: Dispatch<SetStateAction<number>>,
+}
 
 const calendarValueGetter = {
     x: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.monetaryAvgDay,
@@ -22,8 +31,11 @@ const calendarValueGetter = {
 const DayViewSvgSize = 20;
 const PI = 3.14159;
 
-export default function CalendarView3({ transactionDataArr, initCurrentYear, RFMDataArr, domainLimitsObj }:
-    { transactionDataArr: TransactionData[], initCurrentYear: number, RFMDataArr: RFMData[], domainLimitsObj: { xLim: DomainLimits, yLim: DomainLimits, colourLim: DomainLimits, sizeLim: DomainLimits } }) {
+export default function CalendarView3({ transactionDataArr, initCurrentYear, RFMDataArr, domainLimitsObj, selectedDescriptionAndIsCreditArr }:
+    {
+        transactionDataArr: TransactionData[], initCurrentYear: number, RFMDataArr: RFMData[], domainLimitsObj: { xLim: DomainLimits, yLim: DomainLimits, colourLim: DomainLimits, sizeLim: DomainLimits },
+        selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[]
+    }) {
     const [detailDay, setDetailDay] = useState<null | Date>(null);
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const RFMDataMap: Map<string, number> = useMemo(() => getRFMDataMapFromArr(RFMDataArr), [RFMDataArr])
@@ -34,7 +46,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
     const [k, setK] = useState(1);
     const [x, setX] = useState(0);
     const [y, setY] = useState(0);
-    const zoomingInfo = { k: k, setK: setK, x: x, setX: setX, y: y, setY: setY };// pass to the DayView
+    const zoomingInfo: ZoomingInfo = { k: k, setK: setK, x: x, setX: setX, y: y, setY: setY };// pass to the DayView
     /**
      * A map: year->month->day->DataPerTransactionDescription[]
      * the getDataPerTransactionDescription function specify how the data looks like
@@ -97,7 +109,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
                         <GroupedDataPerTransactionDescriptionContext.Provider value={groupedDataPerTransactionDescription}>
                             <ScaleContext.Provider value={scales}>
                                 {MONTHS.map((month, i) => <MonthView month={i + 1}
-                                    key={i + 1} zoomingInfo={zoomingInfo} />)}
+                                    key={i + 1} zoomingInfo={zoomingInfo} selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} />)}
                             </ScaleContext.Provider>
                         </GroupedDataPerTransactionDescriptionContext.Provider>
                     </YearContext.Provider>
@@ -109,14 +121,17 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
     )
 }
 
-function MonthView({ month, zoomingInfo }: { month: number }) {
+function MonthView({ month, zoomingInfo, selectedDescriptionAndIsCreditArr }: { month: number, zoomingInfo: ZoomingInfo, selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[] }) {
     // month: jan for 1, feb for 2, etc. 
     const year = useContext(YearContext);
     if (typeof (year) === 'number') {
         return (<tr>
             <td>{MONTHS[month - 1]}</td>
             {(Array.from(Array(getNumberOfDaysInMonth(year, month)).keys())).map(i =>
-                <DayView day={i + 1} month={month} zoomingInfo={zoomingInfo} />)}
+                <DayView day={i + 1} month={month} zoomingInfo={zoomingInfo} selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} svgSize={{
+                    width: DayViewSvgSize,
+                    height: DayViewSvgSize
+                }} />)}
         </tr>)
     } else {
         throw new Error("year is undefined");
@@ -127,7 +142,9 @@ function MonthView({ month, zoomingInfo }: { month: number }) {
  * @param day the number of the day in the month
  * @param month the number of the month in the year
  */
-function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayViewSvgSize }, zoomingInfo }: { day: number, month: number, svgSize: { width: number, height: number } }) {
+function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayViewSvgSize }, zoomingInfo, selectedDescriptionAndIsCreditArr }: {
+    day: number, month: number, svgSize: { width: number, height: number }, zoomingInfo: ZoomingInfo, selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[],
+}) {
     const currentYear = useContext(YearContext);
     const groupedDataPerTransactionDescription = useContext(GroupedDataPerTransactionDescriptionContext);
     const { scaleX, scaleY, scaleColour, scaleShape, scaleSize } = useContext(ScaleContext);
@@ -162,6 +179,10 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
             .attr('cx', (d: DataPerTransactionDescription) => scaleX(valueGetter.x(d)))
             .attr('cy', (d: DataPerTransactionDescription) => scaleY(valueGetter.y(d)))
             .attr('r', (d: DataPerTransactionDescription) => scaleSize(valueGetter.size(d)))
+            .attr('stroke', (d: DataPerTransactionDescription) => {
+                const isSelected = isTransactionDescriptionSelected(d, selectedDescriptionAndIsCreditArr)
+                return (isSelected ? "#3f4701" : null);
+            })
             .style('fill', (d: DataPerTransactionDescription) => scaleColour(valueGetter.colour(d)));
     }
 
