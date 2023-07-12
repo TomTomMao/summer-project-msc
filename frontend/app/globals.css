@@ -2,3 +2,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.infoTable td {
+    border: 1px black solid;
+}

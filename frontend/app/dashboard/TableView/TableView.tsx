@@ -35,6 +35,7 @@ export default function TableView({ transactionDataArr, RFMDataArr, filteredDesc
                         <td>{transactionData.locationCountry}</td>
                         <td>{transactionData.transactionDescription}</td>
                         <td>{transactionData.transactionType}</td>
+                        <td>{transactionData.date?.toDateString()}</td>
                     </tr>)
             })
         )
@@ -43,7 +44,7 @@ export default function TableView({ transactionDataArr, RFMDataArr, filteredDesc
     return (
         <div>
             number of results: {filteredTransactionDataArr.length}
-            <table>
+            <table className="infoTable">
                 <thead>
                     <tr>
                         <td>transactionNumber</td>
@@ -55,6 +56,7 @@ export default function TableView({ transactionDataArr, RFMDataArr, filteredDesc
                         <td>locationCountry</td>
                         <td>transactionDescription</td>
                         <td>transactionType</td>
+                        <td>date</td>
                     </tr>
                 </thead>
                 <tbody>

@@ -101,42 +101,73 @@ export default function Page() {
     } else {
         return (
             <div>
-                hello data
                 {/* <CalendarView transactions={data}></CalendarView> */}
                 {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
                 <ValueGetterContext.Provider value={valueGetter}>
-                    <CalendarView3 transactionDataArr={transactionDataArr}
-                        initCurrentYear={2016}
-                        RFMDataArr={RFMDataArr}
-                        domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}></CalendarView3>
-                    <ClusterView transactionDataArr={transactionDataArr}
-                        RFMDataArr={RFMDataArr}
-                        height={ClusterViewHeight}
-                        width={ClusterViewWidth}
-                        onSelect={handleSelect}
-                        selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
-                        domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}
-                        handleChangeXYDomain={handleChangeDomain}></ClusterView>
+                    <div className="grid grid-cols-8">
+                        <div className="col-span-3"><ClusterView transactionDataArr={transactionDataArr}
+                            RFMDataArr={RFMDataArr}
+                            height={ClusterViewHeight}
+                            width={ClusterViewWidth}
+                            onSelect={handleSelect}
+                            selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
+                            domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}
+                            handleChangeXYDomain={handleChangeDomain}></ClusterView>
+                        </div>
+                        <div className="col-span-5"><CalendarView3 transactionDataArr={transactionDataArr}
+                            initCurrentYear={2016}
+                            RFMDataArr={RFMDataArr}
+                            domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}></CalendarView3>
+                        </div>
+                    </div>
                 </ValueGetterContext.Provider>
-                <div>
-                    x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
-                    x limit max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} />
-                    <button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button>
-                    <br />
-                    y limit min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} />
-                    y limit max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} />
-                    <button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button>
-                    <br />
-                    colour limit min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} />
-                    colour limit max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} />
-                    <button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button>
-                    <br />
-                    <b>DONT USE THIS</b>
-                    size limit min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} />
-                    size limit max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} />
-                    <button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button>
-                    <br />
+                <div className="grid grid-col-4">
+                    control the domain limit
+                    <div className="col-span-2">
+                        table
+                        x limit min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} />
+                        x limit max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} />
+                        <button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button>
+                        <br />
+                        y limit min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} />
+                        y limit max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} />
+                        <button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button>
+                        <br />
+                        colour limit min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} />
+                        colour limit max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} />
+                        <button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button>
+                        <br />
+                        <b>DONT USE THIS</b>
+                        size limit min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} />
+                        size limit max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} />
+                        <button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button>
+                        <br />
+                    </div>
+                    <div  className="col-span-2">
+                        {/* infoTable from global.css */}
+                        <table className="infoTable"> 
+                            <tbody>
+                                <tr>
+                                    <td>x</td>
+                                    <td>monetaryAvgDay</td>
+                                </tr>
+                                <tr>
+                                    <td>y</td>
+                                    <td>frequencyAvgDay</td>
+                                </tr>
+                                <tr>
+                                    <td>colour</td>
+                                    <td>amount of the day or total amount</td>
+                                </tr>
+                                <tr>
+                                    <td>size</td>
+                                    <td>times of transaction of the day or the total times of transaction</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
                 <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}></TableView>
 
             </div>
