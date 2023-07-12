@@ -11,6 +11,7 @@ import { getDataPerTransactionDescription } from "./getDataPerTransactionDescrip
 import { getRFMDataMapFromArr } from "./getRFMDataMapFromArr";
 import { DomainLimits, isTransactionDescriptionSelected } from "../page";
 import { DescriptionAndIsCredit } from "../TableView/TableView";
+import assert from "assert";
 
 interface ZoomingInfo {
     k: number,
@@ -139,8 +140,8 @@ function MonthView({ month, zoomingInfo, selectedDescriptionAndIsCreditArr }: { 
 }
 
 /**
- * @param day the number of the day in the month
- * @param month the number of the month in the year
+ * @param day the number of the day in the month between 1 to 31
+ * @param month the number of the month in the year between 1 to 12
  */
 function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayViewSvgSize }, zoomingInfo, selectedDescriptionAndIsCreditArr }: {
     day: number, month: number, svgSize: { width: number, height: number }, zoomingInfo: ZoomingInfo, selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[],
@@ -153,6 +154,10 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
     const { width, height } = svgSize;
     const { k, setK, x, setX, y, setY } = zoomingInfo;
 
+    assert(currentYear !== undefined)
+    let dayOfWeek = new Date(currentYear, month - 1, day).getDay();
+    dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
+    const rectBorderColour: string = getDayColour(dayOfWeek)
     // zoom effect reference: https://codepen.io/likr/pen/vYmBEPE
     // allows zoom in
     useEffect(() => {
@@ -190,14 +195,13 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
 
     // highlight the day without transaction
     if (dayData === undefined) {
-        return <td className={`border-2 border-indigo-600 bg-zinc-950`} style={{ width: width, height: height }}>
-            <svg ref={ref} width={width} height={height}>
-            </svg>
+        return <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
+            <div style={{width: width, height: height}}>{dayOfWeek}</div>
         </td>
     }
     else {
         return (
-            <td className={`border-2 border-indigo-600`} style={{ width: width, height: height }}>
+            <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
                 <svg ref={ref} width={width} height={height}>
                     <g transform={`translate(${x},${y})scale(${k})`}></g>
                 </svg>
@@ -205,12 +209,29 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
         )
     }
 }
-
-
-
-
-
-
-
-
-
+/**
+ * 
+ * @param dayOfWeek day in week, 1 to 7, 1: monday, 2: tuesday, 3: wed, ...
+ * @return hex colour string, e.g., #000000
+ */
+function getDayColour(dayOfWeek: number): string {
+    switch (dayOfWeek) {
+        case 1:
+            return '#c4c5ff'
+        case 2:
+            return '#9b9dfa'
+        case 3:
+            return '#7a7dff'
+        case 4:
+            return '#5256fa'
+        case 5:
+            return '#262bff'
+        case 6:
+            return '#000000'
+        case 7:
+            return '#000000'
+        default:
+            throw new Error(`invalid day number, it must be 1 to 7, the value is: ${String(dayOfWeek)}`);
+            ;
+    }
+}
