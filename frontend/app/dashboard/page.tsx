@@ -4,7 +4,7 @@ import { timeParse } from 'd3'
 import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData } from "./DataObject";
 import CalendarView3 from "./CalendarView3/CalendarView3";
 import TableView, { DescriptionAndIsCredit } from "./TableView/TableView";
-import { ValueGetterContext, initValueGetter } from "./CalendarView3/Contexts/ValueGetterContext";
+import { ValueGetterContext, initValueGetter, temporalValueGetter, temporalValueGetterSwapped } from "./CalendarView3/Contexts/ValueGetterContext";
 import { ClusterView, getDomainValueFromDataPerTransactionDescription } from "./ClusterView";
 import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
 import { getDataPerTransactionDescription } from "./CalendarView3/getDataPerTransactionDescription";
@@ -25,6 +25,7 @@ export default function Page() {
     const [RFMDataArr, setRFMDataArr] = useState<Array<RFMData> | null>(null)
     const [valueGetter, setValueGetter] = useState(initValueGetter); // used for get the domain, and used for get the data in the charts
     const [selectedDescriptionAndIsCreditArr, setSelectedDescriptionAndIsCreditArr] = useState<DescriptionAndIsCredit[]>([])
+    const [clusterViewValueGetter, setClusterViewValueGetter] = useState(temporalValueGetter);
 
     const [xLim, setXLim] = useState<DomainLimits | null>(null);
     const [yLim, setYLim] = useState<DomainLimits | null>(null);
@@ -106,13 +107,8 @@ export default function Page() {
                 <ValueGetterContext.Provider value={valueGetter}>
                     <div className="grid grid-cols-8">
                         <div className="col-span-3"><ClusterView transactionDataArr={transactionDataArr}
-                            RFMDataArr={RFMDataArr}
-                            height={ClusterViewHeight}
-                            width={ClusterViewWidth}
-                            onSelect={handleSelect}
-                            selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
-                            domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}
-                            handleChangeXYDomain={handleChangeDomain}></ClusterView>
+                            containerHeight={ClusterViewHeight}
+                            containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}></ClusterView>
                         </div>
                         <div className="col-span-5"><CalendarView3 transactionDataArr={transactionDataArr}
                             initCurrentYear={2016}
@@ -158,7 +154,7 @@ export default function Page() {
                     </table>
                 </div>
 
-                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} handleClearSelect={()=>setSelectedDescriptionAndIsCreditArr([])}></TableView>
+                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} handleClearSelect={() => setSelectedDescriptionAndIsCreditArr([])}></TableView>
 
             </div>
         )
