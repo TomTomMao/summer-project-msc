@@ -34,14 +34,19 @@ const DEFAULT_STROKE_WIDTH = 1;
  */
 export function ClusterView(props: Props) {
     const { transactionDataArr, containerHeight, containerWidth, valueGetter } = props;
+    const [isSwap, setIsSwap] = useState(false);
+    const getColour = valueGetter.colour;
+    const getX = isSwap ? valueGetter.y : valueGetter.x;
+    const getY = isSwap ? valueGetter.x : valueGetter.y;
+
     const margin = DEFAULT_MARGIN;
     const width = containerWidth - margin.left - margin.right
     const height = containerHeight - margin.top - margin.bottom;
     const { xScale, yScale, colourScale } = useMemo(() => {
         let xScale, yScale, colourScale;
-        const xLim = d3.extent(transactionDataArr, valueGetter.x);
-        const yLim = d3.extent(transactionDataArr, valueGetter.y);
-        const colourLim = transactionDataArr.map(valueGetter.colour);
+        const xLim = d3.extent(transactionDataArr, getX);
+        const yLim = d3.extent(transactionDataArr, getY);
+        const colourLim = transactionDataArr.map(getColour);
         // set the scales based on the Lims state
         if (xLim[0] === undefined && xLim[1] === undefined) {
             xScale = d3.scaleLinear().domain([0, 366]).range([0, width]);
@@ -56,7 +61,7 @@ export function ClusterView(props: Props) {
         colourScale = d3.scaleOrdinal<String>().domain(colourLim).range(['yellow', 'purple']);
         return { xScale, yScale, colourScale }
 
-    }, [transactionDataArr, valueGetter])
+    }, [transactionDataArr, valueGetter, isSwap])
 
     // update the charts when the scale domain Lims changed
     return (<div>
@@ -70,11 +75,11 @@ export function ClusterView(props: Props) {
                     return (
                         <circle
                             key={transactionData.transactionNumber}
-                            cx={xScale(valueGetter.x(transactionData))}
-                            cy={yScale(valueGetter.y(transactionData))}
+                            cx={xScale(getX(transactionData))}
+                            cy={yScale(getY(transactionData))}
                             r={DEFAULT_RADIUS}
-                            stroke={colourScale(valueGetter.colour(transactionData)).valueOf()}
-                            fill={colourScale(valueGetter.colour(transactionData)).valueOf()}
+                            stroke={colourScale(getColour(transactionData)).valueOf()}
+                            fill={colourScale(getColour(transactionData)).valueOf()}
                             fillOpacity={DEFAULT_FILL_OPACITY}
                             opacity={DEFAULT_OPACITY}
                             strokeWidth={DEFAULT_STROKE_WIDTH}
@@ -82,8 +87,8 @@ export function ClusterView(props: Props) {
                     )
                 })}
             </g>
-
         </svg>
+        <button onClick={()=>setIsSwap(!isSwap)}>swap axis</button>
     </div>
     );
 }
