@@ -13,7 +13,7 @@ import { DomainLimits, isTransactionDescriptionSelected } from "./page";
  * render a cluster view using scatter plot
  *
  */
-export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr, domainLimitsObj, handleChangeXYDomain }: {
+type Props = {
     transactionDataArr: TransactionData[],
     RFMDataArr: RFMData[],
     height: number,
@@ -25,8 +25,13 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
         xDomain: [number, number],
         yDomain: [number, number]
     }) => void
-}) {
-    const margin = { top: 10, right: 30, bottom: 30, left: 30 };
+}
+
+const DEFAULT_MARGIN = { top: 10, right: 30, bottom: 30, left: 30 };
+
+export function ClusterView(props: Props) {
+    const { transactionDataArr, RFMDataArr, height, width, onSelect, selectedDescriptionAndIsCreditArr, domainLimitsObj, handleChangeXYDomain } = props;
+    const margin = DEFAULT_MARGIN;
     const valueGetter = useContext(ValueGetterContext);
     const RFMDataMap: Map<string, number> = useMemo(() => getRFMDataMapFromArr(RFMDataArr), [RFMDataArr]);
     const dataPerTransactionDescriptionArr: DataPerTransactionDescription[] = useMemo(() => {
@@ -84,35 +89,7 @@ export function ClusterView({ transactionDataArr, RFMDataArr, height, width, onS
 
         chartG.selectAll('circle').on('click', (event, d) => onSelect(d.transactionDescription, d.isCredit));
         // zoom effect, ref: https://observablehq.com/@d3/pan-zoom-axes
-        const zoom = d3.zoom()
-            .scaleExtent([1, 40])
-            .translateExtent([[-100, -100], [width + 90, height + 100]])
-            .filter(filter)
-            .on("zoom", zoomed);
 
-        svg.call(zoom)
-        function zoomed(event) {
-            // chartG.attr("transform", transform);
-            const nextTransform = event.transform
-            setTransform(nextTransform)
-            // onChangeDomain({xDomain: transform.rescaleX(scaleX).domain(), yDomain: transform.rescaleY(scaleY).domain()});
-            xAxisG.call(xAxis.scale(nextTransform.rescaleX(scaleX)));
-            yAxisG.call(yAxis.scale(nextTransform.rescaleY(scaleY)));
-        }
-
-        function reset() {
-            svg.transition()
-                .duration(750)
-                .call(zoom.transform, d3.zoomIdentity);
-        }
-
-        // prevent scrolling then apply the default filter
-        function filter(event) {
-            event.preventDefault();
-            return (!event.ctrlKey || event.type === 'wheel') && !event.button;
-        }
-        // zoom effect copy over.
-        setResetFuc(reset)
 
     };
     // update the charts when the scale domain Lims changed
