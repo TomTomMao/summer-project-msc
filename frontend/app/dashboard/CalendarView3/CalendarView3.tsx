@@ -168,7 +168,7 @@ function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayVie
             setY(y);
         });
         d3.select(ref.current).call(zoom);
-    }, [])
+    })
 
     if (groupedDataPerTransactionDescription === null || currentYear === undefined
         || scaleX === undefined || scaleY === undefined || scaleColour === undefined || scaleShape === undefined || scaleSize === undefined) {
