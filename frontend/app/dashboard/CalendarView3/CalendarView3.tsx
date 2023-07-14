@@ -140,6 +140,8 @@ function MonthView({ month, zoomingInfo, selectedDescriptionAndIsCreditArr }: { 
 }
 
 /**
+ * use public scale for transaction amount and public colours scale for Category
+ * visualise the chart using barGlyph, each bar represents a transaction with unique transaction id, height maps transaction amount 
  * @param day the number of the day in the month between 1 to 31
  * @param month the number of the month in the year between 1 to 12
  */
