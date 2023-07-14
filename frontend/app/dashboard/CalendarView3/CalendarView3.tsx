@@ -56,6 +56,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, tra
     const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse()
     const colourScale: BarCalendarViewSharedScales['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
     const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScale, colourScale }
+    // shared bandwidth
 
     return (
         <div>
@@ -142,7 +143,7 @@ function DayView({ day, month, currentYear, data, scales, valueGetter }: BarDayV
     // xScale for bar glyph
     const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
         const xDomain = Array.from(new Set(dayData.map(valueGetter.x)));
-        if (xDomain[0] === undefined, xDomain[1] === undefined) { return undefined }
+        if (xDomain[0] === undefined && xDomain[1] === undefined) { return undefined }
         return d3.scaleBand().domain(xDomain).range([0, width])
     }, [dayData, valueGetter])
 
@@ -160,8 +161,7 @@ function DayView({ day, month, currentYear, data, scales, valueGetter }: BarDayV
             />
         )
     })
-    // console.log(`${currentYear}-${month}-${day}`, 'bars: ', bars)
-
+    
     if (dayData.length === 0) {
         // highlight the day without transaction
         return <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
@@ -170,7 +170,9 @@ function DayView({ day, month, currentYear, data, scales, valueGetter }: BarDayV
     }
     else {
         return (
-            <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
+            <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}
+                onClick={() => console.log(`${currentYear}-${month}-${day}`, dayData)}
+            >
                 <svg width={width} height={height}>
                     <g>{bars}</g>
                 </svg>
