@@ -26,7 +26,7 @@ export default function Page() {
     const [valueGetter, setValueGetter] = useState(initValueGetter); // used for get the domain, and used for get the data in the charts
     const [selectedDescriptionAndIsCreditArr, setSelectedDescriptionAndIsCreditArr] = useState<DescriptionAndIsCredit[]>([])
     const [clusterViewValueGetter, setClusterViewValueGetter] = useState(temporalValueGetter);
-
+    const [detailedTransactionNumberSet, setDetailedTransactionNumberSet] = useState(new Set())
     const [xLim, setXLim] = useState<DomainLimits | null>(null);
     const [yLim, setYLim] = useState<DomainLimits | null>(null);
     const [colourLim, setColourLim] = useState<DomainLimits | null>(null);
@@ -106,11 +106,11 @@ export default function Page() {
                 {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
                 <ValueGetterContext.Provider value={valueGetter}>
                     <div className="grid grid-cols-8">
-                        <div className="col-span-3"><ClusterView transactionDataArr={transactionDataArr}
+                        <div className="col-span-2"><ClusterView transactionDataArr={transactionDataArr}
                             containerHeight={ClusterViewHeight}
                             containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}></ClusterView>
                         </div>
-                        <div className="col-span-5"><CalendarView3 transactionDataArr={transactionDataArr}
+                        <div className="col-span-6"><CalendarView3 transactionDataArr={transactionDataArr}
                             initCurrentYear={2016} transactionNumberSelectedMap={new Map()}></CalendarView3>
                         </div>
                     </div>
@@ -151,7 +151,7 @@ export default function Page() {
                     </table>
                 </div>
 
-                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} handleClearSelect={() => setSelectedDescriptionAndIsCreditArr([])}></TableView>
+s                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} handleClearSelect={() => setSelectedDescriptionAndIsCreditArr([])}></TableView>
 
             </div>
         )
