@@ -1,101 +1,62 @@
-import { Dispatch, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from "react"
-import { RFMData, TransactionData } from "../DataObject"
+import { useContext, useEffect, useMemo, useRef, useState } from "react"
+import { TransactionData } from "../DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
-import { YearContext } from "./Contexts/YearContext";
 import * as d3 from 'd3'
 import { GroupedDataPerTransactionDescriptionContext } from "./Contexts/GroupedDataPerTransactionDescriptionContext";
 import { ScaleContext } from "./Contexts/ScaleContext";
 import { DataPerTransactionDescription } from "./DataPerTransactionDescription";
 import { ValueGetterContext } from "./Contexts/ValueGetterContext";
-import { getDataPerTransactionDescription } from "./getDataPerTransactionDescription";
-import { getRFMDataMapFromArr } from "./getRFMDataMapFromArr";
-import { DomainLimits, isTransactionDescriptionSelected } from "../page";
-import { DescriptionAndIsCredit } from "../TableView/TableView";
 import assert from "assert";
+import { BarGlyphScales } from "../Glyphs/BarGlyph/BarGlyph";
 
-interface ZoomingInfo {
-    k: number,
-    setK: Dispatch<SetStateAction<number>>,
-    x: number,
-    setX: Dispatch<SetStateAction<number>>,
-    y: number,
-    setY: Dispatch<SetStateAction<number>>,
-}
-
-const calendarValueGetter = {
-    x: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.monetaryAvgDay,
-    y: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.frequencyAvgDay,
-    colour: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.amountToday,
-    size: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.timeToday,
-    shape: (dataPerTransactionDescription: DataPerTransactionDescription) => dataPerTransactionDescription.isCredit
-}
 const DayViewSvgSize = 20;
-const PI = 3.14159;
 
-export default function CalendarView3({ transactionDataArr, initCurrentYear, RFMDataArr, domainLimitsObj, selectedDescriptionAndIsCreditArr }:
-    {
-        transactionDataArr: TransactionData[], initCurrentYear: number, RFMDataArr: RFMData[], domainLimitsObj: { xLim: DomainLimits, yLim: DomainLimits, colourLim: DomainLimits, sizeLim: DomainLimits },
-        selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[]
-    }) {
-    const [detailDay, setDetailDay] = useState<null | Date>(null);
+type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
+type TransactionNumberSelectedMap = Map<TransactionData['transactionNumber'], boolean>
+type Data = {
+    transactionDataMapYMD: TransactionDataMapYMD;
+    transactionNumberSelectedMap: TransactionNumberSelectedMap;
+}
+type BarCalendarViewValueGetter = {
+    x: (d: TransactionData) => string;
+    height: (d: TransactionData) => number;
+    colour: (d: TransactionData) => string;
+}
+type CalendarViewProps = {
+    transactionDataArr: TransactionData[];
+    initCurrentYear: number;
+    transactionNumberSelectedMap: TransactionNumberSelectedMap;
+    scaleHeight: 'log' | 'linear'
+};
+
+const barGlyphValueGetter = {
+    x: (d: TransactionData) => d.transactionNumber,
+    height: (d: TransactionData) => d.transactionAmount,
+    colour: (d: TransactionData) => d.category
+}
+
+export default function CalendarView3({ transactionDataArr, initCurrentYear, transactionNumberSelectedMap, scaleHeight }:
+    CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-    const RFMDataMap: Map<string, number> = useMemo(() => getRFMDataMapFromArr(RFMDataArr), [RFMDataArr])
-    const valueGetter = useContext(ValueGetterContext);
-
-    const { xLim, yLim, colourLim, sizeLim } = domainLimitsObj;
-
-    const [k, setK] = useState(1);
-    const [x, setX] = useState(0);
-    const [y, setY] = useState(0);
-    const zoomingInfo: ZoomingInfo = { k: k, setK: setK, x: x, setX: setX, y: y, setY: setY };// pass to the DayView
-    /**
-     * A map: year->month->day->DataPerTransactionDescription[]
-     * the getDataPerTransactionDescription function specify how the data looks like
-     * used for quick access each day's data
-     */
-    const groupedDataPerTransactionDescription: Map<string, Map<string, Map<string, DataPerTransactionDescription[]>>> = useMemo(() => {
-        // rollup by year, month, day, reduce to transactionDescription.
-        const d = d3.rollup(transactionDataArr, r => getDataPerTransactionDescription(r, RFMDataArr, RFMDataMap),
-            d => `${d.date?.getFullYear()}`, d => `${d.date?.getMonth() + 1}`, d => `${d.date?.getDate()}`)
-        return d
-    }, [transactionDataArr, RFMDataArr])
-
-    // calculate scales based on calendarScatterMapping and groupedDataPerTransactionDescription
-    // get flatten data of each day, used for calculate the max and min value of each domain
-    const groupedDataPerTransactionDescriptionFlat: DataPerTransactionDescription[] = useMemo(() => {
-        const d = d3.flatRollup(transactionDataArr, r => getDataPerTransactionDescription(r, RFMDataArr, RFMDataMap),
-            d => `${d.date?.getFullYear()}`,
-            d => `${d.date?.getMonth() + 1}`,
-            d => `${d.date?.getDate()}`).map(x => x[3]);
-        return d.flat()
-    }, [transactionDataArr, RFMDataArr])
-    // console.log(groupedDataPerTransactionDescriptionFlat)
-    const scales = useMemo(() => {
-        // create scales, the getter is in valueGetter.
-
-        const scaleX = d3.scaleLinear().domain([xLim.min, xLim.max]).range([0, DayViewSvgSize]);
-        const scaleY = d3.scaleLinear().domain([yLim.min, yLim.max]).range([DayViewSvgSize, 0]);
-        const scaleColour = d3.scaleLinear().domain([colourLim.min, colourLim.max]).range(["blue", "red"]);
-        const scaleSize = d3.scaleSqrt().domain([sizeLim.min, sizeLim.max]).range([4, 10]);
-        const scaleShape = (shapeValue: boolean) => (shapeValue ? 'circle' : 'rect');
-
-        const scales: {
-            scaleX: d3.ScaleLinear<number, number, never>;
-            scaleY: d3.ScaleLinear<number, number, never>;
-            scaleColour: number[] & d3.ScaleLinear<number, number, never>;
-            scaleSize: d3.ScalePower<number, number, never>;
-            scaleShape: (shapeValue: boolean) => "circle" | "rect";
-        } = { scaleX: scaleX, scaleY: scaleY, scaleColour: scaleColour, scaleSize: scaleSize, scaleShape: scaleShape }
-        return scales;
-    }, [groupedDataPerTransactionDescriptionFlat, valueGetter, domainLimitsObj])
-
-
-    function handleDetail(month: number) {
-        // month is the number, if Jan, then 1, if Feb then 2.etc.
-        return function (day: number) {
-            setDetailDay(new Date(currentYear, month - 1, day))
-        }
+    const heightScaleFunc = d3.scaleLog
+    const transactionDataMapYMD = useMemo(() => {
+        return d3.group(transactionDataArr, d => d.date?.getFullYear(), d => d.date?.getMonth() + 1, d => d.date?.getDate())
+    }, [transactionDataArr])
+    const glyphType: 'bar' | 'pie' = 'bar';
+    if (transactionDataArr.length === 0) {
+        return <div>loading</div>
     }
+    const data: Data = { transactionDataMapYMD: transactionDataMapYMD, transactionNumberSelectedMap: transactionNumberSelectedMap }
+
+    // create public scales
+    const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height);
+    assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
+    const heightScale: BarCalendarViewSharedScales['heightScale'] = heightScaleFunc(heightDomain, [0, DayViewSvgSize])
+    const colourDomain = Array.from(new Set(transactionDataArr.map(barGlyphValueGetter.colour)))
+    const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse()
+    const colourScale: BarCalendarViewSharedScales['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
+    const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScale, colourScale }
+
     return (
         <div>
             <table>
@@ -106,106 +67,112 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, RFM
                     </tr>
                 </thead>
                 <tbody>
-                    <YearContext.Provider value={currentYear}>
-                        <GroupedDataPerTransactionDescriptionContext.Provider value={groupedDataPerTransactionDescription}>
-                            <ScaleContext.Provider value={scales}>
-                                {MONTHS.map((month, i) => <MonthView month={i + 1}
-                                    key={i + 1} zoomingInfo={zoomingInfo} selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} />)}
-                            </ScaleContext.Provider>
-                        </GroupedDataPerTransactionDescriptionContext.Provider>
-                    </YearContext.Provider>
+                    {MONTHS.map((month, i) => <MonthView month={i + 1} currentYear={currentYear}
+                        key={i + 1} data={data} scales={barCalendarViewSharedScales} valueGetter={barGlyphValueGetter} />)}
                 </tbody>
             </table>
-            {detailDay ? <div>selected Day: {detailDay.toString()}</div> : <div></div>}
-            <button className="rounded-sm bg-zinc-400" onClick={() => { setK(1); setX(0); setY(0) }}>reset Calendar Zooming</button>
         </div >
     )
 }
 
-function MonthView({ month, zoomingInfo, selectedDescriptionAndIsCreditArr }: { month: number, zoomingInfo: ZoomingInfo, selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[] }) {
-    // month: jan for 1, feb for 2, etc. 
-    const year = useContext(YearContext);
-    if (typeof (year) === 'number') {
-        return (<tr>
-            <td>{MONTHS[month - 1]}</td>
-            {(Array.from(Array(getNumberOfDaysInMonth(year, month)).keys())).map(i =>
-                <DayView day={i + 1} month={month} zoomingInfo={zoomingInfo} selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} svgSize={{
-                    width: DayViewSvgSize,
-                    height: DayViewSvgSize
-                }} />)}
-        </tr>)
-    } else {
-        throw new Error("year is undefined");
-    }
+
+type BarMonthViewProps = {
+    month: number,
+    currentYear: number,
+    /**
+     * data of all the transactions
+     */
+    data: Data,
+    scales: BarCalendarViewSharedScales,
+    valueGetter: BarCalendarViewValueGetter
 }
 
+function MonthView({ month, currentYear, data, scales, valueGetter }: BarMonthViewProps) {
+    // month: 1to12 
+    return (<tr>
+        <td>{MONTHS[month - 1]}</td>
+        {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i =>
+            <DayView day={i + 1} month={month} currentYear={currentYear} data={data} scales={scales} valueGetter={valueGetter} />)}
+    </tr>)
+
+}
+
+
+const x = d3.scaleBand().domain(['a', 'b']).range([1, 2])
+type BarCalendarViewSharedScales = {
+    heightScale: BarGlyphScales['heightScale'];
+    colourScale: BarGlyphScales['colourScale'];
+}
+type BarDayViewProps = {
+    day: number,
+    month: number,
+    currentYear: number,
+    data: Data,
+    scales: BarCalendarViewSharedScales,
+    valueGetter: BarCalendarViewValueGetter
+}
 /**
  * use public scale for transaction amount and public colours scale for Category
  * visualise the chart using barGlyph, each bar represents a transaction with unique transaction id, height maps transaction amount 
  * @param day the number of the day in the month between 1 to 31
  * @param month the number of the month in the year between 1 to 12
  */
-function DayView({ day, month, svgSize = { width: DayViewSvgSize, height: DayViewSvgSize }, zoomingInfo, selectedDescriptionAndIsCreditArr }: {
-    day: number, month: number, svgSize: { width: number, height: number }, zoomingInfo: ZoomingInfo, selectedDescriptionAndIsCreditArr: DescriptionAndIsCredit[],
-}) {
-    const currentYear = useContext(YearContext);
-    const groupedDataPerTransactionDescription = useContext(GroupedDataPerTransactionDescriptionContext);
-    const { scaleX, scaleY, scaleColour, scaleShape, scaleSize } = useContext(ScaleContext);
+function DayView({ day, month, currentYear, data, scales, valueGetter }: BarDayViewProps) {
     const ref = useRef(null)
-    const valueGetter = useContext(ValueGetterContext);
-    const { width, height } = svgSize;
-    const { k, setK, x, setX, y, setY } = zoomingInfo;
+    const [width, height] = [DayViewSvgSize, DayViewSvgSize];
 
-    assert(currentYear !== undefined)
+    // scales for bar glyph
+    const { heightScale, colourScale } = scales
+
+    // used for determine the border colour
     let dayOfWeek = new Date(currentYear, month - 1, day).getDay();
-    dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
-    const rectBorderColour: string = getDayColour(dayOfWeek)
-    // zoom effect reference: https://codepen.io/likr/pen/vYmBEPE
-    // allows zoom in
-    useEffect(() => {
-        const zoom = d3.zoom().on("zoom", (event) => {
-            const { x, y, k } = event.transform;
-            setK(k);
-            setX(x);
-            setY(y);
-        });
-        d3.select(ref.current).call(zoom);
+    dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek
+    const rectBorderColour: string = getDayColour(dayOfWeek) // 0 is sunday, which needs to be set 7
+
+    // transactionNumberSelectedMap used for checking if the transaction is selected when rendering or creating rectangles
+    const transactionNumberSelectedMap: TransactionNumberSelectedMap = data.transactionNumberSelectedMap;
+    const dayData: TransactionData[] = useMemo(() => {
+        const currYearData = data.transactionDataMapYMD.get(currentYear)
+        if (currYearData === undefined) { return [] }
+        const currMonthData = currYearData.get(month);
+        if (currMonthData === undefined) { return [] }
+        const currDayData = currMonthData.get(day);
+        return currDayData === undefined ? [] : currDayData;
+    }, [day, month, currentYear, data])
+    // xScale for bar glyph
+    const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
+        const xDomain = Array.from(new Set(dayData.map(valueGetter.x)));
+        if (xDomain[0] === undefined, xDomain[1] === undefined) { return undefined }
+        return d3.scaleBand().domain(xDomain).range([0, width])
+    }, [dayData, valueGetter])
+
+    // prepare the bars
+    const bars = xScale === undefined ? [] : dayData.map(d => {
+        const bandWidth = xScale.bandwidth()
+        const rectHeight = heightScale(valueGetter.height(d))
+        return (
+            <rect
+                x={xScale(valueGetter.x(d))}
+                y={height - rectHeight}
+                width={bandWidth}
+                height={height}
+                fill={colourScale(valueGetter.colour(d))}
+            />
+        )
     })
+    // console.log(`${currentYear}-${month}-${day}`, 'bars: ', bars)
 
-    if (groupedDataPerTransactionDescription === null || currentYear === undefined
-        || scaleX === undefined || scaleY === undefined || scaleColour === undefined || scaleShape === undefined || scaleSize === undefined) {
-        return <td>loading</td>
-    }
-    const dayData: DataPerTransactionDescription[] | undefined = groupedDataPerTransactionDescription.get(String(currentYear))?.get(String(month))?.get(String(day))
-    const draw = () => {
-        const svg = d3.select(ref.current)
-
-
-        // add points
-        svg.select('g').selectAll('circle').data(dayData, d => { return `${d.transactionDescription}` }).join('circle')
-            .attr('cx', (d: DataPerTransactionDescription) => scaleX(valueGetter.x(d)))
-            .attr('cy', (d: DataPerTransactionDescription) => scaleY(valueGetter.y(d)))
-            .attr('r', (d: DataPerTransactionDescription) => scaleSize(valueGetter.size(d)))
-            .attr('stroke', (d: DataPerTransactionDescription) => {
-                const isSelected = isTransactionDescriptionSelected(d, selectedDescriptionAndIsCreditArr)
-                return (isSelected ? "#3f4701" : null);
-            })
-            .style('fill', (d: DataPerTransactionDescription) => scaleColour(valueGetter.colour(d)));
-    }
-
-    useEffect(() => dayData && draw(), [day, month, currentYear, scaleX, scaleY, scaleColour, scaleShape, scaleSize])
-
-    // highlight the day without transaction
-    if (dayData === undefined) {
+    if (dayData.length === 0) {
+        // highlight the day without transaction
         return <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
-            <div style={{width: width, height: height}}>{dayOfWeek}</div>
+            <div style={{ width: width, height: height }}>{dayOfWeek}</div>
         </td>
     }
     else {
         return (
             <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
-                <svg ref={ref} width={width} height={height}>
-                    <g transform={`translate(${x},${y})scale(${k})`}></g>
+                <svg width={width} height={height}>
+                    <g>{bars}</g>
                 </svg>
             </td>
         )

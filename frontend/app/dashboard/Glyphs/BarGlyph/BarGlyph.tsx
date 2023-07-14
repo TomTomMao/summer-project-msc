@@ -1,9 +1,9 @@
 import * as d3 from "d3"
 type BarGlyphData = { id: string, xDomainValue: string, heightDomainValue: number, colourDomainValue: string }[]
-type BarGlyphScales = {
-    // xScale: ScaleBand<string>, // x scale should be independent between different scales.
-    heightScale: d3.ScaleLinear<number, number, never>,
-    colourScale: d3.ScaleOrdinal<string, number, never>
+export type BarGlyphScales = {
+    xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
+    heightScale: d3.ScaleLinear<number, number, never> | d3.ScaleLogarithmic<number, number, never>,
+    colourScale: d3.ScaleOrdinal<string, string, never>
 }
 
 type Props = {
@@ -18,7 +18,7 @@ export default function BarGlyph(props: Props) {
     const width = height;
     const xScale = d3.scaleBand().domain()
     return (
-            <g>{rectangles}</g>
+        <g>{rectangles}</g>
     )
 }
 

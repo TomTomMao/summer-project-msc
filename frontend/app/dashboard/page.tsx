@@ -111,10 +111,7 @@ export default function Page() {
                             containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}></ClusterView>
                         </div>
                         <div className="col-span-5"><CalendarView3 transactionDataArr={transactionDataArr}
-                            initCurrentYear={2016}
-                            RFMDataArr={RFMDataArr}
-                            selectedDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr}
-                            domainLimitsObj={{ xLim, yLim, colourLim, sizeLim }}></CalendarView3>
+                            initCurrentYear={2016} transactionNumberSelectedMap={new Map()}></CalendarView3>
                         </div>
                     </div>
                 </ValueGetterContext.Provider>

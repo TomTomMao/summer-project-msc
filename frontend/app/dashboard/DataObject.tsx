@@ -33,7 +33,7 @@ export interface ITransactionDataFromAPI {
  * a class represent a record of transaction
  */
 export class TransactionData {
-    readonly date: Date | null;
+    readonly date: Date ;
     readonly transactionNumber: string;
     readonly transactionType: string;
     readonly transactionDescription: string;
@@ -44,7 +44,7 @@ export class TransactionData {
     readonly locationCity: string;
     readonly locationCountry: string; constructor(
         transactionNumber: string,
-        date: Date | null,
+        date: Date ,
         transactionType: string,
         transactionDescription: string,
         debitAmount: number,
@@ -65,6 +65,9 @@ export class TransactionData {
         this.locationCity = locationCity;
         this.locationCountry = locationCountry;
     }
+    public get transactionAmount() {
+        return this.isCredit() ? this.creditAmount : this.debitAmount
+    }
     public isCredit() {
         if (this.creditAmount === 0 && this.debitAmount >= 0) {
             return false
@@ -80,7 +83,7 @@ export class TransactionData {
  * a class represent transactiondata plus it's rfm infomation (monetaryAvgDay, frequencyAvgDay, recency)
  */
 export class TransactionDataWithRFMInfo extends TransactionData {
-    
+
 }
 export class CTransaction {
     readonly date: Date | null;
@@ -217,9 +220,9 @@ export class RFMData {
         return this.monetary.avgYear;
     }
 
-     /**
-     * (times of transaction) / (last date - first date + 1)
-     */
+    /**
+    * (times of transaction) / (last date - first date + 1)
+    */
     public get frequencyAvgDay(): number {
         return this.frequency.avgDay;
     }
