@@ -38,7 +38,13 @@ const barGlyphValueGetter = {
 export default function CalendarView3({ transactionDataArr, initCurrentYear, transactionNumberSelectedMap, scaleHeight }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-    const heightScaleFunc = d3.scaleLog
+    const heightScaleFunc = d3.scaleLog // todo: replace with state and add radio button
+    const [detailDay, setDetailDay] = useState<null | { day: number, month: number, year: number }>(null)
+
+    function handleShowDayDetail(day: number, month: number, year: number) {
+        setDetailDay({ day: day, month: month, year: year })
+    }
+
     const transactionDataMapYMD = useMemo(() => {
         return d3.group(transactionDataArr, d => d.date?.getFullYear(), d => d.date?.getMonth() + 1, d => d.date?.getDate())
     }, [transactionDataArr])
@@ -69,9 +75,12 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, tra
                 </thead>
                 <tbody>
                     {MONTHS.map((month, i) => <MonthView month={i + 1} currentYear={currentYear}
-                        key={i + 1} data={data} scales={barCalendarViewSharedScales} valueGetter={barGlyphValueGetter} />)}
+                        key={i + 1} data={data} scales={barCalendarViewSharedScales} valueGetter={barGlyphValueGetter} onShowDayDetail={handleShowDayDetail} />)}
                 </tbody>
             </table>
+            <div>
+                {detailDay !== null && <DetailView day={detailDay.day} month={detailDay.month} currentYear={detailDay.year} transactionDataMapYMD={transactionDataMapYMD} />}
+            </div>
         </div >
     )
 }
@@ -85,15 +94,16 @@ type BarMonthViewProps = {
      */
     data: Data,
     scales: BarCalendarViewSharedScales,
-    valueGetter: BarCalendarViewValueGetter
+    valueGetter: BarCalendarViewValueGetter,
+    onShowDayDetail: (day: number, month: number, year: number) => void
 }
 
-function MonthView({ month, currentYear, data, scales, valueGetter }: BarMonthViewProps) {
+function MonthView({ month, currentYear, data, scales, valueGetter, onShowDayDetail }: BarMonthViewProps) {
     // month: 1to12 
     return (<tr>
         <td>{MONTHS[month - 1]}</td>
         {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i =>
-            <DayView day={i + 1} month={month} currentYear={currentYear} data={data} scales={scales} valueGetter={valueGetter} />)}
+            <DayView day={i + 1} month={month} currentYear={currentYear} data={data} scales={scales} valueGetter={valueGetter} onShowDayDetail={onShowDayDetail} />)}
     </tr>)
 
 }
@@ -110,7 +120,8 @@ type BarDayViewProps = {
     currentYear: number,
     data: Data,
     scales: BarCalendarViewSharedScales,
-    valueGetter: BarCalendarViewValueGetter
+    valueGetter: BarCalendarViewValueGetter,
+    onShowDayDetail: (day: number, month: number, year: number) => void
 }
 /**
  * use public scale for transaction amount and public colours scale for Category
@@ -118,9 +129,15 @@ type BarDayViewProps = {
  * @param day the number of the day in the month between 1 to 31
  * @param month the number of the month in the year between 1 to 12
  */
-function DayView({ day, month, currentYear, data, scales, valueGetter }: BarDayViewProps) {
+function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDayDetail }: BarDayViewProps) {
     const ref = useRef(null)
     const [width, height] = [DayViewSvgSize, DayViewSvgSize];
+    const useShareBandWidth = false;
+
+    function handleShowDayDetail() {
+        console.log(`${currentYear}-${month}-${day}`, dayData);
+        onShowDayDetail(day, month, currentYear);
+    }
 
     // scales for bar glyph
     const { heightScale, colourScale } = scales
@@ -161,7 +178,7 @@ function DayView({ day, month, currentYear, data, scales, valueGetter }: BarDayV
             />
         )
     })
-    
+
     if (dayData.length === 0) {
         // highlight the day without transaction
         return <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
@@ -171,7 +188,7 @@ function DayView({ day, month, currentYear, data, scales, valueGetter }: BarDayV
     else {
         return (
             <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}
-                onClick={() => console.log(`${currentYear}-${month}-${day}`, dayData)}
+                onClick={handleShowDayDetail}
             >
                 <svg width={width} height={height}>
                     <g>{bars}</g>
@@ -205,4 +222,90 @@ function getDayColour(dayOfWeek: number): string {
             throw new Error(`invalid day number, it must be 1 to 7, the value is: ${String(dayOfWeek)}`);
             ;
     }
+}
+
+type DetailViewProps = {
+    day: number,
+    month: number,
+    currentYear: number,
+    transactionDataMapYMD: TransactionDataMapYMD
+}
+function DetailView({ day, month, currentYear, transactionDataMapYMD }: DetailViewProps) {
+    const dayData = getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear)
+    console.log('detailview dayData: ', dayData)
+    return <Table data={dayData} />
+}
+
+/**
+ * 
+ * @param param0 data should be an array of object share the same keys
+ */
+function Table({ data }: { data: Array<TransactionData>, }) {
+    const transactionRows = useMemo(() => {
+        return (
+            data.map(transactionData => {
+                return (
+                    <tr key={transactionData.transactionNumber}>
+                        <td>{transactionData.transactionNumber}</td>
+                        <td>{transactionData.balance}</td>
+                        <td>{transactionData.category}</td>
+                        <td>{transactionData.creditAmount}</td>
+                        <td>{transactionData.debitAmount}</td>
+                        <td>{transactionData.locationCity}</td>
+                        <td>{transactionData.locationCountry}</td>
+                        <td>{transactionData.transactionDescription}</td>
+                        <td>{transactionData.transactionType}</td>
+                        <td>{transactionData.date?.toDateString()}</td>
+                    </tr>)
+            })
+        )
+    }, [data])
+
+    return (
+        <div>
+            <table className="infoTable">
+                <thead>
+                    <tr>
+                        <td>transactionNumber</td>
+                        <td>balance</td>
+                        <td>category</td>
+                        <td>creditAmount</td>
+                        <td>debitAmount</td>
+                        <td>locationCity</td>
+                        <td>locationCountry</td>
+                        <td>transactionDescription</td>
+                        <td>transactionType</td>
+                        <td>date</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {transactionRows}
+                </tbody>
+            </table>
+        </div>
+    )
+}
+
+/**
+ * get the data in O(1)
+ * @param transactionDataMapYMD 
+ * @param year number of year
+ * @param month 1to12
+ * @param day 1to31
+ * @returns an array of TransactionData object
+ */
+function getDataFromTransactionDataMapYMD(transactionDataMapYMD: TransactionDataMapYMD, day: number, month: number, year: number,): TransactionData[] {
+    if (month < 1 || month > 12) { throw new Error(`invalid month: ${month}, should be 1<=month<=12`,); }
+    if (day < 1 || day > 31) { throw new Error(`invalid day: ${day}, should be 1<=day<=31`,); }
+
+    const currYearData = transactionDataMapYMD.get(year)
+    console.log('currYearData:', currYearData)
+    if (currYearData === undefined) { return [] }
+    const currMonthData = currYearData.get(month);
+    console.log('currMonthData:', currMonthData)
+    if (currMonthData === undefined) { return [] }
+    const currDayData = currMonthData.get(day);
+    console.log('currDayData:', currDayData)
+    return currDayData === undefined ? [] : currDayData;
+
 }
