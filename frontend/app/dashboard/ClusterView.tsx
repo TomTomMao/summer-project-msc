@@ -50,7 +50,7 @@ export function ClusterView(props: Props) {
         const xLimSwap = d3.extent(transactionDataArr, getXSwap);
         const yLim = d3.extent(transactionDataArr, getY);
         const yLimSwap = d3.extent(transactionDataArr, getYSwap);
-        const colourLim = transactionDataArr.map(getColour);
+        const colourLim = Array.from(new Set(transactionDataArr.map(getColour)));
         // set the scales based on the Lims state
         if (xLim[0] === undefined && xLim[1] === undefined) {
             xScale = d3.scaleLinear().domain([0, 366]).range([0, width]);
@@ -72,7 +72,8 @@ export function ClusterView(props: Props) {
         } else {
             yScaleSwap = d3.scaleLinear().domain([yLimSwap[0], yLimSwap[1]]).range([height, 0]);
         }
-        colourScale = d3.scaleOrdinal<String>().domain(colourLim).range(['yellow', 'purple']);
+        const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourLim.length).reverse() // ref: https://observablehq.com/@d3/pie-chart/2?intent=fork
+        colourScale = d3.scaleOrdinal<String>().domain(colourLim).range(colourRange);
         return { xScale, yScale, xScaleSwap, yScaleSwap, colourScale }
 
     }, [transactionDataArr, valueGetter])
