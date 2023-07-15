@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useContext, useMemo } from "react";
+import { useState, useEffect, useRef, useContext, useMemo, Dispatch, SetStateAction } from "react";
 import { TransactionData } from "./DataObject";
 import * as d3 from 'd3';
 import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
@@ -19,7 +19,9 @@ interface Props {
     transactionDataArr: TransactionData[],
     containerHeight: number,
     containerWidth: number,
-    valueGetter: ClusterViewValueGetter
+    valueGetter: ClusterViewValueGetter,
+    brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>,
+    setBrushedTransactionNumberSet: Dispatch<SetStateAction<Set<TransactionData['transactionNumber']>>>
 }
 
 const DEFAULT_MARGIN = { top: 5, right: 5, bottom: 30, left: 40 };
@@ -33,9 +35,8 @@ const DEFAULT_STROKE_WIDTH = 1;
  * @returns 
  */
 export function ClusterView(props: Props) {
-    const { transactionDataArr, containerHeight, containerWidth, valueGetter } = props;
+    const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet } = props;
     const [isSwap, setIsSwap] = useState(false);
-    const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set())
     const brushGRef = useRef(null)
     const getColour = valueGetter.colour;
     const getX = valueGetter.x;
