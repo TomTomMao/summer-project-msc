@@ -35,11 +35,40 @@ const DEFAULT_STROKE_WIDTH = 1;
 export function ClusterView(props: Props) {
     const { transactionDataArr, containerHeight, containerWidth, valueGetter } = props;
     const [isSwap, setIsSwap] = useState(false);
+    const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set())
+    const brushGRef = useRef(null)
     const getColour = valueGetter.colour;
     const getX = valueGetter.x;
     const getY = valueGetter.y;
     const getXSwap = valueGetter.y;
     const getYSwap = valueGetter.x;
+    function handleBrush(selection: [[number, number], [number, number]] | null) {
+        if (selection === null) {
+            setBrushedTransactionNumberSet(new Set());
+            return;
+        }
+        const [[x0, y0], [x1, y1]]: [[number, number], [number, number]] = selection; // ref this line: https://observablehq.com/@d3/brushable-scatterplot
+        if (isSwap === false) {
+            const [[domainXMin, domainXMax], [domainYMin, domainYMax]] = [[xScale.invert(x0), xScale.invert(x1)], [yScale.invert(y1), yScale.invert(y0)]];
+            const nextBrushedTransactionNumberSet = new Set(transactionDataArr.filter(transactionData => {
+                const dataXValue = getX(transactionData);
+                const dataYValue = getY(transactionData);
+                // console.log("dataXValue:", dataXValue, "dataXValue:", dataYValue)
+                return dataXValue >= domainXMin && dataXValue <= domainXMax &&
+                    dataYValue >= domainYMin && dataYValue <= domainYMax
+            }).map(d => d.transactionNumber))
+            setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
+        } else {
+            const [[domainXMin, domainXMax], [domainYMin, domainYMax]] = [[xScaleSwap.invert(x0), xScaleSwap.invert(x1)], [yScaleSwap.invert(y1), yScaleSwap.invert(y0)]];
+            const nextBrushedTransactionNumberSet = new Set(transactionDataArr.filter(transactionData => {
+                const dataXValue = getXSwap(transactionData);
+                const dataYValue = getYSwap(transactionData);
+                return dataXValue >= domainXMin && dataXValue <= domainXMax &&
+                    dataYValue >= domainYMin && dataYValue <= domainYMax
+            }).map(d => d.transactionNumber))
+            setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
+        }
+    }
 
     const margin = DEFAULT_MARGIN;
     const width = containerWidth - margin.left - margin.right
@@ -47,17 +76,22 @@ export function ClusterView(props: Props) {
     // cache the scales
     const { xScale, yScale, colourScale, xScaleSwap, yScaleSwap } = useMemo(getScales(transactionDataArr, getX, getXSwap, getY, getYSwap, getColour, width, height), [transactionDataArr, valueGetter])
     // cache the circles
-    const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, xScale, getX, yScale, getY, colourScale, getColour, xScaleSwap, getXSwap, yScaleSwap, getYSwap), [transactionDataArr, valueGetter])
+    const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, brushedTransactionNumberSet, xScale, getX, yScale, getY, colourScale, getColour, xScaleSwap, getXSwap, yScaleSwap, getYSwap), [transactionDataArr, valueGetter, brushedTransactionNumberSet])
+    useEffect(() => {
+        //https://github.com/d3/d3-brush
+        const brushG = d3.select(brushGRef.current)
+        console.log('brushG', brushG)
+        brushG.call(d3.brush().extent([[0, 0], [width, height]]).on("end", ({ selection }) => handleBrush(selection)))
+        return function () { brushG.on('.brush', null) }
+    }, [containerWidth, containerHeight, isSwap])
 
-    // update the charts when the scale domain Lims changed
     return (<div>
         <svg width={containerWidth} height={containerHeight}>
             <g transform={`translate(${margin.left},${margin.top})`}>
-                <AxisLeft yScale={isSwap ? yScaleSwap : yScale} pixelsPerTick={60}></AxisLeft>
-                <g transform={`translate(0, ${height})`}>
-                    <AxisBottom xScale={isSwap ? xScaleSwap : xScale} pixelsPerTick={60}></AxisBottom>
-                </g>
-                {isSwap ? swapCircles : circles}
+                <g>{isSwap ? swapCircles : circles}</g>
+                <g ref={brushGRef}></g>
+                <g><AxisLeft yScale={isSwap ? yScaleSwap : yScale} pixelsPerTick={60}></AxisLeft></g>
+                <g transform={`translate(0, ${height})`}><AxisBottom xScale={isSwap ? xScaleSwap : xScale} pixelsPerTick={60}></AxisBottom></g>
             </g>
         </svg>
         <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
@@ -65,31 +99,46 @@ export function ClusterView(props: Props) {
     );
 }
 
-function getCircles(transactionDataArr: TransactionData[], xScale: d3.ScaleLinear<number, number, never>, getX: (transactionData: TransactionData) => number, yScale: d3.ScaleLinear<number, number, never>, getY: (transactionData: TransactionData) => number, colourScale: d3.ScaleOrdinal<string, String, never>, getColour: (transactionData: TransactionData) => string, xScaleSwap: d3.ScaleLinear<number, number, never>, getXSwap: (transactionData: TransactionData) => number, yScaleSwap: d3.ScaleLinear<number, number, never>, getYSwap: (transactionData: TransactionData) => number) {
+function getCircles(transactionDataArr: TransactionData[], brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>, xScale: d3.ScaleLinear<number, number, never>, getX: (transactionData: TransactionData) => number, yScale: d3.ScaleLinear<number, number, never>, getY: (transactionData: TransactionData) => number, colourScale: d3.ScaleOrdinal<string, String, never>, getColour: (transactionData: TransactionData) => string, xScaleSwap: d3.ScaleLinear<number, number, never>, getXSwap: (transactionData: TransactionData) => number, yScaleSwap: d3.ScaleLinear<number, number, never>, getYSwap: (transactionData: TransactionData) => number) {
     return () => {
+        const brushed = brushedTransactionNumberSet.size;
         const circles = transactionDataArr.map(transactionData => {
+            const isCircleHighlighted = brushedTransactionNumberSet.has(transactionData.transactionNumber);
             return (
                 <circle
                     key={transactionData.transactionNumber}
                     cx={xScale(getX(transactionData))}
                     cy={yScale(getY(transactionData))}
                     r={DEFAULT_RADIUS}
-                    fill={colourScale(getColour(transactionData)).valueOf()} />
+                    fill={colourScale(getColour(transactionData)).valueOf()}
+                    opacity={((!brushed) || isCircleHighlighted) ? 1 : 0.1}
+                    stroke={brushed && isCircleHighlighted ? 'black' : undefined}
+                />
             );
         });
+        // brushed isCircleHighlighted (!brushed) || isCircleHighlighted)  opacity
+        // t       t                   true                                1
+        // t       f                   false                               0.1
+        // f       t                   true                                1
+        // f       f                   true                                1
         const swapCircles = transactionDataArr.map(transactionData => {
+            const isCircleHighlighted = brushedTransactionNumberSet.has(transactionData.transactionNumber);
             return (
                 <circle
                     key={transactionData.transactionNumber}
                     cx={xScaleSwap(getXSwap(transactionData))}
                     cy={yScaleSwap(getYSwap(transactionData))}
                     r={DEFAULT_RADIUS}
-                    fill={colourScale(getColour(transactionData)).valueOf()} />
+                    fill={colourScale(getColour(transactionData)).valueOf()}
+                    opacity={((!brushed) || isCircleHighlighted) ? 1 : 0.1}
+                    stroke={brushed && isCircleHighlighted ? 'black' : undefined}
+                />
             );
         });
         return { circles: circles, swapCircles: swapCircles };
     };
 }
+
 
 function getScales(transactionDataArr: TransactionData[], getX: (transactionData: TransactionData) => number, getXSwap: (transactionData: TransactionData) => number, getY: (transactionData: TransactionData) => number, getYSwap: (transactionData: TransactionData) => number, getColour: (transactionData: TransactionData) => string, width: number, height: number): () => { xScale: d3.ScaleLinear<number, number, never>; yScale: d3.ScaleLinear<number, number, never>; xScaleSwap: d3.ScaleLinear<number, number, never>; yScaleSwap: d3.ScaleLinear<number, number, never>; colourScale: d3.ScaleOrdinal<string, String, never>; } {
     return () => {
