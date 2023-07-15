@@ -1,6 +1,6 @@
 'use client';
 
-import { AssertionError } from "assert";
+import assert, { AssertionError } from "assert";
 
 export enum ETransactionVariable {
     transactionNumber = 'transactionNumber',
@@ -29,11 +29,14 @@ export interface ITransactionDataFromAPI {
     'Location City': string,
     'Location Country': string
 }
+
+
+export type TransactionDataAttrs = "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry";
 /**
  * a class represent a record of transaction
  */
 export class TransactionData {
-    readonly date: Date ;
+    readonly date: Date;
     readonly transactionNumber: string;
     readonly transactionType: string;
     readonly transactionDescription: string;
@@ -44,7 +47,7 @@ export class TransactionData {
     readonly locationCity: string;
     readonly locationCountry: string; constructor(
         transactionNumber: string,
-        date: Date ,
+        date: Date,
         transactionType: string,
         transactionDescription: string,
         debitAmount: number,
@@ -65,6 +68,56 @@ export class TransactionData {
         this.locationCity = locationCity;
         this.locationCountry = locationCountry;
     }
+    static getColumnNames = function (): TransactionDataAttrs[] {
+        Object.getOwnPropertyNames(TransactionData)
+        return ["date",
+            "transactionNumber",
+            "transactionType",
+            "transactionDescription",
+            "debitAmount",
+            "creditAmount",
+            "balance",
+            "category",
+            "locationCity",
+            "locationCountry"]
+    }
+    /**
+     * get a comparator function that compare the given key, if key is transactionNumber, compare them by regarding them as numbers
+     * @param key data for compare
+     */
+    static curryCompare(key: TransactionDataAttrs, desc = false) {
+        assert(TransactionData.getColumnNames().includes(key))
+
+        if (desc === false) {
+            if (['debitAmount', 'creditAmount', 'balance', 'date'].includes(key)) {
+                return (a: TransactionData, b: TransactionData) => {
+                    return a[key] - b[key];
+                }
+            } else if (key === 'transactionNumber') {
+                return (a: TransactionData, b: TransactionData) => {
+                    return parseInt(a[key]) - parseInt(b[key]);
+                }
+            } else {
+                return (a: TransactionData, b: TransactionData) => {
+                    return (a[key]) > (b[key]) ? 1 : -1;
+                }
+            }
+        } else {
+            if (['debitAmount', 'creditAmount', 'balance', 'date'].includes(key)) {
+                return (a: TransactionData, b: TransactionData) => {
+                    return b[key] - a[key];
+                }
+            } else if (key === 'transactionNumber') {
+                return (a: TransactionData, b: TransactionData) => {
+                    return parseInt(b[key]) - parseInt(a[key]);
+                }
+            } else {
+                return (a: TransactionData, b: TransactionData) => {
+                    return (b[key]) > (a[key]) ? 1 : -1;
+                }
+            }
+        }
+    }
     public get transactionAmount() {
         return this.isCredit() ? this.creditAmount : this.debitAmount
     }
@@ -77,6 +130,7 @@ export class TransactionData {
             throw new Error('both creditamount and debit amount is greater than 0');
         }
     }
+
 }
 
 /**

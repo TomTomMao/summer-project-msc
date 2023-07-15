@@ -28,7 +28,7 @@ export default function Page() {
     const [selectedDescriptionAndIsCreditArr, setSelectedDescriptionAndIsCreditArr] = useState<DescriptionAndIsCredit[]>([])
     const [clusterViewValueGetter, setClusterViewValueGetter] = useState(temporalValueGetter);
     const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set()) // cluster view's points in the brusher
-    const [detailedTransactionNumberSet, setDetailedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set())
+    
     const [xLim, setXLim] = useState<DomainLimits | null>(null);
     const [yLim, setYLim] = useState<DomainLimits | null>(null);
     const [colourLim, setColourLim] = useState<DomainLimits | null>(null);
@@ -145,8 +145,8 @@ export default function Page() {
                     <ColourLegendList colourMappings={[]}></ColourLegendList>
                 </ValueGetterContext.Provider>
 
-                <div className="m-auto">
-                    {/* infoTable from global.css */}
+                {/* <div className="m-auto">
+                    class from globalcss
                     <table className="infoTable">
                         <tbody>
                             <tr>
@@ -179,8 +179,8 @@ export default function Page() {
                             </tr>
                         </tbody>
                     </table>
-                </div>
-                <TableView transactionDataArr={transactionDataArr} RFMDataArr={RFMDataArr} filteredDescriptionAndIsCreditArr={selectedDescriptionAndIsCreditArr} handleClearSelect={() => setSelectedDescriptionAndIsCreditArr([])}></TableView>
+                </div> */}
+                <TableView transactionDataArr={transactionDataArr} handleClearSelect={() => setBrushedTransactionNumberSet(new Set())} transactionNumberSet={brushedTransactionNumberSet}></TableView>
             </div>
         )
     }

@@ -1,26 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
-import { TransactionData, RFMData } from "../DataObject";
+import { useEffect, useMemo, useReducer, useState } from "react";
+import { TransactionData, RFMData, TransactionDataAttrs } from "../DataObject";
 
 export interface DescriptionAndIsCredit {
     transactionDescription: string;
     isCredit: boolean;
 }
 
+
 /**
- * show the filtered transactions based on filteredDescriptionAndIsCreditArr
+ * show the transactions
  */
-export default function TableView({ transactionDataArr, RFMDataArr, filteredDescriptionAndIsCreditArr ,handleClearSelect}:
+export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect }:
     {
-        transactionDataArr: TransactionData[], RFMDataArr: RFMData[], filteredDescriptionAndIsCreditArr: DescriptionAndIsCredit[], handleClearSelect: (()=>void)
+        transactionDataArr: TransactionData[], transactionNumberSet: Set<TransactionData['transactionNumber']>, handleClearSelect: (() => void)
     }) {
-    // initially, just copy the transaction numbers into a set
-    const [filteredTransactionNumbers, setFilteredTransactionNumbers] = useState<Set<TransactionData['transactionNumber']>>(new Set(transactionDataArr.map(transactionData => transactionData.transactionNumber)))
     // when the component mount or the filteredDescriptionAndIsCreditArr Changes, change it. the time complexity is transactionDataArr.length * filteredDescriptionAndIsCreditArr; can be improved in the future.[performance improvement]
-    useEffect(() => {
-        const nextFilteredTransactionNumbers = getFilteredTransactionNumbers(transactionDataArr, filteredDescriptionAndIsCreditArr);
-        setFilteredTransactionNumbers(nextFilteredTransactionNumbers);
-    }, [filteredDescriptionAndIsCreditArr])
-    const filteredTransactionDataArr = transactionDataArr.filter(transactionData => filteredTransactionNumbers.has(transactionData.transactionNumber));
+    const columnNames = TransactionData.getColumnNames()
+    const [sortingConfig, dispatch] = useReducer(sortingConfigReducer, initialSortingConfig)
+
+    const filteredTransactionDataArr = transactionDataArr.filter(transactionData => transactionNumberSet.has(transactionData.transactionNumber)).sort(TransactionData.curryCompare(sortingConfig.sortingKey, sortingConfig.isDesc))
     const transactionRows = useMemo(() => {
         return (
             filteredTransactionDataArr.map(transactionData => {
@@ -39,24 +37,39 @@ export default function TableView({ transactionDataArr, RFMDataArr, filteredDesc
                     </tr>)
             })
         )
-    }, [filteredTransactionNumbers])
-
+    }, [transactionDataArr, transactionNumberSet, sortingConfig])
+    function handleClickColumnName(columnName: TransactionDataAttrs) {
+        if (columnName === sortingConfig.sortingKey) {
+            handleToggleOrder()
+        } else {
+            handleChangeSortingKey(columnName)
+        }
+    }
+    function handleChangeSortingKey(newSortingKey: TransactionDataAttrs) {
+        dispatch({ type: 'change sorting key', newSortingKey: newSortingKey })
+    }
+    function handleToggleOrder() {
+        dispatch({ type: 'toggle order' })
+    }
     return (
         <div>
-            number of results: {filteredTransactionDataArr.length} <button onClick={handleClearSelect}>clear all</button>
+            <div>number of results: {filteredTransactionDataArr.length}</div>
+            <div><button onClick={handleClearSelect}>clear all</button></div>
+            <div>sorted by {sortingConfig.sortingKey}</div>
+            <div>order: {sortingConfig.isDesc ? 'descending' : 'ascending'}</div>
             <table className="infoTable">
                 <thead>
                     <tr>
-                        <td>transactionNumber</td>
-                        <td>balance</td>
-                        <td>category</td>
-                        <td>creditAmount</td>
-                        <td>debitAmount</td>
-                        <td>locationCity</td>
-                        <td>locationCountry</td>
-                        <td>transactionDescription</td>
-                        <td>transactionType</td>
-                        <td>date</td>
+                        <td><button onClick={() => handleClickColumnName('transactionNumber')}>transactionNumber</button></td>
+                        <td><button onClick={() => handleClickColumnName('balance')}>balance</button></td>
+                        <td><button onClick={() => handleClickColumnName('category')}>category</button></td>
+                        <td><button onClick={() => handleClickColumnName('creditAmount')}>creditAmount</button></td>
+                        <td><button onClick={() => handleClickColumnName('debitAmount')}>debitAmount</button></td>
+                        <td><button onClick={() => handleClickColumnName('locationCity')}>locationCity</button></td>
+                        <td><button onClick={() => handleClickColumnName('locationCountry')}>locationCountry</button></td>
+                        <td><button onClick={() => handleClickColumnName('transactionDescription')}>transactionDescription</button></td>
+                        <td><button onClick={() => handleClickColumnName('transactionType')}>transactionType</button></td>
+                        <td><button onClick={() => handleClickColumnName('date')}>date</button></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,7 +80,7 @@ export default function TableView({ transactionDataArr, RFMDataArr, filteredDesc
     )
 }
 
-// help functions
+// helper functions
 
 /**
  * return transactionNumber of those transactionData whose transactionDescription and isCredit() in the filteredDescriptionAndIsCreditArr array 
@@ -89,4 +102,30 @@ function getFilteredTransactionNumbers(transactionDataArr: TransactionData[], fi
         }
     }
     return transactionNumberSet;
+}
+
+type SortingConfig = {
+    sortingKey: TransactionDataAttrs,
+    isDesc: boolean
+}
+type SortingConfigAction = {
+    type: 'change sorting key',
+    newSortingKey: SortingConfig['sortingKey']
+} | {
+    type: 'toggle order'
+}
+function sortingConfigReducer(sortingConfig: SortingConfig, action: SortingConfigAction): SortingConfig {
+    switch (action.type) {
+        case 'change sorting key':
+            return { ...sortingConfig, sortingKey: action.newSortingKey }
+        case 'toggle order':
+            return { ...sortingConfig, isDesc: !sortingConfig.isDesc }
+        default:
+            throw new Error("invalid action");
+            ;
+    }
+}
+const initialSortingConfig: SortingConfig = {
+    sortingKey: 'transactionNumber',
+    isDesc: false
 }
