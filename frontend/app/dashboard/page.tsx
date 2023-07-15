@@ -115,7 +115,7 @@ export default function Page() {
                         ></ClusterView>
                         </div>
                         <div className="col-span-6"><CalendarView3 transactionDataArr={transactionDataArr}
-                            initCurrentYear={2016} transactionNumberSelectedMap={new Map()} heightScaleType={"log"}></CalendarView3>
+                            initCurrentYear={2016} heightScaleType={"log"} highLightedTransactionNumberSet={brushedTransactionNumberSet}></CalendarView3>
                         </div>
                     </div>
                 </ValueGetterContext.Provider>

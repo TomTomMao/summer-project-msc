@@ -10,12 +10,11 @@ import assert from "assert";
 import { BarGlyphScales } from "../Glyphs/BarGlyph/BarGlyph";
 
 const DayViewSvgSize = 20;
-
+type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
-type TransactionNumberSelectedMap = Map<TransactionData['transactionNumber'], boolean>
 type Data = {
     transactionDataMapYMD: TransactionDataMapYMD;
-    transactionNumberSelectedMap: TransactionNumberSelectedMap;
+    highLightedTransactionNumberSet: HighLightedTransactionNumberSet;
 }
 type BarCalendarViewValueGetter = {
     x: (d: TransactionData) => string;
@@ -24,9 +23,9 @@ type BarCalendarViewValueGetter = {
 }
 type CalendarViewProps = {
     transactionDataArr: TransactionData[];
+    highLightedTransactionNumberSet: HighLightedTransactionNumberSet;
     initCurrentYear: number;
-    transactionNumberSelectedMap: TransactionNumberSelectedMap;
-    heightScaleType: 'log' | 'linear'
+    heightScaleType: 'log' | 'linear',
 };
 
 const barGlyphValueGetter = {
@@ -35,7 +34,7 @@ const barGlyphValueGetter = {
     colour: (d: TransactionData) => d.category
 }
 
-export default function CalendarView3({ transactionDataArr, initCurrentYear, transactionNumberSelectedMap, heightScaleType }:
+export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, heightScaleType }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear // todo: replace with state and add radio button
@@ -52,7 +51,7 @@ export default function CalendarView3({ transactionDataArr, initCurrentYear, tra
     if (transactionDataArr.length === 0) {
         return <div>loading</div>
     }
-    const data: Data = { transactionDataMapYMD: transactionDataMapYMD, transactionNumberSelectedMap: transactionNumberSelectedMap }
+    const data: Data = { transactionDataMapYMD: transactionDataMapYMD, highLightedTransactionNumberSet: highLightedTransactionNumberSet }
 
     // create public scales
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height);
@@ -132,30 +131,20 @@ type BarDayViewProps = {
 function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDayDetail }: BarDayViewProps) {
     const [width, height] = [DayViewSvgSize, DayViewSvgSize];
     const useShareBandWidth = false;
-
+    // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
+    const { transactionDataMapYMD, highLightedTransactionNumberSet } = data;
+    const highlightMode = highLightedTransactionNumberSet.size > 0; // for deciding the style of rect
+    const { heightScale, colourScale } = scales // scales for bar glyph
     function handleShowDayDetail() {
-        console.log(`${currentYear}-${month}-${day}`, dayData);
+        // console.log(`${currentYear}-${month}-${day}`, dayData);
         onShowDayDetail(day, month, currentYear);
     }
-
-    // scales for bar glyph
-    const { heightScale, colourScale } = scales
-
-    // used for determine the border colour
+    // border colour determined by the day of week
     let dayOfWeek = new Date(currentYear, month - 1, day).getDay();
     dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek
     const rectBorderColour: string = getDayColour(dayOfWeek) // 0 is sunday, which needs to be set 7
 
-    // transactionNumberSelectedMap used for checking if the transaction is selected when rendering or creating rectangles
-    const transactionNumberSelectedMap: TransactionNumberSelectedMap = data.transactionNumberSelectedMap;
-    const dayData: TransactionData[] = useMemo(() => {
-        const currYearData = data.transactionDataMapYMD.get(currentYear)
-        if (currYearData === undefined) { return [] }
-        const currMonthData = currYearData.get(month);
-        if (currMonthData === undefined) { return [] }
-        const currDayData = currMonthData.get(day);
-        return currDayData === undefined ? [] : currDayData;
-    }, [day, month, currentYear, data])
+    const dayData: TransactionData[] = useMemo(() => getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear), [day, month, currentYear, data])
     // xScale for bar glyph
     const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
         const sortedDayData = d3.sort(dayData, (a, b) => a.transactionAmount - b.transactionAmount)
@@ -172,6 +161,7 @@ function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDay
             return dayData.map(d => {
                 const bandWidth = xScale.bandwidth()
                 const rectHeight = heightScale(valueGetter.height(d))
+                const isThisDataHighLighted = highLightedTransactionNumberSet.has(d.transactionNumber);
                 return (
                     <rect
                         x={xScale(valueGetter.x(d))}
@@ -179,12 +169,13 @@ function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDay
                         width={bandWidth}
                         height={height}
                         fill={colourScale(valueGetter.colour(d))}
+                        opacity={highlightMode && !isThisDataHighLighted ? 0.1 : 1}
                     />
                 )
             });
         }
-    }, [dayData])
-
+    }, [data])
+    
     if (dayData.length === 0) {
         // highlight the day without transaction
         return <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
