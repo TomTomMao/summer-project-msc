@@ -165,7 +165,7 @@ function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDay
     }, [dayData, valueGetter])
 
     // prepare the bars
-    const bars = xScale === undefined ? [] : dayData.map(d => {
+    const bars = xScale === undefined ? [] : dayData.sort((a,b)=>b.transactionAmount-a.transactionAmount).map(d => {
         const bandWidth = xScale.bandwidth()
         const rectHeight = heightScale(valueGetter.height(d))
         return (
