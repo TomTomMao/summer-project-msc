@@ -11,6 +11,7 @@ import { getDataPerTransactionDescription } from "./CalendarView3/getDataPerTran
 import { getRFMDataMapFromArr } from "./CalendarView3/getRFMDataMapFromArr";
 import assert from "assert";
 import ColourLegendList from "./ColourLegend";
+import * as d3 from 'd3';
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
@@ -22,6 +23,9 @@ export interface DomainLimits {
     min: number;
     max: number;
 }
+
+const publicValueGetter = { colour: (d: TransactionData) => d.category }
+export type PublicScale = { colourScale: d3.ScaleOrdinal<string, string, never> };
 export default function Page() {
     const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
     const [RFMDataArr, setRFMDataArr] = useState<Array<RFMData> | null>(null)
@@ -39,6 +43,17 @@ export default function Page() {
     const [calendarGlyphUseLog, setCalendarGlyphUseLog] = useState(false);
     // cluster view's initial y axis's scale 
     const [clusterUseLog, setClusterUseLog] = useState(false);
+
+    // public colour scale
+    const colourScale: null | PublicScale['colourScale'] = useMemo(() => {
+        if (transactionDataArr === null) {
+            return null
+        }
+        const colourDomain = Array.from(new Set(transactionDataArr.map(publicValueGetter.colour)))
+        const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse(); // ref: https://observablehq.com/@d3/pie-chart/2?intent=fork
+        const colourScale: PublicScale['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
+        return colourScale
+    }, [transactionDataArr])
 
 
     const limitsInitialised = xLim !== null && yLim !== null && colourLim !== null && sizeLim !== null;
@@ -106,7 +121,7 @@ export default function Page() {
     if (transactionDataArr === null || RFMDataArr === null) {
         return <>loading...</>
     }
-    if (xDomainMin === null || !limitsInitialised) {
+    if (xDomainMin === null || !limitsInitialised || colourScale === null) {
         return <>initialising</>
     } else {
         return (
@@ -137,6 +152,7 @@ export default function Page() {
                             brushedTransactionNumberSet={brushedTransactionNumberSet}
                             setBrushedTransactionNumberSet={setBrushedTransactionNumberSet}
                             useLogScale={clusterUseLog}
+                            colourScale={colourScale}
                         ></ClusterView>
                             <TableView transactionDataArr={transactionDataArr}
                                 handleClearSelect={() => setBrushedTransactionNumberSet(new Set())} transactionNumberSet={brushedTransactionNumberSet}></TableView>
@@ -144,7 +160,10 @@ export default function Page() {
                         <div className="col-span-7">
                             <CalendarView3 transactionDataArr={transactionDataArr}
                                 initCurrentYear={2016}
-                                heightScaleType={calendarGlyphUseLog ? "log" : "linear"} highLightedTransactionNumberSet={brushedTransactionNumberSet}></CalendarView3>
+                                heightScaleType={calendarGlyphUseLog ? "log" : "linear"}
+                                highLightedTransactionNumberSet={brushedTransactionNumberSet}
+                                colourScale={colourScale}
+                            ></CalendarView3>
 
                         </div>
                     </div>

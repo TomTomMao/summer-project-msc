@@ -4,6 +4,7 @@ import { TransactionData } from "./DataObject";
 import * as d3 from 'd3';
 import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
 import { AxisBottom, AxisLeft } from "./Axis";
+import { PublicScale } from "./page";
 
 /**
  * render a cluster view using scatter plot
@@ -22,7 +23,8 @@ type Props = {
     valueGetter: ClusterViewValueGetter;
     brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>;
     setBrushedTransactionNumberSet: Dispatch<SetStateAction<Set<TransactionData['transactionNumber']>>>;
-    useLogScale: boolean
+    useLogScale: boolean;
+    colourScale: PublicScale['colourScale']
 }
 
 const DEFAULT_MARGIN = { top: 5, right: 5, bottom: 30, left: 40 };
@@ -36,7 +38,7 @@ const DEFAULT_STROKE_WIDTH = 1;
  * @returns 
  */
 export function ClusterView(props: Props) {
-    const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, useLogScale = true } = props;
+    const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, useLogScale = true, colourScale } = props;
     const [isSwap, setIsSwap] = useState(false);
     const brushGRef = useRef(null)
     const getColour = valueGetter.colour;
@@ -76,7 +78,7 @@ export function ClusterView(props: Props) {
     const width = containerWidth - margin.left - margin.right
     const height = containerHeight - margin.top - margin.bottom;
     // cache the scales
-    const { xScale, yScale, colourScale, xScaleSwap, yScaleSwap } = useMemo(() => getScales(transactionDataArr, getX, getXSwap, getY, getYSwap, getColour, width, height)(useLogScale), [transactionDataArr, valueGetter, useLogScale])
+    const { xScale, yScale, xScaleSwap, yScaleSwap } = useMemo(() => getScales(transactionDataArr, getX, getXSwap, getY, getYSwap, getColour, width, height)(useLogScale), [transactionDataArr, valueGetter, useLogScale])
     // cache the circles
     const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, brushedTransactionNumberSet, xScale, getX, yScale, getY, colourScale, getColour, xScaleSwap, getXSwap, yScaleSwap, getYSwap), [transactionDataArr, valueGetter, brushedTransactionNumberSet, useLogScale])
     useEffect(() => {

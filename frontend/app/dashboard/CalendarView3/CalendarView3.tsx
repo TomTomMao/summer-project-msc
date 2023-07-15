@@ -29,6 +29,7 @@ type CalendarViewProps = {
     highLightedTransactionNumberSet: HighLightedTransactionNumberSet;
     initCurrentYear: number;
     heightScaleType: 'log' | 'linear',
+    colourScale: d3.ScaleOrdinal<string, string, never>
 };
 
 const barGlyphValueGetter = {
@@ -37,7 +38,7 @@ const barGlyphValueGetter = {
     colour: (d: TransactionData) => d.category
 }
 
-export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, heightScaleType }:
+export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, heightScaleType, colourScale }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear 
@@ -60,9 +61,9 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height);
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
     const heightScale: BarCalendarViewSharedScales['heightScale'] = heightScaleFunc(heightDomain, [0, CalendarViewCellWidth])
-    const colourDomain = Array.from(new Set(transactionDataArr.map(barGlyphValueGetter.colour)))
-    const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse()
-    const colourScale: BarCalendarViewSharedScales['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
+    // const colourDomain = Array.from(new Set(transactionDataArr.map(barGlyphValueGetter.colour)))
+    // const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse()
+    // const colourScale: BarCalendarViewSharedScales['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
     const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScale, colourScale }
     // shared bandwidth
 
