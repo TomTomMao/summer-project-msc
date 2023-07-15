@@ -15,13 +15,14 @@ interface ClusterViewValueGetter {
     colour: (transactionData: TransactionData) => string,
 }
 
-interface Props {
-    transactionDataArr: TransactionData[],
-    containerHeight: number,
-    containerWidth: number,
-    valueGetter: ClusterViewValueGetter,
-    brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>,
-    setBrushedTransactionNumberSet: Dispatch<SetStateAction<Set<TransactionData['transactionNumber']>>>
+type Props = {
+    transactionDataArr: TransactionData[];
+    containerHeight: number;
+    containerWidth: number;
+    valueGetter: ClusterViewValueGetter;
+    brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>;
+    setBrushedTransactionNumberSet: Dispatch<SetStateAction<Set<TransactionData['transactionNumber']>>>;
+    useLogScale: boolean
 }
 
 const DEFAULT_MARGIN = { top: 5, right: 5, bottom: 30, left: 40 };
@@ -35,7 +36,7 @@ const DEFAULT_STROKE_WIDTH = 1;
  * @returns 
  */
 export function ClusterView(props: Props) {
-    const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet } = props;
+    const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, useLogScale = true } = props;
     const [isSwap, setIsSwap] = useState(false);
     const brushGRef = useRef(null)
     const getColour = valueGetter.colour;
@@ -75,16 +76,16 @@ export function ClusterView(props: Props) {
     const width = containerWidth - margin.left - margin.right
     const height = containerHeight - margin.top - margin.bottom;
     // cache the scales
-    const { xScale, yScale, colourScale, xScaleSwap, yScaleSwap } = useMemo(getScales(transactionDataArr, getX, getXSwap, getY, getYSwap, getColour, width, height), [transactionDataArr, valueGetter])
+    const { xScale, yScale, colourScale, xScaleSwap, yScaleSwap } = useMemo(() => getScales(transactionDataArr, getX, getXSwap, getY, getYSwap, getColour, width, height)(useLogScale), [transactionDataArr, valueGetter, useLogScale])
     // cache the circles
-    const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, brushedTransactionNumberSet, xScale, getX, yScale, getY, colourScale, getColour, xScaleSwap, getXSwap, yScaleSwap, getYSwap), [transactionDataArr, valueGetter, brushedTransactionNumberSet])
+    const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, brushedTransactionNumberSet, xScale, getX, yScale, getY, colourScale, getColour, xScaleSwap, getXSwap, yScaleSwap, getYSwap), [transactionDataArr, valueGetter, brushedTransactionNumberSet, useLogScale])
     useEffect(() => {
         //https://github.com/d3/d3-brush
         const brushG = d3.select(brushGRef.current)
         console.log('brushG', brushG)
         brushG.call(d3.brush().extent([[0, 0], [width, height]]).on("end", ({ selection }) => handleBrush(selection)))
         return function () { brushG.on('.brush', null) }
-    }, [containerWidth, containerHeight, isSwap])
+    }, [containerWidth, containerHeight, isSwap, useLogScale])
 
     return (<div>
         <svg width={containerWidth} height={containerHeight}>
@@ -141,8 +142,27 @@ function getCircles(transactionDataArr: TransactionData[], brushedTransactionNum
 }
 
 
-function getScales(transactionDataArr: TransactionData[], getX: (transactionData: TransactionData) => number, getXSwap: (transactionData: TransactionData) => number, getY: (transactionData: TransactionData) => number, getYSwap: (transactionData: TransactionData) => number, getColour: (transactionData: TransactionData) => string, width: number, height: number): () => { xScale: d3.ScaleLinear<number, number, never>; yScale: d3.ScaleLinear<number, number, never>; xScaleSwap: d3.ScaleLinear<number, number, never>; yScaleSwap: d3.ScaleLinear<number, number, never>; colourScale: d3.ScaleOrdinal<string, String, never>; } {
-    return () => {
+function getScales(transactionDataArr: TransactionData[],
+    getX: (transactionData: TransactionData) => number,
+    getXSwap: (transactionData: TransactionData) => number,
+    getY: (transactionData: TransactionData) => number,
+    getYSwap: (transactionData: TransactionData) => number,
+    getColour: (transactionData: TransactionData) => string, width: number, height: number):
+    (useLogScale: boolean) => {
+        xScale: d3.ScaleLinear<number, number, never>;
+        yScale: d3.ScaleLinear<number, number, never>;
+        xScaleSwap: d3.ScaleLinear<number, number, never>;
+        yScaleSwap: d3.ScaleLinear<number, number, never>;
+        colourScale: d3.ScaleOrdinal<string, String, never>;
+    } | {
+        xScale: d3.ScaleLinear<number, number, never>;
+        yScale: d3.ScaleLogarithmic<number, number, never>;
+        xScaleSwap: d3.ScaleLogarithmic<number, number, never>;
+        yScaleSwap: d3.ScaleLinear<number, number, never>;
+        colourScale: d3.ScaleOrdinal<string, String, never>;
+    } {
+    return (useLogScale) => {
+        const scaleFuncForYandXSwap = useLogScale ? d3.scaleLog : d3.scaleLinear;
         let xScale, yScale, colourScale, xScaleSwap, yScaleSwap;
         const xLim = d3.extent(transactionDataArr, getX);
         const xLimSwap = d3.extent(transactionDataArr, getXSwap);
@@ -156,14 +176,14 @@ function getScales(transactionDataArr: TransactionData[], getX: (transactionData
             xScale = d3.scaleLinear().domain([xLim[0], xLim[1]]).range([0, width]);
         }
         if (xLimSwap[0] === undefined && xLimSwap[1] === undefined) {
-            xScaleSwap = d3.scaleLinear().domain([0, 366]).range([0, width]);
+            xScaleSwap = scaleFuncForYandXSwap().domain([0, 366]).range([0, width]);
         } else {
-            xScaleSwap = d3.scaleLinear().domain([xLimSwap[0], xLimSwap[1]]).range([0, width]);
+            xScaleSwap = scaleFuncForYandXSwap().domain([xLimSwap[0], xLimSwap[1]]).range([0, width]);
         }
         if (yLim[0] === undefined && yLim[1] === undefined) {
-            yScale = d3.scaleLinear().domain([0, 1]).range([height, 0]);
+            yScale = scaleFuncForYandXSwap().domain([0, 1]).range([height, 0]);
         } else {
-            yScale = d3.scaleLinear().domain([yLim[0], yLim[1]]).range([height, 0]);
+            yScale = scaleFuncForYandXSwap().domain([yLim[0], yLim[1]]).range([height, 0]);
         }
         if (yLimSwap[0] === undefined && yLimSwap[1] === undefined) {
             yScaleSwap = d3.scaleLinear().domain([0, 1]).range([height, 0]);

@@ -33,6 +33,11 @@ export default function Page() {
     const [colourLim, setColourLim] = useState<DomainLimits | null>(null);
     const [sizeLim, setSizeLim] = useState<DomainLimits | null>(null);
 
+    // calendarGlyph axis's scale 
+    const [calendarGlyphUseLog, setCalendarGlyphUseLog] = useState(false);
+    // cluster view's initial y axis's scale 
+    const [clusterUseLog, setClusterUseLog] = useState(false);
+
     const limitsInitialised = xLim !== null && yLim !== null && colourLim !== null && sizeLim !== null;
 
     // get the data domain of the aggregated data when the data is loaded or the data is updated
@@ -107,18 +112,35 @@ export default function Page() {
                 {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
                 <ValueGetterContext.Provider value={valueGetter}>
                     <div className="grid grid-cols-8">
-                        <div className="col-span-2"><ClusterView transactionDataArr={transactionDataArr}
+                        <div className="col-span-3"><ClusterView transactionDataArr={transactionDataArr}
                             containerHeight={ClusterViewHeight}
                             containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}
                             brushedTransactionNumberSet={brushedTransactionNumberSet}
                             setBrushedTransactionNumberSet={setBrushedTransactionNumberSet}
+                            useLogScale={clusterUseLog}
                         ></ClusterView>
                         </div>
-                        <div className="col-span-6"><CalendarView3 transactionDataArr={transactionDataArr}
-                            initCurrentYear={2016} heightScaleType={"log"} highLightedTransactionNumberSet={brushedTransactionNumberSet}></CalendarView3>
+                        <div className="col-span-5"><CalendarView3 transactionDataArr={transactionDataArr}
+                            initCurrentYear={2016} heightScaleType={calendarGlyphUseLog ? "log" : "linear"} highLightedTransactionNumberSet={brushedTransactionNumberSet}></CalendarView3>
                         </div>
                     </div>
                 </ValueGetterContext.Provider>
+                <div>
+                    <div>
+                        scatter plots:
+                        <label htmlFor="clusterUseLog">log</label>
+                        <input type="radio" name="clusterUseLog" id="" checked={clusterUseLog} onChange={()=>setClusterUseLog(true)}/>
+                        <label htmlFor="clusterUseLinear">linear</label>
+                        <input type="radio" name="clusterUseLinear" id="" checked={!clusterUseLog} onChange={()=>setClusterUseLog(false)}/>
+                    </div>
+                    <div>
+                        calendar bar glyph:
+                        <label htmlFor="calendarGlyphUseLog">log</label>
+                        <input type="radio" name="calendarGlyphUseLog" id="" checked={calendarGlyphUseLog} onChange={()=>setCalendarGlyphUseLog(true)}/>
+                        <label htmlFor="calendarGlyphUseLog">linear</label>
+                        <input type="radio" name="calendarGlyphUseLog" id="" checked={!calendarGlyphUseLog} onChange={()=>setCalendarGlyphUseLog(false)}/>
+                    </div>
+                </div>
                 <div className="m-auto">
                     {/* infoTable from global.css */}
                     <table className="infoTable">
