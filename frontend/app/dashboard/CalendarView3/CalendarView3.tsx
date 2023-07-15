@@ -9,8 +9,10 @@ import { ValueGetterContext } from "./Contexts/ValueGetterContext";
 import assert from "assert";
 import { BarGlyphScales } from "../Glyphs/BarGlyph/BarGlyph";
 import TableView from "../TableView/TableView";
+import { CalendarViewCellHeight, CalendarViewCellWidth } from "../page";
 
-const DayViewSvgSize = 20;
+
+
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
 type Data = {
@@ -57,7 +59,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     // create public scales
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height);
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
-    const heightScale: BarCalendarViewSharedScales['heightScale'] = heightScaleFunc(heightDomain, [0, DayViewSvgSize])
+    const heightScale: BarCalendarViewSharedScales['heightScale'] = heightScaleFunc(heightDomain, [0, CalendarViewCellWidth])
     const colourDomain = Array.from(new Set(transactionDataArr.map(barGlyphValueGetter.colour)))
     const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse()
     const colourScale: BarCalendarViewSharedScales['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
@@ -130,7 +132,7 @@ type BarDayViewProps = {
  * @param month the number of the month in the year between 1 to 12
  */
 function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDayDetail }: BarDayViewProps) {
-    const [width, height] = [DayViewSvgSize, DayViewSvgSize];
+    const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
     const useShareBandWidth = false;
     // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
     const { transactionDataMapYMD, highLightedTransactionNumberSet } = data;

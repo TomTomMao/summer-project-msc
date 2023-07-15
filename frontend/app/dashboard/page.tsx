@@ -14,9 +14,10 @@ import ColourLegendList from "./ColourLegend";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
-const ClusterViewHeight = 500;
+const ClusterViewHeight = 400;
 const ClusterViewWidth = 500;
-
+export const CalendarViewCellWidth = 17;
+export const CalendarViewCellHeight = 17;
 export interface DomainLimits {
     min: number;
     max: number;
@@ -28,7 +29,7 @@ export default function Page() {
     const [selectedDescriptionAndIsCreditArr, setSelectedDescriptionAndIsCreditArr] = useState<DescriptionAndIsCredit[]>([])
     const [clusterViewValueGetter, setClusterViewValueGetter] = useState(temporalValueGetter);
     const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set()) // cluster view's points in the brusher
-    
+
     const [xLim, setXLim] = useState<DomainLimits | null>(null);
     const [yLim, setYLim] = useState<DomainLimits | null>(null);
     const [colourLim, setColourLim] = useState<DomainLimits | null>(null);
@@ -129,17 +130,22 @@ export default function Page() {
                     </div>
                 </div>
                 <ValueGetterContext.Provider value={valueGetter}>
-                    <div className="grid grid-cols-8">
-                        <div className="col-span-3"><ClusterView transactionDataArr={transactionDataArr}
+                    <div className="grid grid-cols-12">
+                        <div className="col-span-5"><ClusterView transactionDataArr={transactionDataArr}
                             containerHeight={ClusterViewHeight}
                             containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}
                             brushedTransactionNumberSet={brushedTransactionNumberSet}
                             setBrushedTransactionNumberSet={setBrushedTransactionNumberSet}
                             useLogScale={clusterUseLog}
                         ></ClusterView>
+                            <TableView transactionDataArr={transactionDataArr}
+                                handleClearSelect={() => setBrushedTransactionNumberSet(new Set())} transactionNumberSet={brushedTransactionNumberSet}></TableView>
                         </div>
-                        <div className="col-span-5"><CalendarView3 transactionDataArr={transactionDataArr}
-                            initCurrentYear={2016} heightScaleType={calendarGlyphUseLog ? "log" : "linear"} highLightedTransactionNumberSet={brushedTransactionNumberSet}></CalendarView3>
+                        <div className="col-span-7">
+                            <CalendarView3 transactionDataArr={transactionDataArr}
+                                initCurrentYear={2016}
+                                heightScaleType={calendarGlyphUseLog ? "log" : "linear"} highLightedTransactionNumberSet={brushedTransactionNumberSet}></CalendarView3>
+
                         </div>
                     </div>
                     <ColourLegendList colourMappings={[]}></ColourLegendList>
@@ -180,7 +186,7 @@ export default function Page() {
                         </tbody>
                     </table>
                 </div> */}
-                <TableView transactionDataArr={transactionDataArr} handleClearSelect={() => setBrushedTransactionNumberSet(new Set())} transactionNumberSet={brushedTransactionNumberSet}></TableView>
+
             </div>
         )
     }
