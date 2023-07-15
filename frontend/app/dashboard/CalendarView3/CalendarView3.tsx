@@ -26,7 +26,7 @@ type CalendarViewProps = {
     transactionDataArr: TransactionData[];
     initCurrentYear: number;
     transactionNumberSelectedMap: TransactionNumberSelectedMap;
-    scaleHeight: 'log' | 'linear'
+    heightScaleType: 'log' | 'linear'
 };
 
 const barGlyphValueGetter = {
@@ -35,10 +35,10 @@ const barGlyphValueGetter = {
     colour: (d: TransactionData) => d.category
 }
 
-export default function CalendarView3({ transactionDataArr, initCurrentYear, transactionNumberSelectedMap, scaleHeight }:
+export default function CalendarView3({ transactionDataArr, initCurrentYear, transactionNumberSelectedMap, heightScaleType }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-    const heightScaleFunc = d3.scaleLog // todo: replace with state and add radio button
+    const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear // todo: replace with state and add radio button
     const [detailDay, setDetailDay] = useState<null | { day: number, month: number, year: number }>(null)
 
     function handleShowDayDetail(day: number, month: number, year: number) {
@@ -130,7 +130,6 @@ type BarDayViewProps = {
  * @param month the number of the month in the year between 1 to 12
  */
 function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDayDetail }: BarDayViewProps) {
-    const ref = useRef(null)
     const [width, height] = [DayViewSvgSize, DayViewSvgSize];
     const useShareBandWidth = false;
 
@@ -159,25 +158,32 @@ function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDay
     }, [day, month, currentYear, data])
     // xScale for bar glyph
     const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
-        const xDomain = Array.from(new Set(dayData.map(valueGetter.x)));
+        const sortedDayData = d3.sort(dayData, (a, b) => a.transactionAmount - b.transactionAmount)
+        const xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
         if (xDomain[0] === undefined && xDomain[1] === undefined) { return undefined }
         return d3.scaleBand().domain(xDomain).range([0, width])
     }, [dayData, valueGetter])
 
     // prepare the bars
-    const bars = xScale === undefined ? [] : dayData.sort((a,b)=>b.transactionAmount-a.transactionAmount).map(d => {
-        const bandWidth = xScale.bandwidth()
-        const rectHeight = heightScale(valueGetter.height(d))
-        return (
-            <rect
-                x={xScale(valueGetter.x(d))}
-                y={height - rectHeight}
-                width={bandWidth}
-                height={height}
-                fill={colourScale(valueGetter.colour(d))}
-            />
-        )
-    })
+    const bars = useMemo(() => {
+        if (xScale === undefined) {
+            return []
+        } else {
+            return dayData.map(d => {
+                const bandWidth = xScale.bandwidth()
+                const rectHeight = heightScale(valueGetter.height(d))
+                return (
+                    <rect
+                        x={xScale(valueGetter.x(d))}
+                        y={height - rectHeight}
+                        width={bandWidth}
+                        height={height}
+                        fill={colourScale(valueGetter.colour(d))}
+                    />
+                )
+            });
+        }
+    }, [dayData])
 
     if (dayData.length === 0) {
         // highlight the day without transaction
