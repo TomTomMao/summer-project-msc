@@ -8,6 +8,7 @@ import { DataPerTransactionDescription } from "./DataPerTransactionDescription";
 import { ValueGetterContext } from "./Contexts/ValueGetterContext";
 import assert from "assert";
 import { BarGlyphScales } from "../Glyphs/BarGlyph/BarGlyph";
+import TableView from "../TableView/TableView";
 
 const DayViewSvgSize = 20;
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
@@ -37,7 +38,7 @@ const barGlyphValueGetter = {
 export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, heightScaleType }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-    const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear // todo: replace with state and add radio button
+    const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear 
     const [detailDay, setDetailDay] = useState<null | { day: number, month: number, year: number }>(null)
 
     function handleShowDayDetail(day: number, month: number, year: number) {
@@ -175,7 +176,7 @@ function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDay
             });
         }
     }, [data])
-    
+
     if (dayData.length === 0) {
         // highlight the day without transaction
         return <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
@@ -230,7 +231,9 @@ type DetailViewProps = {
 function DetailView({ day, month, currentYear, transactionDataMapYMD }: DetailViewProps) {
     const dayData = getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear)
     console.log('detailview dayData: ', dayData)
-    return <Table data={dayData} />
+    return <TableView transactionDataArr={dayData} transactionNumberSet={new Set(dayData.map(d => d.transactionNumber))} handleClearSelect={function (): void {
+        throw new Error("Function not implemented.");
+    }} />
 }
 
 /**

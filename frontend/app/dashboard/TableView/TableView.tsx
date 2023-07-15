@@ -8,7 +8,7 @@ export interface DescriptionAndIsCredit {
 
 
 /**
- * show the transactions
+ * show the transactions that has the number in the transactionNumberSet
  */
 export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect }:
     {
