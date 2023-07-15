@@ -1,19 +1,24 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { TransactionData, RFMData, TransactionDataAttrs } from "../DataObject";
+import { PublicScale, publicValueGetter } from "../page";
 
 export interface DescriptionAndIsCredit {
     transactionDescription: string;
     isCredit: boolean;
 }
 
-
+type Props = {
+    transactionDataArr: TransactionData[];
+    transactionNumberSet: Set<TransactionData['transactionNumber']>;
+    handleClearSelect: (() => void)
+    colourScale: PublicScale['colourScale']
+    colourValueGetter: publicValueGetter['colour']
+}
 /**
  * show the transactions that has the number in the transactionNumberSet
  */
-export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect }:
-    {
-        transactionDataArr: TransactionData[], transactionNumberSet: Set<TransactionData['transactionNumber']>, handleClearSelect: (() => void)
-    }) {
+export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect, colourScale, colourValueGetter }:
+    Props) {
     // when the component mount or the filteredDescriptionAndIsCreditArr Changes, change it. the time complexity is transactionDataArr.length * filteredDescriptionAndIsCreditArr; can be improved in the future.[performance improvement]
     const columnNames = TransactionData.getColumnNames()
     const [sortingConfig, dispatch] = useReducer(sortingConfigReducer, initialSortingConfig)
@@ -22,8 +27,9 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
     const transactionRows = useMemo(() => {
         return (
             filteredTransactionDataArr.map(transactionData => {
+                const colour = colourScale(colourValueGetter(transactionData));
                 return (
-                    <tr key={transactionData.transactionNumber}>
+                    <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
                         <td>{transactionData.transactionNumber}</td>
                         <td>{transactionData.balance}</td>
                         <td>{transactionData.category}</td>

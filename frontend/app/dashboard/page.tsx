@@ -24,8 +24,10 @@ export interface DomainLimits {
     max: number;
 }
 
-const publicValueGetter = { colour: (d: TransactionData) => d.category }
 export type PublicScale = { colourScale: d3.ScaleOrdinal<string, string, never> };
+export type publicValueGetter = { colour: (d: TransactionData) => string; }
+const publicValueGetter = { colour: (d: TransactionData) => d.category }
+
 export default function Page() {
     const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
     const [RFMDataArr, setRFMDataArr] = useState<Array<RFMData> | null>(null)
@@ -155,7 +157,7 @@ export default function Page() {
                             colourScale={colourScale}
                         ></ClusterView>
                             <TableView transactionDataArr={transactionDataArr}
-                                handleClearSelect={() => setBrushedTransactionNumberSet(new Set())} transactionNumberSet={brushedTransactionNumberSet}></TableView>
+                                handleClearSelect={() => setBrushedTransactionNumberSet(new Set())} transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale} colourValueGetter={publicValueGetter.colour}></TableView>
                         </div>
                         <div className="col-span-7">
                             <CalendarView3 transactionDataArr={transactionDataArr}
@@ -163,6 +165,7 @@ export default function Page() {
                                 heightScaleType={calendarGlyphUseLog ? "log" : "linear"}
                                 highLightedTransactionNumberSet={brushedTransactionNumberSet}
                                 colourScale={colourScale}
+                                colourValueGetter={publicValueGetter.colour}
                             ></CalendarView3>
 
                         </div>

@@ -9,7 +9,7 @@ import { ValueGetterContext } from "./Contexts/ValueGetterContext";
 import assert from "assert";
 import { BarGlyphScales } from "../Glyphs/BarGlyph/BarGlyph";
 import TableView from "../TableView/TableView";
-import { CalendarViewCellHeight, CalendarViewCellWidth } from "../page";
+import { CalendarViewCellHeight, CalendarViewCellWidth, PublicScale, publicValueGetter } from "../page";
 
 
 
@@ -29,7 +29,8 @@ type CalendarViewProps = {
     highLightedTransactionNumberSet: HighLightedTransactionNumberSet;
     initCurrentYear: number;
     heightScaleType: 'log' | 'linear',
-    colourScale: d3.ScaleOrdinal<string, string, never>
+    colourScale:PublicScale['colourScale']
+    colourValueGetter: publicValueGetter['colour']
 };
 
 const barGlyphValueGetter = {
@@ -38,10 +39,10 @@ const barGlyphValueGetter = {
     colour: (d: TransactionData) => d.category
 }
 
-export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, heightScaleType, colourScale }:
+export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, heightScaleType, colourScale, colourValueGetter }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-    const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear 
+    const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear
     const [detailDay, setDetailDay] = useState<null | { day: number, month: number, year: number }>(null)
 
     function handleShowDayDetail(day: number, month: number, year: number) {
@@ -82,8 +83,15 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                 </tbody>
             </table>
             <div>
-                {detailDay !== null && <DetailView day={detailDay.day} month={detailDay.month} currentYear={detailDay.year} transactionDataMapYMD={transactionDataMapYMD} />}
-            </div>
+                {detailDay !== null && <DetailView day={detailDay.day}
+                    month={detailDay.month}
+                    currentYear={detailDay.year}
+                    transactionDataMapYMD={transactionDataMapYMD}
+                    colourScale={colourScale}
+                    colourValueGetter={colourValueGetter}
+                    />}
+
+           </div>
         </div >
     )
 }
@@ -229,14 +237,21 @@ type DetailViewProps = {
     day: number,
     month: number,
     currentYear: number,
-    transactionDataMapYMD: TransactionDataMapYMD
+    transactionDataMapYMD: TransactionDataMapYMD,
+    colourScale: PublicScale['colourScale'],
+    colourValueGetter: publicValueGetter['colour']
 }
-function DetailView({ day, month, currentYear, transactionDataMapYMD }: DetailViewProps) {
+function DetailView({ day, month, currentYear, transactionDataMapYMD, colourScale, colourValueGetter }: DetailViewProps) {
     const dayData = getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear)
     console.log('detailview dayData: ', dayData)
-    return <TableView transactionDataArr={dayData} transactionNumberSet={new Set(dayData.map(d => d.transactionNumber))} handleClearSelect={function (): void {
-        throw new Error("Function not implemented.");
-    }} />
+    return <TableView transactionDataArr={dayData}
+        transactionNumberSet={new Set(dayData.map(d => d.transactionNumber))}
+        handleClearSelect={function (): void {
+            throw new Error("Function not implemented.");
+        }}
+        colourScale={colourScale}
+        colourValueGetter={colourValueGetter}
+    />
 }
 
 /**
