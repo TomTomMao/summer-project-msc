@@ -13,8 +13,8 @@ import assert from "assert";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
-const ClusterViewHeight = 300;
-const ClusterViewWidth = 300;
+const ClusterViewHeight = 500;
+const ClusterViewWidth = 500;
 
 export interface DomainLimits {
     min: number;

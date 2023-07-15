@@ -44,7 +44,55 @@ export function ClusterView(props: Props) {
     const margin = DEFAULT_MARGIN;
     const width = containerWidth - margin.left - margin.right
     const height = containerHeight - margin.top - margin.bottom;
-    const { xScale, yScale, colourScale, xScaleSwap, yScaleSwap } = useMemo(() => {
+    // cache the scales
+    const { xScale, yScale, colourScale, xScaleSwap, yScaleSwap } = useMemo(getScales(transactionDataArr, getX, getXSwap, getY, getYSwap, getColour, width, height), [transactionDataArr, valueGetter])
+    // cache the circles
+    const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, xScale, getX, yScale, getY, colourScale, getColour, xScaleSwap, getXSwap, yScaleSwap, getYSwap), [transactionDataArr, valueGetter])
+
+    // update the charts when the scale domain Lims changed
+    return (<div>
+        <svg width={containerWidth} height={containerHeight}>
+            <g transform={`translate(${margin.left},${margin.top})`}>
+                <AxisLeft yScale={isSwap ? yScaleSwap : yScale} pixelsPerTick={60}></AxisLeft>
+                <g transform={`translate(0, ${height})`}>
+                    <AxisBottom xScale={isSwap ? xScaleSwap : xScale} pixelsPerTick={60}></AxisBottom>
+                </g>
+                {isSwap ? swapCircles : circles}
+            </g>
+        </svg>
+        <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
+    </div>
+    );
+}
+
+function getCircles(transactionDataArr: TransactionData[], xScale: d3.ScaleLinear<number, number, never>, getX: (transactionData: TransactionData) => number, yScale: d3.ScaleLinear<number, number, never>, getY: (transactionData: TransactionData) => number, colourScale: d3.ScaleOrdinal<string, String, never>, getColour: (transactionData: TransactionData) => string, xScaleSwap: d3.ScaleLinear<number, number, never>, getXSwap: (transactionData: TransactionData) => number, yScaleSwap: d3.ScaleLinear<number, number, never>, getYSwap: (transactionData: TransactionData) => number) {
+    return () => {
+        const circles = transactionDataArr.map(transactionData => {
+            return (
+                <circle
+                    key={transactionData.transactionNumber}
+                    cx={xScale(getX(transactionData))}
+                    cy={yScale(getY(transactionData))}
+                    r={DEFAULT_RADIUS}
+                    fill={colourScale(getColour(transactionData)).valueOf()} />
+            );
+        });
+        const swapCircles = transactionDataArr.map(transactionData => {
+            return (
+                <circle
+                    key={transactionData.transactionNumber}
+                    cx={xScaleSwap(getXSwap(transactionData))}
+                    cy={yScaleSwap(getYSwap(transactionData))}
+                    r={DEFAULT_RADIUS}
+                    fill={colourScale(getColour(transactionData)).valueOf()} />
+            );
+        });
+        return { circles: circles, swapCircles: swapCircles };
+    };
+}
+
+function getScales(transactionDataArr: TransactionData[], getX: (transactionData: TransactionData) => number, getXSwap: (transactionData: TransactionData) => number, getY: (transactionData: TransactionData) => number, getYSwap: (transactionData: TransactionData) => number, getColour: (transactionData: TransactionData) => string, width: number, height: number): () => { xScale: d3.ScaleLinear<number, number, never>; yScale: d3.ScaleLinear<number, number, never>; xScaleSwap: d3.ScaleLinear<number, number, never>; yScaleSwap: d3.ScaleLinear<number, number, never>; colourScale: d3.ScaleOrdinal<string, String, never>; } {
+    return () => {
         let xScale, yScale, colourScale, xScaleSwap, yScaleSwap;
         const xLim = d3.extent(transactionDataArr, getX);
         const xLimSwap = d3.extent(transactionDataArr, getXSwap);
@@ -72,61 +120,13 @@ export function ClusterView(props: Props) {
         } else {
             yScaleSwap = d3.scaleLinear().domain([yLimSwap[0], yLimSwap[1]]).range([height, 0]);
         }
-        const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourLim.length).reverse() // ref: https://observablehq.com/@d3/pie-chart/2?intent=fork
+        const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourLim.length).reverse(); // ref: https://observablehq.com/@d3/pie-chart/2?intent=fork
         colourScale = d3.scaleOrdinal<String>().domain(colourLim).range(colourRange);
-        return { xScale, yScale, xScaleSwap, yScaleSwap, colourScale }
+        return { xScale, yScale, xScaleSwap, yScaleSwap, colourScale };
 
-    }, [transactionDataArr, valueGetter])
-    console.log(colourScale)
-    const { circles, swapCircles } = useMemo(() => {
-        const circles = transactionDataArr.map(transactionData => {
-            return (
-                <circle
-                    key={transactionData.transactionNumber}
-                    cx={xScale(getX(transactionData))}
-                    cy={yScale(getY(transactionData))}
-                    r={DEFAULT_RADIUS}
-                    fill={colourScale(getColour(transactionData)).valueOf()}
-                // fillOpacity={DEFAULT_FILL_OPACITY}
-                // stroke={colourScale(getColour(transactionData)).valueOf()}
-                // strokeWidth={DEFAULT_STROKE_WIDTH}
-                // opacity={DEFAULT_OPACITY}
-                />
-            )
-        });
-        const swapCircles = transactionDataArr.map(transactionData => {
-            return (
-                <circle
-                    key={transactionData.transactionNumber}
-                    cx={xScaleSwap(getXSwap(transactionData))}
-                    cy={yScaleSwap(getYSwap(transactionData))}
-                    r={DEFAULT_RADIUS}
-                    fill={colourScale(getColour(transactionData)).valueOf()}
-                // fillOpacity={DEFAULT_FILL_OPACITY}
-                // stroke={colourScale(getColour(transactionData)).valueOf()}
-                // strokeWidth={DEFAULT_STROKE_WIDTH}
-                // opacity={DEFAULT_OPACITY}
-                />
-            )
-        })
-        return { circles: circles, swapCircles: swapCircles }
-    }, [transactionDataArr, valueGetter])
-
-    // update the charts when the scale domain Lims changed
-    return (<div>
-        <svg width={containerWidth} height={containerHeight}>
-            <g transform={`translate(${margin.left},${margin.top})`}>
-                <AxisLeft yScale={isSwap ? yScaleSwap : yScale} pixelsPerTick={60}></AxisLeft>
-                <g transform={`translate(0, ${height})`}>
-                    <AxisBottom xScale={isSwap ? xScaleSwap : xScale} pixelsPerTick={60}></AxisBottom>
-                </g>
-                {isSwap ? swapCircles : circles}
-            </g>
-        </svg>
-        <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
-    </div>
-    );
+    };
 }
+
 /**
  * returns the min and max values of x,y,colour,size domains;
  * @param dataPerTransactionDescriptionArr this object provide an array of data
