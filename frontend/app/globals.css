@@ -6,3 +6,7 @@
 .infoTable td {
     border: 1px black solid;
 }
+.infoTable {
+    font-size: 10px;
+}
+
