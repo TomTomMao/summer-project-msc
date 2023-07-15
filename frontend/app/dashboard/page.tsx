@@ -10,6 +10,7 @@ import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactio
 import { getDataPerTransactionDescription } from "./CalendarView3/getDataPerTransactionDescription";
 import { getRFMDataMapFromArr } from "./CalendarView3/getRFMDataMapFromArr";
 import assert from "assert";
+import ColourLegendList from "./ColourLegend";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
@@ -37,6 +38,7 @@ export default function Page() {
     const [calendarGlyphUseLog, setCalendarGlyphUseLog] = useState(false);
     // cluster view's initial y axis's scale 
     const [clusterUseLog, setClusterUseLog] = useState(false);
+
 
     const limitsInitialised = xLim !== null && yLim !== null && colourLim !== null && sizeLim !== null;
 
@@ -110,6 +112,22 @@ export default function Page() {
             <div>
                 {/* <CalendarView transactions={data}></CalendarView> */}
                 {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
+                <div>
+                    <div>
+                        scatter plots:
+                        <label htmlFor="clusterUseLog">log</label>
+                        <input type="radio" name="clusterUseLog" id="" checked={clusterUseLog} onChange={() => setClusterUseLog(true)} />
+                        <label htmlFor="clusterUseLinear">linear</label>
+                        <input type="radio" name="clusterUseLinear" id="" checked={!clusterUseLog} onChange={() => setClusterUseLog(false)} />
+                    </div>
+                    <div>
+                        calendar bar glyph:
+                        <label htmlFor="calendarGlyphUseLog">log</label>
+                        <input type="radio" name="calendarGlyphUseLog" id="" checked={calendarGlyphUseLog} onChange={() => setCalendarGlyphUseLog(true)} />
+                        <label htmlFor="calendarGlyphUseLog">linear</label>
+                        <input type="radio" name="calendarGlyphUseLog" id="" checked={!calendarGlyphUseLog} onChange={() => setCalendarGlyphUseLog(false)} />
+                    </div>
+                </div>
                 <ValueGetterContext.Provider value={valueGetter}>
                     <div className="grid grid-cols-8">
                         <div className="col-span-3"><ClusterView transactionDataArr={transactionDataArr}
@@ -124,23 +142,9 @@ export default function Page() {
                             initCurrentYear={2016} heightScaleType={calendarGlyphUseLog ? "log" : "linear"} highLightedTransactionNumberSet={brushedTransactionNumberSet}></CalendarView3>
                         </div>
                     </div>
+                    <ColourLegendList colourMappings={[]}></ColourLegendList>
                 </ValueGetterContext.Provider>
-                <div>
-                    <div>
-                        scatter plots:
-                        <label htmlFor="clusterUseLog">log</label>
-                        <input type="radio" name="clusterUseLog" id="" checked={clusterUseLog} onChange={()=>setClusterUseLog(true)}/>
-                        <label htmlFor="clusterUseLinear">linear</label>
-                        <input type="radio" name="clusterUseLinear" id="" checked={!clusterUseLog} onChange={()=>setClusterUseLog(false)}/>
-                    </div>
-                    <div>
-                        calendar bar glyph:
-                        <label htmlFor="calendarGlyphUseLog">log</label>
-                        <input type="radio" name="calendarGlyphUseLog" id="" checked={calendarGlyphUseLog} onChange={()=>setCalendarGlyphUseLog(true)}/>
-                        <label htmlFor="calendarGlyphUseLog">linear</label>
-                        <input type="radio" name="calendarGlyphUseLog" id="" checked={!calendarGlyphUseLog} onChange={()=>setCalendarGlyphUseLog(false)}/>
-                    </div>
-                </div>
+
                 <div className="m-auto">
                     {/* infoTable from global.css */}
                     <table className="infoTable">
