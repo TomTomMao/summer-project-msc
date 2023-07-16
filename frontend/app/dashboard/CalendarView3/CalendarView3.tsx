@@ -74,7 +74,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
 
     return (
         <div>
-            <table>
+            <table className="smallLetterTable">
                 <thead>
                     <tr>
                         <td><input className="w-14" type="number" value={currentYear} onChange={(e) => e.target.value != '2014' && e.target.value != '2023' && setCurrentYear(parseInt(e.target.value))} /></td>
