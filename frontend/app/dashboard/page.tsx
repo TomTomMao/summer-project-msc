@@ -152,7 +152,7 @@ export default function Page() {
                             </div>
                             <div className="col-span-7">
                                 <div className="controlPannelFolderableContainer floatDiv">
-                                    <FolderableContainer label="ControlPannel">
+                                    <FolderableContainer label="ControlPannel" initIsFolded={true}>
                                         <div className="controlPannel"><ControlPannel /></div>
                                     </FolderableContainer>
                                 </div>

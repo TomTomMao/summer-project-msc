@@ -39,10 +39,17 @@ const barGlyphValueGetter = {
 }
 
 
+type Day = {
+    day: number;
+    month: number;
+    year: number;
+};
+
 export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, colourScale, colourValueGetter }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-    const [detailDay, setDetailDay] = useState<null | { day: number, month: number, year: number }>(null)
+
+    const [detailDay, setDetailDay] = useState<null | Day>(null)
 
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
@@ -83,7 +90,8 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                 </thead>
                 <tbody>
                     {MONTHS.map((month, i) => <MonthView month={i + 1} currentYear={currentYear}
-                        key={i + 1} data={data} scales={barCalendarViewSharedScales} valueGetter={barGlyphValueGetter} onShowDayDetail={handleShowDayDetail} />)}
+                        key={i + 1} data={data} scales={barCalendarViewSharedScales} valueGetter={barGlyphValueGetter} onShowDayDetail={handleShowDayDetail}
+                        detailDay={detailDay} />)}
                 </tbody>
             </table>
             <div>
@@ -110,7 +118,8 @@ type BarMonthViewProps = {
     data: Data,
     scales: BarCalendarViewSharedScales,
     valueGetter: BarCalendarViewValueGetter,
-    onShowDayDetail: (day: number, month: number, year: number) => void
+    onShowDayDetail: (day: number, month: number, year: number) => void,
+    detailDay: Day | null
 }
 
 function MonthView(props: BarMonthViewProps) {
@@ -141,7 +150,8 @@ type BarDayViewProps = {
     data: Data,
     scales: BarCalendarViewSharedScales,
     valueGetter: BarCalendarViewValueGetter,
-    onShowDayDetail: (day: number, month: number, year: number) => void
+    onShowDayDetail: (day: number, month: number, year: number) => void,
+    detailDay: null | Day
 }
 /**
  * use public scale for transaction amount and public colours scale for Category
@@ -150,9 +160,9 @@ type BarDayViewProps = {
  * @param month the number of the month in the year between 1 to 12
  */
 function DayView(props: BarDayViewProps) {
-    const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail } = props
+    const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail, detailDay } = props
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
-
+    const isDetailDay = detailDay !== null && day === detailDay.day && month === detailDay.month && currentYear === detailDay.year
     const maxTransactionCountOfDay: number = 28; // todo, take it from the calendarview component
     // configs
     const config = useContext(ConfigContext)
@@ -206,14 +216,11 @@ function DayView(props: BarDayViewProps) {
     }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc])
 
     return (
-        <td className={`border-2 border-indigo-600`}
-            // style={{ width: width, height: height, borderColor: rectBorderColour }}
-            onClick={handleShowDayDetail}
-        >
-            <svg width={width} height={height}>
-                {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
-                {/* <g>{bars}</g> */}
-            </svg>
+        <td onClick={handleShowDayDetail} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
+                <svg width={width} height={height}>
+                    {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
+                    {/* <g>{bars}</g> */}
+                </svg>
         </td>
     )
 }
