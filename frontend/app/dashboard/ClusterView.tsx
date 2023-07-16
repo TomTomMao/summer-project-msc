@@ -89,7 +89,7 @@ export function ClusterView(props: Props) {
         return function () { brushG.on('.brush', null) }
     }, [containerWidth, containerHeight, isSwap, useLogScale])
 
-    return (<div>
+    return (<>
         <svg width={containerWidth} height={containerHeight}>
             <g transform={`translate(${margin.left},${margin.top})`}>
                 <g>{isSwap ? swapCircles : circles}</g>
@@ -99,7 +99,7 @@ export function ClusterView(props: Props) {
             </g>
         </svg>
         <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
-    </div>
+    </>
     );
 }
 

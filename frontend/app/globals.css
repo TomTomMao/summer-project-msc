@@ -72,3 +72,14 @@ button:hover {
     z-index: 1;
     top: 2em
 }
+
+
+/* cluster view */
+.clusterView {
+    background-color: white;
+    border-radius: 1em;
+    margin: 1em 1em;
+    font-size: 12px;
+    padding-bottom: 1em;
+    padding-left: 1em;
+}

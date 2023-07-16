@@ -132,18 +132,10 @@ export default function Page() {
         return (
             <div>
                 <ConfigProvider>
-                    <div>
-                        <div>
-                            scatter plots:
-                            <label htmlFor="clusterUseLog">log</label>
-                            <input type="radio" name="clusterUseLog" id="" checked={clusterUseLog} onChange={() => setClusterUseLog(true)} />
-                            <label htmlFor="clusterUseLinear">linear</label>
-                            <input type="radio" name="clusterUseLinear" id="" checked={!clusterUseLog} onChange={() => setClusterUseLog(false)} />
-                        </div>
-                    </div>
+
                     <ValueGetterContext.Provider value={valueGetter}>
                         <div className="grid grid-cols-12">
-                            <div className="col-span-5">
+                            <div className="col-span-5 clusterView">
                                 <ClusterView transactionDataArr={transactionDataArr}
                                     containerHeight={ClusterViewHeight}
                                     containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}
@@ -152,7 +144,11 @@ export default function Page() {
                                     useLogScale={clusterUseLog}
                                     colourScale={colourScale}
                                 />
-
+                                scatter plots:
+                                <label htmlFor="clusterUseLog">log</label>
+                                <input type="radio" name="clusterUseLog" id="" checked={clusterUseLog} onChange={() => setClusterUseLog(true)} />
+                                <label htmlFor="clusterUseLinear">linear</label>
+                                <input type="radio" name="clusterUseLinear" id="" checked={!clusterUseLog} onChange={() => setClusterUseLog(false)} />
                             </div>
                             <div className="col-span-7">
                                 <div className="controlPannelFolderableContainer floatDiv">
@@ -170,10 +166,11 @@ export default function Page() {
                                 </div>
                             </div>
                         </div>
-                        <TableView transactionDataArr={transactionDataArr}
-                            handleClearSelect={() => setBrushedTransactionNumberSet(new Set())}
-                            transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
-                            colourValueGetter={publicValueGetter.colour}></TableView>
+                        <FolderableContainer label="detail of brushed points">
+                            <TableView transactionDataArr={transactionDataArr}
+                                handleClearSelect={() => setBrushedTransactionNumberSet(new Set())}
+                                transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
+                                colourValueGetter={publicValueGetter.colour}></TableView></FolderableContainer>
                         <ColourLegendList colourMappings={[]}></ColourLegendList>
                     </ValueGetterContext.Provider>
                 </ConfigProvider>

@@ -168,51 +168,7 @@ function DayView(props: BarDayViewProps) {
     function handleShowDayDetail() {
         onShowDayDetail(day, month, currentYear);
     }
-    // border colour determined by the day of week
-    // let dayOfWeek = new Date(currentYear, month - 1, day).getDay();
-    // dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek
-    // const rectBorderColour: string = getDayColour(dayOfWeek) // 0 is sunday, which needs to be set 7
 
-    // const dayData: TransactionData[] = useMemo(() => getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear), [day, month, currentYear, data])
-    // xScale for bar glyph
-    // const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
-    //     const sortedDayData = d3.sort(dayData, comparator)
-    //     let xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
-    //     if (isSharedBandWidth) {
-    //         // fill the domain if use shared band width
-    //         const domainLength = xDomain.length
-    //         for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`) }
-    //     }
-    //     if (xDomain[0] === undefined && xDomain[1] === undefined) { return undefined }
-    //     return d3.scaleBand().domain(xDomain).range([0, width])
-    // }, [dayData, valueGetter, isSharedBandWidth, sortingKey])
-
-    // // todo: preload bars for different state
-    // const bars = useMemo(() => {
-    //     // console.log(`${day}-${month}-${currentYear}`, 'bars rerendered')
-
-    //     if (xScale === undefined) {
-    //         return []
-    //     } else {
-    //         const bars = dayData.map(d => {
-    //             const bandWidth = xScale.bandwidth()
-    //             const rectHeight = heightScale(valueGetter.height(d))
-    //             const isThisDataHighLighted = highLightedTransactionNumberSet.has(d.transactionNumber);
-    //             return (
-    //                 <rect
-    //                     key={d.transactionNumber}
-    //                     x={xScale(valueGetter.x(d))}
-    //                     y={height - rectHeight}
-    //                     width={bandWidth}
-    //                     height={height}
-    //                     fill={colourScale(valueGetter.colour(d))}
-    //                     opacity={highlightMode && !isThisDataHighLighted ? 0.1 : 1}
-    //                 />
-    //             )
-    //         });
-    //         return bars
-    //     }
-    // }, [data, heightAxis, colourScale, xScale])
 
     const barsOfEachYear: { year: number, bars: JSX.Element[] }[] = useMemo(() => {
         const years = Array.from(data.transactionDataMapYMD.keys());
@@ -249,16 +205,6 @@ function DayView(props: BarDayViewProps) {
         return barsOfEachYear
     }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc])
 
-
-    // if (dayData.length === 0) {
-    //     // highlight the day without transaction
-    //     return <td className={`border-2 border-indigo-600`}
-    //     // style={{ width: width, height: height, borderColor: rectBorderColour }}
-    //     >
-    //         <div style={{ width: width, height: height }}>{dayOfWeek}</div>
-    //     </td>
-    // }
-    // else {
         return (
             <td className={`border-2 border-indigo-600`}
                 // style={{ width: width, height: height, borderColor: rectBorderColour }}
@@ -270,7 +216,6 @@ function DayView(props: BarDayViewProps) {
                 </svg>
             </td>
         )
-    // }
 }
 /**
  * 
