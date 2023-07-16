@@ -58,7 +58,6 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     const data: Data = useMemo(() => { return { transactionDataMapYMD: transactionDataMapYMD, highLightedTransactionNumberSet: highLightedTransactionNumberSet } }, [transactionDataMapYMD, highLightedTransactionNumberSet])
 
     // create public height scale for the bar glyph
-    // todo: replace with useMemos to improve performance
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height); // height for bar glyph
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
     const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, CalendarViewCellWidth]);
@@ -67,7 +66,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     // create shared number of bars, the number will be used for control the xDomain's Size
     const maxTransactionCountOfDay = useMemo(() => {
         const countTransactionArr = d3.flatRollup(transactionDataArr, d => d.length, d => d.date);
-        console.log('countTransactionArr', countTransactionArr)
+        // console.log('countTransactionArr', countTransactionArr)
         return d3.max(countTransactionArr, d => d[1])
     }, [transactionDataArr])
     // console.log('maxTransactionCountOfDay', maxTransactionCountOfDay)
@@ -155,7 +154,7 @@ function DayView(props: BarDayViewProps) {
     const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail } = props
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
 
-    const maxTransactionCountOfDay: number = 28;
+    const maxTransactionCountOfDay: number = 28; // todo, take it from the calendarview component
     // configs
     const config = useContext(ConfigContext)
     assert(config !== null);
@@ -171,32 +170,66 @@ function DayView(props: BarDayViewProps) {
         onShowDayDetail(day, month, currentYear);
     }
     // border colour determined by the day of week
-    let dayOfWeek = new Date(currentYear, month - 1, day).getDay();
-    dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek
-    const rectBorderColour: string = getDayColour(dayOfWeek) // 0 is sunday, which needs to be set 7
+    // let dayOfWeek = new Date(currentYear, month - 1, day).getDay();
+    // dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek
+    // const rectBorderColour: string = getDayColour(dayOfWeek) // 0 is sunday, which needs to be set 7
 
-    const dayData: TransactionData[] = useMemo(() => getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear), [day, month, currentYear, data])
+    // const dayData: TransactionData[] = useMemo(() => getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear), [day, month, currentYear, data])
     // xScale for bar glyph
-    const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
-        const sortedDayData = d3.sort(dayData, comparator)
-        let xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
-        if (isSharedBandWidth) {
-            // fill the domain if use shared band width
-            const domainLength = xDomain.length
-            for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`) }
-        }
-        if (xDomain[0] === undefined && xDomain[1] === undefined) { return undefined }
-        return d3.scaleBand().domain(xDomain).range([0, width])
-    }, [dayData, valueGetter, isSharedBandWidth, sortingKey])
+    // const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
+    //     const sortedDayData = d3.sort(dayData, comparator)
+    //     let xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
+    //     if (isSharedBandWidth) {
+    //         // fill the domain if use shared band width
+    //         const domainLength = xDomain.length
+    //         for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`) }
+    //     }
+    //     if (xDomain[0] === undefined && xDomain[1] === undefined) { return undefined }
+    //     return d3.scaleBand().domain(xDomain).range([0, width])
+    // }, [dayData, valueGetter, isSharedBandWidth, sortingKey])
 
-    // todo: preload bars for different state
-    const bars = useMemo(() => {
-        console.log(`${day}-${month}-${currentYear}`,'bars rerendered')
+    // // todo: preload bars for different state
+    // const bars = useMemo(() => {
+    //     // console.log(`${day}-${month}-${currentYear}`, 'bars rerendered')
 
-        if (xScale === undefined) {
-            return []
-        } else {
-            return dayData.map(d => {
+    //     if (xScale === undefined) {
+    //         return []
+    //     } else {
+    //         const bars = dayData.map(d => {
+    //             const bandWidth = xScale.bandwidth()
+    //             const rectHeight = heightScale(valueGetter.height(d))
+    //             const isThisDataHighLighted = highLightedTransactionNumberSet.has(d.transactionNumber);
+    //             return (
+    //                 <rect
+    //                     key={d.transactionNumber}
+    //                     x={xScale(valueGetter.x(d))}
+    //                     y={height - rectHeight}
+    //                     width={bandWidth}
+    //                     height={height}
+    //                     fill={colourScale(valueGetter.colour(d))}
+    //                     opacity={highlightMode && !isThisDataHighLighted ? 0.1 : 1}
+    //                 />
+    //             )
+    //         });
+    //         return bars
+    //     }
+    // }, [data, heightAxis, colourScale, xScale])
+
+    const barsOfEachYear: { year: number, bars: JSX.Element[] }[] = useMemo(() => {
+        const years = Array.from(data.transactionDataMapYMD.keys());
+        const barsOfEachYear: { year: number, bars: JSX.Element[] }[] = [];
+        for (let year of years) {
+            const dayData = getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, year);
+            const sortedDayData = d3.sort(dayData, comparator)
+            let xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
+            if (isSharedBandWidth) {
+                // fill the domain if use shared band width
+                const domainLength = xDomain.length
+                for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`) }
+            }
+
+            const xScale = d3.scaleBand().domain(xDomain).range([0, width])
+            const bars: JSX.Element[] = dayData.map(d => {
                 const bandWidth = xScale.bandwidth()
                 const rectHeight = heightScale(valueGetter.height(d))
                 const isThisDataHighLighted = highLightedTransactionNumberSet.has(d.transactionNumber);
@@ -212,26 +245,33 @@ function DayView(props: BarDayViewProps) {
                     />
                 )
             });
+            barsOfEachYear.push({ year: year, bars: bars })
         }
-    }, [data, heightAxis, colourScale, xScale])
+        return barsOfEachYear
+    }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc])
 
-    if (dayData.length === 0) {
-        // highlight the day without transaction
-        return <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}>
-            <div style={{ width: width, height: height }}>{dayOfWeek}</div>
-        </td>
-    }
-    else {
+
+    // if (dayData.length === 0) {
+    //     // highlight the day without transaction
+    //     return <td className={`border-2 border-indigo-600`}
+    //     // style={{ width: width, height: height, borderColor: rectBorderColour }}
+    //     >
+    //         <div style={{ width: width, height: height }}>{dayOfWeek}</div>
+    //     </td>
+    // }
+    // else {
         return (
-            <td className={`border-2 border-indigo-600`} style={{ width: width, height: height, borderColor: rectBorderColour }}
+            <td className={`border-2 border-indigo-600`}
+                // style={{ width: width, height: height, borderColor: rectBorderColour }}
                 onClick={handleShowDayDetail}
             >
                 <svg width={width} height={height}>
-                    <g>{bars}</g>
+                    {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
+                    {/* <g>{bars}</g> */}
                 </svg>
             </td>
         )
-    }
+    // }
 }
 /**
  * 

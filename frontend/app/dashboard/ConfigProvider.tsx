@@ -4,7 +4,7 @@ const initConfig: Config = {
     barGlyphConfig: {
         isSharedBandWidth: false,
         sortingKey: 'transactionAmount',
-        isDesc: false,
+        isDesc: true,
         heightAxis: 'log'
     }
 }
