@@ -32,7 +32,7 @@ export default function ControlPannel() {
             }
         }
         throw new Error("invalid sorting keys:" + nextSortingKey);
-        
+
     }
 
     const handleSetBarGlyphSortingOrder = (nextOrder: string) => {
@@ -45,11 +45,13 @@ export default function ControlPannel() {
     const handleSetBarGlyphHeightAxis = (nextAxis: string) => {
         switch (nextAxis) {
             case 'log':
-                dispatch({ targetChart: 'bar glyph', type: 'set height axis', axis: 'log' })
+                dispatch({ targetChart: 'bar glyph', type: 'set height axis', axis: 'log' });
+                break;
             case 'linear':
-                dispatch({ targetChart: 'bar glyph', type: 'set height axis', axis: 'linear' })
+                dispatch({ targetChart: 'bar glyph', type: 'set height axis', axis: 'linear' });
+                break;
             default:
-                throw new Error("");
+                throw new Error("invalid nextAxis: " + nextAxis);
                 ;
         }
     }
