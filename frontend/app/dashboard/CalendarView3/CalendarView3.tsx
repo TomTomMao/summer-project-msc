@@ -8,6 +8,7 @@ import { BarGlyphScales, BarGlyphScalesLinearHeight, BarGlyphScalesLogHeight } f
 import TableView from "../TableView/TableView";
 import { CalendarViewCellHeight, CalendarViewCellWidth, PublicScale, publicValueGetter } from "../page";
 import { ConfigContext } from "../ConfigProvider";
+import FolderableContainer from "../Components/FolderableContainer";
 
 
 
@@ -86,15 +87,14 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                 </tbody>
             </table>
             <div>
-                {detailDay !== null && <DetailView day={detailDay.day}
+                {detailDay !== null && <FolderableContainer label={`detail of the transaction happened in ${currentYear}-${detailDay.month}-${detailDay.day}`} initIsFolded={false}><DetailView day={detailDay.day}
                     month={detailDay.month}
                     currentYear={detailDay.year}
                     transactionDataMapYMD={transactionDataMapYMD}
                     colourScale={colourScale}
                     colourValueGetter={colourValueGetter}
                     onClearDetail={() => setDetailDay(null)}
-                />}
-
+                /></FolderableContainer>}
             </div>
         </div >
     )
@@ -205,17 +205,17 @@ function DayView(props: BarDayViewProps) {
         return barsOfEachYear
     }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc])
 
-        return (
-            <td className={`border-2 border-indigo-600`}
-                // style={{ width: width, height: height, borderColor: rectBorderColour }}
-                onClick={handleShowDayDetail}
-            >
-                <svg width={width} height={height}>
-                    {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
-                    {/* <g>{bars}</g> */}
-                </svg>
-            </td>
-        )
+    return (
+        <td className={`border-2 border-indigo-600`}
+            // style={{ width: width, height: height, borderColor: rectBorderColour }}
+            onClick={handleShowDayDetail}
+        >
+            <svg width={width} height={height}>
+                {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
+                {/* <g>{bars}</g> */}
+            </svg>
+        </td>
+    )
 }
 /**
  * 

@@ -1,7 +1,7 @@
 import { useState } from "react"
 
-export default function FolderableContainer({ children, label }: { children: React.ReactNode, label: string }) {
-    const [isFolded, setIsFolded] = useState(true);
+export default function FolderableContainer({ children, label, initIsFolded }: { children: React.ReactNode, label: string, initIsFolded: boolean }) {
+    const [isFolded, setIsFolded] = useState(initIsFolded);
     const handleToggleFold = () => {
         setIsFolded(!isFolded)
     }
