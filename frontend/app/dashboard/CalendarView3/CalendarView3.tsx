@@ -1,11 +1,8 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react"
-import { TransactionData } from "../DataObject"
+import { useContext, useEffect, useMemo, useState } from "react"
+import { TransactionData, TransactionDataAttrs } from "../DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import * as d3 from 'd3'
-import { GroupedDataPerTransactionDescriptionContext } from "./Contexts/GroupedDataPerTransactionDescriptionContext";
-import { ScaleContext } from "./Contexts/ScaleContext";
-import { DataPerTransactionDescription } from "./DataPerTransactionDescription";
-import { ValueGetterContext } from "./Contexts/ValueGetterContext";
+
 import assert from "assert";
 import { BarGlyphScales } from "../Glyphs/BarGlyph/BarGlyph";
 import TableView from "../TableView/TableView";
@@ -39,12 +36,14 @@ const barGlyphValueGetter = {
     colour: (d: TransactionData) => d.category
 }
 
+
 export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, heightScaleType, colourScale, colourValueGetter }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear
     const [detailDay, setDetailDay] = useState<null | { day: number, month: number, year: number }>(null)
-
+    
+    // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
         setDetailDay({ day: day, month: month, year: year })
     }
@@ -58,12 +57,20 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     }
     const data: Data = useMemo(() => { return { transactionDataMapYMD: transactionDataMapYMD, highLightedTransactionNumberSet: highLightedTransactionNumberSet } }, [transactionDataMapYMD, highLightedTransactionNumberSet])
 
-    // create public scales
-    const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height);
+    // create public height scale for the bar glyph
+    // todo: replace with useMemos to improve performance
+    const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height); // height for bar glyph
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
     const heightScale: BarCalendarViewSharedScales['heightScale'] = heightScaleFunc(heightDomain, [0, CalendarViewCellWidth])
-    const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScale, colourScale }
-    // shared bandwidth
+    const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScale, colourScale } // colourScale shared with other views
+    // create shared number of bars, the number will be used for control the xDomain's Size
+    const maxTransactionCountOfDay = useMemo(() => {
+        const countTransactionArr = d3.flatRollup(transactionDataArr, d => d.length, d => d.date);
+        console.log('countTransactionArr', countTransactionArr)
+        return d3.max(countTransactionArr, d => d[1])
+    }, [transactionDataArr])
+    console.log('maxTransactionCountOfDay', maxTransactionCountOfDay)
+
 
     return (
         <div>
@@ -86,6 +93,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                     transactionDataMapYMD={transactionDataMapYMD}
                     colourScale={colourScale}
                     colourValueGetter={colourValueGetter}
+                    onClearDetail={() => setDetailDay(null)}
                 />}
 
             </div>
@@ -113,20 +121,21 @@ function MonthView(props: BarMonthViewProps) {
         <td>{MONTHS[month - 1]}</td>
         {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i => {
             const barDayViewProps: BarDayViewProps = { day: i + 1, ...props }
-            return <DayView {...barDayViewProps} />
+            return <DayView {...barDayViewProps} key={`${month}-${i + 1}`} />
         })}
     </tr>)
 
 }
 
 
-const x = d3.scaleBand().domain(['a', 'b']).range([1, 2])
 type BarCalendarViewSharedScales = {
     heightScale: BarGlyphScales['heightScale'];
     colourScale: BarGlyphScales['colourScale'];
 }
 type BarDayViewProps = {
+    /**1to31 */
     day: number,
+    /**1to12 */
     month: number,
     currentYear: number,
     data: Data,
@@ -143,11 +152,18 @@ type BarDayViewProps = {
 function DayView(props: BarDayViewProps) {
     const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail } = props
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
-    const useShareBandWidth = false;
+
+    // configs
+    const maxTransactionCountOfDay: number | null = 28;
+    const useShareBandWidth = maxTransactionCountOfDay === null ? false : true;
+    const sortKey: null | TransactionDataAttrs = 'category';
+    const sortDesc: boolean = false
+
+    const comparator = TransactionData.curryCompare(sortKey === null ? 'transactionNumber' : sortKey, sortDesc)
     // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
     const { transactionDataMapYMD, highLightedTransactionNumberSet } = data;
     const highlightMode = highLightedTransactionNumberSet.size > 0; // for deciding the style of rect
-    const { heightScale, colourScale } = scales // scales for bar glyph
+    const { heightScale, colourScale } = scales // heightScale for bar glyph, colourScale for category
     function handleShowDayDetail() {
         onShowDayDetail(day, month, currentYear);
     }
@@ -159,15 +175,20 @@ function DayView(props: BarDayViewProps) {
     const dayData: TransactionData[] = useMemo(() => getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear), [day, month, currentYear, data])
     // xScale for bar glyph
     const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
-        const sortedDayData = d3.sort(dayData, (a, b) => a.transactionAmount - b.transactionAmount)
-        const xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
+        const sortedDayData = d3.sort(dayData, comparator)
+        let xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
+        if (useShareBandWidth) {
+            // fill the domain if use shared band width
+            const domainLength = xDomain.length
+            for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`) }
+        }
         if (xDomain[0] === undefined && xDomain[1] === undefined) { return undefined }
         return d3.scaleBand().domain(xDomain).range([0, width])
-    }, [dayData, valueGetter])
+    }, [dayData, valueGetter, useShareBandWidth, sortKey])
 
 
     const bars = useMemo(() => {
-        console.log(currentYear, month, day, 'rendering bars because data OR scales changed: ', data)
+
         if (xScale === undefined) {
             return []
         } else {
@@ -177,6 +198,7 @@ function DayView(props: BarDayViewProps) {
                 const isThisDataHighLighted = highLightedTransactionNumberSet.has(d.transactionNumber);
                 return (
                     <rect
+                        key={d.transactionNumber}
                         x={xScale(valueGetter.x(d))}
                         y={height - rectHeight}
                         width={bandWidth}
@@ -240,69 +262,18 @@ type DetailViewProps = {
     currentYear: number,
     transactionDataMapYMD: TransactionDataMapYMD,
     colourScale: PublicScale['colourScale'],
-    colourValueGetter: publicValueGetter['colour']
+    colourValueGetter: publicValueGetter['colour'],
+    onClearDetail(): void
 }
-function DetailView({ day, month, currentYear, transactionDataMapYMD, colourScale, colourValueGetter }: DetailViewProps) {
+function DetailView({ day, month, currentYear, transactionDataMapYMD, colourScale, colourValueGetter, onClearDetail }: DetailViewProps) {
     const dayData = getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear)
-    console.log('detailview dayData: ', dayData)
+
     return <TableView transactionDataArr={dayData}
         transactionNumberSet={new Set(dayData.map(d => d.transactionNumber))}
-        handleClearSelect={function (): void {
-            throw new Error("Function not implemented.");
-        }}
+        handleClearSelect={onClearDetail}
         colourScale={colourScale}
         colourValueGetter={colourValueGetter}
     />
-}
-
-/**
- * 
- * @param param0 data should be an array of object share the same keys
- */
-function Table({ data }: { data: Array<TransactionData>, }) {
-    const transactionRows = useMemo(() => {
-        return (
-            data.map(transactionData => {
-                return (
-                    <tr key={transactionData.transactionNumber}>
-                        <td>{transactionData.transactionNumber}</td>
-                        <td>{transactionData.balance}</td>
-                        <td>{transactionData.category}</td>
-                        <td>{transactionData.creditAmount}</td>
-                        <td>{transactionData.debitAmount}</td>
-                        <td>{transactionData.locationCity}</td>
-                        <td>{transactionData.locationCountry}</td>
-                        <td>{transactionData.transactionDescription}</td>
-                        <td>{transactionData.transactionType}</td>
-                        <td>{transactionData.date?.toDateString()}</td>
-                    </tr>)
-            })
-        )
-    }, [data])
-
-    return (
-        <div>
-            <table className="infoTable">
-                <thead>
-                    <tr>
-                        <td>transactionNumber</td>
-                        <td>balance</td>
-                        <td>category</td>
-                        <td>creditAmount</td>
-                        <td>debitAmount</td>
-                        <td>locationCity</td>
-                        <td>locationCountry</td>
-                        <td>transactionDescription</td>
-                        <td>transactionType</td>
-                        <td>date</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {transactionRows}
-                </tbody>
-            </table>
-        </div>
-    )
 }
 
 /**
@@ -318,13 +289,13 @@ function getDataFromTransactionDataMapYMD(transactionDataMapYMD: TransactionData
     if (day < 1 || day > 31) { throw new Error(`invalid day: ${day}, should be 1<=day<=31`,); }
 
     const currYearData = transactionDataMapYMD.get(year)
-    console.log('currYearData:', currYearData)
+    // console.log('currYearData:', currYearData)
     if (currYearData === undefined) { return [] }
     const currMonthData = currYearData.get(month);
-    console.log('currMonthData:', currMonthData)
+    // console.log('currMonthData:', currMonthData)
     if (currMonthData === undefined) { return [] }
     const currDayData = currMonthData.get(day);
-    console.log('currDayData:', currDayData)
+    // console.log('currDayData:', currDayData)
     return currDayData === undefined ? [] : currDayData;
 
 }

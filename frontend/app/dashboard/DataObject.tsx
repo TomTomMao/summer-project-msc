@@ -31,7 +31,7 @@ export interface ITransactionDataFromAPI {
 }
 
 
-export type TransactionDataAttrs = "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry";
+export type TransactionDataAttrs = "transactionAmount"| "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry";
 /**
  * a class represent a record of transaction
  */
@@ -79,7 +79,8 @@ export class TransactionData {
             "balance",
             "category",
             "locationCity",
-            "locationCountry"]
+            "locationCountry",
+            "transactionAmount"]
     }
     /**
      * get a comparator function that compare the given key, if key is transactionNumber, compare them by regarding them as numbers

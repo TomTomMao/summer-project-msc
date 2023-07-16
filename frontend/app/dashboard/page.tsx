@@ -12,6 +12,7 @@ import { getRFMDataMapFromArr } from "./CalendarView3/getRFMDataMapFromArr";
 import assert from "assert";
 import ColourLegendList from "./ColourLegend";
 import * as d3 from 'd3';
+import { ConfigProvider } from "./ConfigProvider";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
@@ -127,6 +128,7 @@ export default function Page() {
         return <>initialising</>
     } else {
         return (
+            <ConfigProvider>
             <div>
                 {/* <CalendarView transactions={data}></CalendarView> */}
                 {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
@@ -210,6 +212,7 @@ export default function Page() {
                 </div> */}
 
             </div>
+            </ConfigProvider>
         )
     }
 
