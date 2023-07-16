@@ -14,6 +14,7 @@ import ColourLegendList from "./ColourLegend";
 import * as d3 from 'd3';
 import { ConfigProvider } from "./ConfigProvider";
 import ControlPannel from "./ControlPannel/ControlPannel";
+import FolderableContainer from "./Components/FolderableContainer";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
@@ -129,91 +130,54 @@ export default function Page() {
         return <>initialising</>
     } else {
         return (
-            <ConfigProvider>
             <div>
-                {/* <CalendarView transactions={data}></CalendarView> */}
-                {/* <CalendarView2 rawData={data} startDate={new Date()}></CalendarView2> */}
-                <div>
+                <ConfigProvider>
                     <div>
-                        scatter plots:
-                        <label htmlFor="clusterUseLog">log</label>
-                        <input type="radio" name="clusterUseLog" id="" checked={clusterUseLog} onChange={() => setClusterUseLog(true)} />
-                        <label htmlFor="clusterUseLinear">linear</label>
-                        <input type="radio" name="clusterUseLinear" id="" checked={!clusterUseLog} onChange={() => setClusterUseLog(false)} />
-                    </div>
-                    <div>
-                        calendar bar glyph:
-                        <label htmlFor="calendarGlyphUseLog">log</label>
-                        <input type="radio" name="calendarGlyphUseLog" id="" checked={calendarGlyphUseLog} onChange={() => setCalendarGlyphUseLog(true)} />
-                        <label htmlFor="calendarGlyphUseLog">linear</label>
-                        <input type="radio" name="calendarGlyphUseLog" id="" checked={!calendarGlyphUseLog} onChange={() => setCalendarGlyphUseLog(false)} />
-                    </div>
-                </div>
-                <ValueGetterContext.Provider value={valueGetter}>
-                    <div className="grid grid-cols-12">
-                        <div className="col-span-5"><ClusterView transactionDataArr={transactionDataArr}
-                            containerHeight={ClusterViewHeight}
-                            containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}
-                            brushedTransactionNumberSet={brushedTransactionNumberSet}
-                            setBrushedTransactionNumberSet={setBrushedTransactionNumberSet}
-                            useLogScale={clusterUseLog}
-                            colourScale={colourScale}
-                        ></ClusterView>
-                            <TableView transactionDataArr={transactionDataArr}
-                                handleClearSelect={() => setBrushedTransactionNumberSet(new Set())} transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale} colourValueGetter={publicValueGetter.colour}></TableView>
-                        </div>
-                        <div className="col-span-7">
-                            <CalendarView3 transactionDataArr={transactionDataArr}
-                                initCurrentYear={2016}
-                                highLightedTransactionNumberSet={brushedTransactionNumberSet}
-                                colourScale={colourScale}
-                                colourValueGetter={publicValueGetter.colour}
-                            ></CalendarView3>
-
+                        <div>
+                            scatter plots:
+                            <label htmlFor="clusterUseLog">log</label>
+                            <input type="radio" name="clusterUseLog" id="" checked={clusterUseLog} onChange={() => setClusterUseLog(true)} />
+                            <label htmlFor="clusterUseLinear">linear</label>
+                            <input type="radio" name="clusterUseLinear" id="" checked={!clusterUseLog} onChange={() => setClusterUseLog(false)} />
                         </div>
                     </div>
-                    <ColourLegendList colourMappings={[]}></ColourLegendList>
-                    <ControlPannel></ControlPannel>
-                </ValueGetterContext.Provider>
+                    <ValueGetterContext.Provider value={valueGetter}>
+                        <div className="grid grid-cols-12">
+                            <div className="col-span-5">
+                                <ClusterView transactionDataArr={transactionDataArr}
+                                    containerHeight={ClusterViewHeight}
+                                    containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}
+                                    brushedTransactionNumberSet={brushedTransactionNumberSet}
+                                    setBrushedTransactionNumberSet={setBrushedTransactionNumberSet}
+                                    useLogScale={clusterUseLog}
+                                    colourScale={colourScale}
+                                />
 
-                {/* <div className="m-auto">
-                    class from globalcss
-                    <table className="infoTable">
-                        <tbody>
-                            <tr>
-                                <td>x</td>
-                                <td>monetaryAvgDay</td>
-                                <td>min: <input type="number" value={xLim.min} onChange={e => parseFloat(e.target.value) < xLim.max && setXLim({ ...xLim, min: parseFloat(e.target.value) })} /></td>
-                                <td>max: <input type="number" value={xLim.max} onChange={e => parseFloat(e.target.value) > xLim.min && setXLim({ ...xLim, max: parseFloat(e.target.value) })} /></td>
-                                <td><button onClick={() => setXLim({ min: xDomainMin, max: xDomainMax })}>reset</button></td>
-                            </tr>
-                            <tr>
-                                <td>y</td>
-                                <td>frequencyAvgDay</td>
-                                <td>min: <input type="number" value={yLim.min} onChange={e => parseFloat(e.target.value) < yLim.max && setYLim({ ...yLim, min: parseFloat(e.target.value) })} /></td>
-                                <td>max: <input type="number" value={yLim.max} onChange={e => parseFloat(e.target.value) > yLim.min && setYLim({ ...yLim, max: parseFloat(e.target.value) })} /></td>
-                                <td><button onClick={() => setYLim({ min: yDomainMin, max: yDomainMax })}>reset</button></td>
-                            </tr>
-                            <tr>
-                                <td>colour</td>
-                                <td>amount of the day or total amount</td>
-                                <td>min: <input type="number" value={colourLim.min} onChange={e => setColourLim({ ...colourLim, min: parseFloat(e.target.value) })} /></td>
-                                <td>max: <input type="number" value={colourLim.max} onChange={e => setColourLim({ ...colourLim, max: parseFloat(e.target.value) })} /></td>
-                                <td><button onClick={() => setColourLim({ min: colourDomainMin, max: colourDomainMax })}>reset</button></td>
-                            </tr>
-                            <tr>
-                                <td>size</td>
-                                <td>times of transaction of the day or the total times of transaction</td>
-                                <td>min: <input type="number" value={sizeLim.min} onChange={e => setSizeLim({ ...sizeLim, min: parseFloat(e.target.value) })} /></td>
-                                <td>max: <input type="number" value={sizeLim.max} onChange={e => setSizeLim({ ...sizeLim, max: parseFloat(e.target.value) })} /></td>
-                                <td><button onClick={() => setSizeLim({ min: sizeDomainMin, max: sizeDomainMax })}>reset</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div> */}
-
+                            </div>
+                            <div className="col-span-7">
+                                <div className="controlPannelFolderableContainer floatDiv">
+                                    <FolderableContainer label="ControlPannel">
+                                        <div className="controlPannel"><ControlPannel /></div>
+                                    </FolderableContainer>
+                                </div>
+                                <div className="calendarView">
+                                    <CalendarView3 transactionDataArr={transactionDataArr}
+                                        initCurrentYear={2016}
+                                        highLightedTransactionNumberSet={brushedTransactionNumberSet}
+                                        colourScale={colourScale}
+                                        colourValueGetter={publicValueGetter.colour}
+                                    ></CalendarView3>
+                                </div>
+                            </div>
+                        </div>
+                        <TableView transactionDataArr={transactionDataArr}
+                            handleClearSelect={() => setBrushedTransactionNumberSet(new Set())}
+                            transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
+                            colourValueGetter={publicValueGetter.colour}></TableView>
+                        <ColourLegendList colourMappings={[]}></ColourLegendList>
+                    </ValueGetterContext.Provider>
+                </ConfigProvider>
             </div>
-            </ConfigProvider>
         )
     }
 

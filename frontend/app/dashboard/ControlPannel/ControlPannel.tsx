@@ -56,8 +56,8 @@ export default function ControlPannel() {
         }
     }
 
-    return (<div>
-        <div>
+    return (<>
+        <div className="controlPannelSubtitle">
             calendar view setting
         </div>
         <table>
@@ -106,5 +106,5 @@ export default function ControlPannel() {
                 </td>
             </tr>
         </table>
-    </div>)
+    </>)
 }

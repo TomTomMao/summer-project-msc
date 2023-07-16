@@ -6,7 +6,8 @@ export interface DescriptionAndIsCredit {
     transactionDescription: string;
     isCredit: boolean;
 }
-
+const UPARROW = <span>↑</span>;
+const DOWNARROW = <span>↓</span>;
 type Props = {
     transactionDataArr: TransactionData[];
     transactionNumberSet: Set<TransactionData['transactionNumber']>;
@@ -20,10 +21,11 @@ type Props = {
 export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect, colourScale, colourValueGetter }:
     Props) {
     // when the component mount or the filteredDescriptionAndIsCreditArr Changes, change it. the time complexity is transactionDataArr.length * filteredDescriptionAndIsCreditArr; can be improved in the future.[performance improvement]
-    const columnNames = TransactionData.getColumnNames()
-    const [sortingConfig, dispatch] = useReducer(sortingConfigReducer, initialSortingConfig)
 
-    const filteredTransactionDataArr = transactionDataArr.filter(transactionData => transactionNumberSet.has(transactionData.transactionNumber)).sort(TransactionData.curryCompare(sortingConfig.sortingKey, sortingConfig.isDesc))
+    const [sortingConfig, dispatch] = useReducer(sortingConfigReducer, initialSortingConfig)
+    const sortingKey = sortingConfig.sortingKey;
+    const isDesc = sortingConfig.isDesc
+    const filteredTransactionDataArr = transactionDataArr.filter(transactionData => transactionNumberSet.has(transactionData.transactionNumber)).sort(TransactionData.curryCompare(sortingKey, isDesc))
     const transactionRows = useMemo(() => {
         return (
             filteredTransactionDataArr.map(transactionData => {
@@ -45,7 +47,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
         )
     }, [transactionDataArr, transactionNumberSet, sortingConfig])
     function handleClickColumnName(columnName: TransactionDataAttrs) {
-        if (columnName === sortingConfig.sortingKey) {
+        if (columnName === sortingKey) {
             handleToggleOrder()
         } else {
             handleChangeSortingKey(columnName)
@@ -59,23 +61,21 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
     }
     return (
         <div>
-            <div>number of results: {filteredTransactionDataArr.length}</div>
-            <div><button onClick={handleClearSelect}>clear all</button></div>
-            <div>sorted by {sortingConfig.sortingKey}</div>
-            <div>order: {sortingConfig.isDesc ? 'descending' : 'ascending'}</div>
+            <div className="text-xs">number of results: {filteredTransactionDataArr.length}</div>
+            <button onClick={handleClearSelect}>clear all</button>
             <table className="infoTable">
                 <thead>
                     <tr>
-                        <td><button onClick={() => handleClickColumnName('transactionNumber')}>transactionNumber</button></td>
-                        <td><button onClick={() => handleClickColumnName('balance')}>balance</button></td>
-                        <td><button onClick={() => handleClickColumnName('category')}>category</button></td>
-                        <td><button onClick={() => handleClickColumnName('creditAmount')}>creditAmount</button></td>
-                        <td><button onClick={() => handleClickColumnName('debitAmount')}>debitAmount</button></td>
-                        <td><button onClick={() => handleClickColumnName('locationCity')}>locationCity</button></td>
-                        <td><button onClick={() => handleClickColumnName('locationCountry')}>locationCountry</button></td>
-                        <td><button onClick={() => handleClickColumnName('transactionDescription')}>transactionDescription</button></td>
-                        <td><button onClick={() => handleClickColumnName('transactionType')}>transactionType</button></td>
-                        <td><button onClick={() => handleClickColumnName('date')}>date</button></td>
+                        <td><button onClick={() => handleClickColumnName('transactionNumber')}>transactionNumber {sortingKey === 'transactionNumber' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('balance')}>balance {sortingKey === 'balance' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('category')}>category {sortingKey === 'category' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('creditAmount')}>creditAmount {sortingKey === 'creditAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('debitAmount')}>debitAmount {sortingKey === 'debitAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('locationCity')}>locationCity {sortingKey === 'locationCity' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('locationCountry')}>locationCountry {sortingKey === 'locationCountry' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('transactionDescription')}>transactionDescription {sortingKey === 'transactionDescription' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('transactionType')}>transactionType {sortingKey === 'transactionType' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('date')}>date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                     </tr>
                 </thead>
                 <tbody>

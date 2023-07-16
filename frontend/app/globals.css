@@ -22,7 +22,53 @@ button {
     padding: 0.3em 1em
 }
 button:hover {
-    background-color: azure;
+    background-color: rgb(196, 196, 196);
     transition: 0.2s;
 }
 
+
+/* controllpannel */
+.controlPannelFolderableContainer {
+    background-color: azure;
+    padding: 0.1em 0.4em;
+    border-radius: 1em;
+    padding-bottom: 0.3em;
+}
+.controlPannelFolderableContainer button {
+    background-color: azure;
+    color: black;
+    border-radius: 1em;
+    border:0px;
+    margin:auto
+}
+.controlPannelFolderableContainer button:hover {
+    background-color: rgb(197, 248, 248);
+    color: black;
+}
+.controlPannel{
+    padding-bottom: 0.5em;
+}
+.controlPannel table {
+    margin: auto;
+    font-size: 12px;
+}
+.controlPannelSubtitle {
+    margin-left: 1em;
+    font-size: 16px;
+}
+
+
+/* float div */
+
+.floatDiv {
+    position: absolute;
+    z-index: 2;
+}
+
+/* calendar view */
+
+.calendarView {
+    position: relative;
+    z-index: 1;
+    top: 2em
+}
