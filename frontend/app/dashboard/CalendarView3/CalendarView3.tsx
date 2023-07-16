@@ -29,7 +29,7 @@ type CalendarViewProps = {
     highLightedTransactionNumberSet: HighLightedTransactionNumberSet;
     initCurrentYear: number;
     heightScaleType: 'log' | 'linear',
-    colourScale:PublicScale['colourScale']
+    colourScale: PublicScale['colourScale']
     colourValueGetter: publicValueGetter['colour']
 };
 
@@ -56,15 +56,12 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     if (transactionDataArr.length === 0) {
         return <div>loading</div>
     }
-    const data: Data = { transactionDataMapYMD: transactionDataMapYMD, highLightedTransactionNumberSet: highLightedTransactionNumberSet }
+    const data: Data = useMemo(() => { return { transactionDataMapYMD: transactionDataMapYMD, highLightedTransactionNumberSet: highLightedTransactionNumberSet } }, [transactionDataMapYMD, highLightedTransactionNumberSet])
 
     // create public scales
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height);
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
     const heightScale: BarCalendarViewSharedScales['heightScale'] = heightScaleFunc(heightDomain, [0, CalendarViewCellWidth])
-    // const colourDomain = Array.from(new Set(transactionDataArr.map(barGlyphValueGetter.colour)))
-    // const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse()
-    // const colourScale: BarCalendarViewSharedScales['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
     const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScale, colourScale }
     // shared bandwidth
 
@@ -89,9 +86,9 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                     transactionDataMapYMD={transactionDataMapYMD}
                     colourScale={colourScale}
                     colourValueGetter={colourValueGetter}
-                    />}
+                />}
 
-           </div>
+            </div>
         </div >
     )
 }
@@ -101,7 +98,7 @@ type BarMonthViewProps = {
     month: number,
     currentYear: number,
     /**
-     * data of all the transactions
+     * data of all the transactions and a map store the transaction number of the highlighted transaction
      */
     data: Data,
     scales: BarCalendarViewSharedScales,
@@ -109,12 +106,15 @@ type BarMonthViewProps = {
     onShowDayDetail: (day: number, month: number, year: number) => void
 }
 
-function MonthView({ month, currentYear, data, scales, valueGetter, onShowDayDetail }: BarMonthViewProps) {
+function MonthView(props: BarMonthViewProps) {
+    const { month, currentYear } = props
     // month: 1to12 
     return (<tr>
         <td>{MONTHS[month - 1]}</td>
-        {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i =>
-            <DayView day={i + 1} month={month} currentYear={currentYear} data={data} scales={scales} valueGetter={valueGetter} onShowDayDetail={onShowDayDetail} />)}
+        {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i => {
+            const barDayViewProps: BarDayViewProps = { day: i + 1, ...props }
+            return <DayView {...barDayViewProps} />
+        })}
     </tr>)
 
 }
@@ -140,7 +140,8 @@ type BarDayViewProps = {
  * @param day the number of the day in the month between 1 to 31
  * @param month the number of the month in the year between 1 to 12
  */
-function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDayDetail }: BarDayViewProps) {
+function DayView(props: BarDayViewProps) {
+    const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail } = props
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
     const useShareBandWidth = false;
     // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
@@ -148,7 +149,6 @@ function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDay
     const highlightMode = highLightedTransactionNumberSet.size > 0; // for deciding the style of rect
     const { heightScale, colourScale } = scales // scales for bar glyph
     function handleShowDayDetail() {
-        // console.log(`${currentYear}-${month}-${day}`, dayData);
         onShowDayDetail(day, month, currentYear);
     }
     // border colour determined by the day of week
@@ -165,8 +165,9 @@ function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDay
         return d3.scaleBand().domain(xDomain).range([0, width])
     }, [dayData, valueGetter])
 
-    // prepare the bars
+
     const bars = useMemo(() => {
+        console.log(currentYear, month, day, 'rendering bars because data OR scales changed: ', data)
         if (xScale === undefined) {
             return []
         } else {
@@ -186,7 +187,7 @@ function DayView({ day, month, currentYear, data, scales, valueGetter, onShowDay
                 )
             });
         }
-    }, [data])
+    }, [data, heightScale, colourScale, xScale])
 
     if (dayData.length === 0) {
         // highlight the day without transaction
