@@ -13,6 +13,7 @@ import assert from "assert";
 import ColourLegendList from "./ColourLegend";
 import * as d3 from 'd3';
 import { ConfigProvider } from "./ConfigProvider";
+import ControlPannel from "./ControllPannel/ControllPannel";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
@@ -172,6 +173,7 @@ export default function Page() {
                         </div>
                     </div>
                     <ColourLegendList colourMappings={[]}></ColourLegendList>
+                    <ControlPannel></ControlPannel>
                 </ValueGetterContext.Provider>
 
                 {/* <div className="m-auto">
