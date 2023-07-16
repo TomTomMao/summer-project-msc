@@ -85,7 +85,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                 <thead>
                     <tr>
                         <td><input className="w-10" type="number" value={currentYear} onChange={(e) => e.target.value != '2014' && e.target.value != '2023' && setCurrentYear(parseInt(e.target.value))} /></td>
-                        {(Array.from(Array(31).keys())).map(i => <td key={i + 1} style={{ color: detailDay && detailDay.day === i + 1 ? 'red' : 'black' }}>{i + 1}</td>)}
+                        {(Array.from(Array(31).keys())).map(i => <td key={i + 1} style={{ color: detailDay && detailDay.day === i + 1 && detailDay.year === currentYear ? 'red' : 'black' }}>{i + 1}</td>)}
                     </tr>
                 </thead>
                 <tbody>
@@ -126,7 +126,7 @@ function MonthView(props: BarMonthViewProps) {
     const { month, currentYear, detailDay } = props
     // month: 1to12 
     return (<tr>
-        <td style={{ color: detailDay && detailDay.month === month ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
+        <td style={{ color: detailDay && detailDay.month === month && detailDay.year === currentYear ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
         {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i => {
             const barDayViewProps: BarDayViewProps = { day: i + 1, ...props }
             return <DayView {...barDayViewProps} key={`${month}-${i + 1}`} />
