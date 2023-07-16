@@ -51,7 +51,6 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     const transactionDataMapYMD = useMemo(() => {
         return d3.group(transactionDataArr, d => d.date?.getFullYear(), d => d.date?.getMonth() + 1, d => d.date?.getDate())
     }, [transactionDataArr])
-    const glyphType: 'bar' | 'pie' = 'bar';
     if (transactionDataArr.length === 0) {
         return <div>loading</div>
     }
