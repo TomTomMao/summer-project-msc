@@ -13,7 +13,7 @@ import assert from "assert";
 import ColourLegendList from "./ColourLegend";
 import * as d3 from 'd3';
 import { ConfigProvider } from "./ConfigProvider";
-import ControlPannel from "./ControllPannel/ControllPannel";
+import ControlPannel from "./ControlPannel/ControlPannel";
 
 const parseTime = timeParse('%d/%m/%Y')
 const apiUrl = 'http://localhost:3030';
