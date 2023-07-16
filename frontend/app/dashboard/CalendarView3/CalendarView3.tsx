@@ -4,9 +4,10 @@ import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import * as d3 from 'd3'
 
 import assert from "assert";
-import { BarGlyphScales } from "../Glyphs/BarGlyph/BarGlyph";
+import { BarGlyphScales, BarGlyphScalesLinearHeight, BarGlyphScalesLogHeight } from "../Glyphs/BarGlyph/BarGlyph";
 import TableView from "../TableView/TableView";
 import { CalendarViewCellHeight, CalendarViewCellWidth, PublicScale, publicValueGetter } from "../page";
+import { ConfigContext } from "../ConfigProvider";
 
 
 
@@ -25,7 +26,7 @@ type CalendarViewProps = {
     transactionDataArr: TransactionData[];
     highLightedTransactionNumberSet: HighLightedTransactionNumberSet;
     initCurrentYear: number;
-    heightScaleType: 'log' | 'linear',
+    // heightScaleType: 'log' | 'linear',
     colourScale: PublicScale['colourScale']
     colourValueGetter: publicValueGetter['colour']
 };
@@ -37,12 +38,11 @@ const barGlyphValueGetter = {
 }
 
 
-export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, heightScaleType, colourScale, colourValueGetter }:
+export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, colourScale, colourValueGetter }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-    const heightScaleFunc = heightScaleType === 'log' ? d3.scaleLog : d3.scaleLinear
     const [detailDay, setDetailDay] = useState<null | { day: number, month: number, year: number }>(null)
-    
+
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
         setDetailDay({ day: day, month: month, year: year })
@@ -61,15 +61,16 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     // todo: replace with useMemos to improve performance
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height); // height for bar glyph
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
-    const heightScale: BarCalendarViewSharedScales['heightScale'] = heightScaleFunc(heightDomain, [0, CalendarViewCellWidth])
-    const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScale, colourScale } // colourScale shared with other views
+    const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, CalendarViewCellWidth]);
+    const heightScaleLog: BarCalendarViewSharedScales['heightScaleLog'] = d3.scaleLog(heightDomain, [0, CalendarViewCellWidth]);
+    const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScaleLinear, heightScaleLog, colourScale } // colourScale shared with other views
     // create shared number of bars, the number will be used for control the xDomain's Size
     const maxTransactionCountOfDay = useMemo(() => {
         const countTransactionArr = d3.flatRollup(transactionDataArr, d => d.length, d => d.date);
         console.log('countTransactionArr', countTransactionArr)
         return d3.max(countTransactionArr, d => d[1])
     }, [transactionDataArr])
-    console.log('maxTransactionCountOfDay', maxTransactionCountOfDay)
+    // console.log('maxTransactionCountOfDay', maxTransactionCountOfDay)
 
 
     return (
@@ -129,7 +130,8 @@ function MonthView(props: BarMonthViewProps) {
 
 
 type BarCalendarViewSharedScales = {
-    heightScale: BarGlyphScales['heightScale'];
+    heightScaleLog: BarGlyphScalesLogHeight['heightScale'];
+    heightScaleLinear: BarGlyphScalesLinearHeight['heightScale']
     colourScale: BarGlyphScales['colourScale'];
 }
 type BarDayViewProps = {
@@ -153,17 +155,18 @@ function DayView(props: BarDayViewProps) {
     const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail } = props
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
 
+    const maxTransactionCountOfDay: number = 28;
     // configs
-    const maxTransactionCountOfDay: number | null = 28;
-    const useShareBandWidth = maxTransactionCountOfDay === null ? false : true;
-    const sortKey: null | TransactionDataAttrs = 'category';
-    const sortDesc: boolean = false
+    const config = useContext(ConfigContext)
+    assert(config !== null);
+    const { isSharedBandWidth, sortingKey, isDesc, heightAxis } = config.barGlyphConfig
+    const comparator = TransactionData.curryCompare(sortingKey, isDesc)
 
-    const comparator = TransactionData.curryCompare(sortKey === null ? 'transactionNumber' : sortKey, sortDesc)
     // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
     const { transactionDataMapYMD, highLightedTransactionNumberSet } = data;
     const highlightMode = highLightedTransactionNumberSet.size > 0; // for deciding the style of rect
-    const { heightScale, colourScale } = scales // heightScale for bar glyph, colourScale for category
+    const { heightScaleLog, heightScaleLinear, colourScale } = scales // heightScale for bar glyph, colourScale for category
+    const heightScale = heightAxis === 'log' ? heightScaleLog : heightScaleLinear
     function handleShowDayDetail() {
         onShowDayDetail(day, month, currentYear);
     }
@@ -177,17 +180,18 @@ function DayView(props: BarDayViewProps) {
     const xScale: BarGlyphScales['xScale'] | undefined = useMemo(() => {
         const sortedDayData = d3.sort(dayData, comparator)
         let xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
-        if (useShareBandWidth) {
+        if (isSharedBandWidth) {
             // fill the domain if use shared band width
             const domainLength = xDomain.length
             for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`) }
         }
         if (xDomain[0] === undefined && xDomain[1] === undefined) { return undefined }
         return d3.scaleBand().domain(xDomain).range([0, width])
-    }, [dayData, valueGetter, useShareBandWidth, sortKey])
+    }, [dayData, valueGetter, isSharedBandWidth, sortingKey])
 
-
+    // todo: preload bars for different state
     const bars = useMemo(() => {
+        console.log(`${day}-${month}-${currentYear}`,'bars rerendered')
 
         if (xScale === undefined) {
             return []
@@ -209,7 +213,7 @@ function DayView(props: BarDayViewProps) {
                 )
             });
         }
-    }, [data, heightScale, colourScale, xScale])
+    }, [data, heightAxis, colourScale, xScale])
 
     if (dayData.length === 0) {
         // highlight the day without transaction

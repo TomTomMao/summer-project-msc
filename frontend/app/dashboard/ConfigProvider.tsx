@@ -3,7 +3,7 @@ import { TransactionDataAttrs } from "./DataObject";
 const initConfig: Config = {
     barGlyphConfig: {
         isSharedBandWidth: false,
-        sortingKey: 'transactionNumber',
+        sortingKey: 'transactionAmount',
         isDesc: false,
         heightAxis: 'log'
     }

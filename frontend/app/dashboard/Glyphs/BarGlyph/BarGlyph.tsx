@@ -1,10 +1,16 @@
 import * as d3 from "d3"
 type BarGlyphData = { id: string, xDomainValue: string, heightDomainValue: number, colourDomainValue: string }[]
-export type BarGlyphScales = {
+export type BarGlyphScalesLinearHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
-    heightScale: d3.ScaleLinear<number, number, never> | d3.ScaleLogarithmic<number, number, never>,
+    heightScale: d3.ScaleLinear<number, number, never>,
     colourScale: d3.ScaleOrdinal<string, string, never>
 }
+export type BarGlyphScalesLogHeight = {
+    xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
+    heightScale: d3.ScaleLogarithmic<number, number, never>,
+    colourScale: d3.ScaleOrdinal<string, string, never>
+}
+export type BarGlyphScales = BarGlyphScalesLogHeight | BarGlyphScalesLinearHeight
 
 type Props = {
     data: BarGlyphData,

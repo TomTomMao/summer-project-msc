@@ -164,7 +164,6 @@ export default function Page() {
                         <div className="col-span-7">
                             <CalendarView3 transactionDataArr={transactionDataArr}
                                 initCurrentYear={2016}
-                                heightScaleType={calendarGlyphUseLog ? "log" : "linear"}
                                 highLightedTransactionNumberSet={brushedTransactionNumberSet}
                                 colourScale={colourScale}
                                 colourValueGetter={publicValueGetter.colour}
