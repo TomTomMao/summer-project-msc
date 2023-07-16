@@ -84,12 +84,12 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
             <table className="smallLetterTable">
                 <thead>
                     <tr>
-                        <td><input className="w-14" type="number" value={currentYear} onChange={(e) => e.target.value != '2014' && e.target.value != '2023' && setCurrentYear(parseInt(e.target.value))} /></td>
-                        {(Array.from(Array(31).keys())).map(i => <td key={i + 1}>{i + 1}</td>)}
+                        <td><input className="w-10" type="number" value={currentYear} onChange={(e) => e.target.value != '2014' && e.target.value != '2023' && setCurrentYear(parseInt(e.target.value))} /></td>
+                        {(Array.from(Array(31).keys())).map(i => <td key={i + 1} style={{ color: detailDay && detailDay.day === i + 1 ? 'red' : 'black' }}>{i + 1}</td>)}
                     </tr>
                 </thead>
                 <tbody>
-                    {MONTHS.map((month, i) => <MonthView month={i + 1} currentYear={currentYear}
+                    {MONTHS.map((_, i) => <MonthView month={i + 1} currentYear={currentYear}
                         key={i + 1} data={data} scales={barCalendarViewSharedScales} valueGetter={barGlyphValueGetter} onShowDayDetail={handleShowDayDetail}
                         detailDay={detailDay} />)}
                 </tbody>
@@ -123,10 +123,10 @@ type BarMonthViewProps = {
 }
 
 function MonthView(props: BarMonthViewProps) {
-    const { month, currentYear } = props
+    const { month, currentYear, detailDay } = props
     // month: 1to12 
     return (<tr>
-        <td>{MONTHS[month - 1]}</td>
+        <td style={{ color: detailDay && detailDay.month === month ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
         {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i => {
             const barDayViewProps: BarDayViewProps = { day: i + 1, ...props }
             return <DayView {...barDayViewProps} key={`${month}-${i + 1}`} />
@@ -168,7 +168,7 @@ function DayView(props: BarDayViewProps) {
     const config = useContext(ConfigContext)
     assert(config !== null);
     const { isSharedBandWidth, sortingKey, isDesc, heightAxis } = config.barGlyphConfig
-    const comparator = TransactionData.curryCompare(sortingKey, isDesc)
+    const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc])
 
     // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
     const { transactionDataMapYMD, highLightedTransactionNumberSet } = data;
@@ -179,7 +179,7 @@ function DayView(props: BarDayViewProps) {
         onShowDayDetail(day, month, currentYear);
     }
 
-
+    // cache the bars of all the years.
     const barsOfEachYear: { year: number, bars: JSX.Element[] }[] = useMemo(() => {
         const years = Array.from(data.transactionDataMapYMD.keys());
         const barsOfEachYear: { year: number, bars: JSX.Element[] }[] = [];
@@ -217,10 +217,10 @@ function DayView(props: BarDayViewProps) {
 
     return (
         <td onClick={handleShowDayDetail} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
-                <svg width={width} height={height}>
-                    {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
-                    {/* <g>{bars}</g> */}
-                </svg>
+            <svg width={width} height={height}>
+                {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
+                {/* <g>{bars}</g> */}
+            </svg>
         </td>
     )
 }
