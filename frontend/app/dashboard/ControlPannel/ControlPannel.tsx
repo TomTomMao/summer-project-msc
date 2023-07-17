@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { ConfigContext, ConfigDispatchContext } from "../ConfigProvider"
+import { Action, ConfigContext, ConfigDispatchContext } from "../ConfigProvider"
 import { assert } from "console"
 import { TransactionData, TransactionDataAttrs } from "../DataObject"
 import next from "next/types"
@@ -55,6 +55,12 @@ export default function ControlPannel() {
                 ;
         }
     }
+    const handleUseBarGlyph = () => {
+        dispatch({ targetChart: 'calendar view', type: 'change glyph type', glyphType: 'bar' })
+    }
+    const handleUsePieGlyph = () => {
+        dispatch({ targetChart: 'calendar view', type: 'change glyph type', glyphType: 'pie' })
+    }
 
     return (<>
         <div className="controlPannelSubtitle">
@@ -62,8 +68,15 @@ export default function ControlPannel() {
         </div>
         <table>
             <tr>
+                <td><input type="radio" name="barGlyph" checked={config.calendarViewConfig.glyphType === 'bar'} id="barGlyph"
+                    onClick={handleUseBarGlyph} /><label htmlFor="barGlyph">bar glyph</label></td>
+                <td><input type="radio" name="pieGlyph" checked={config.calendarViewConfig.glyphType === 'pie'} id="pieGlyph"
+                    onClick={handleUsePieGlyph} /><label htmlFor="pieGlyph">pie glyph</label></td>
+            </tr>
+            <tr><td><hr /></td><td><hr /></td></tr>
+            <tr>
                 <td>
-                    share bandwidth among bar glyphs
+                    barGlyph share bandwidth?
                 </td>
                 <td>
                     <select name="" id="" value={String(config.barGlyphConfig.isSharedBandWidth)}
@@ -75,7 +88,7 @@ export default function ControlPannel() {
             </tr>
             <tr>
                 <td>
-                    set sorting key
+                    barGlyph sorting key:
                 </td>
                 <td>
                     <select name="" id="" value={config.barGlyphConfig.sortingKey} onChange={(e) => handleSetBarGlyphSortingKey(e.target.value)}>
@@ -85,7 +98,7 @@ export default function ControlPannel() {
             </tr>
             <tr>
                 <td>
-                    set sorting order
+                    barGlyph sorting order:
                 </td>
                 <td>
                     <select name="" id="" value={config.barGlyphConfig.isDesc ? 'descending' : 'ascending'} onChange={(e) => handleSetBarGlyphSortingOrder(e.target.value)}>
@@ -96,7 +109,7 @@ export default function ControlPannel() {
             </tr>
             <tr>
                 <td>
-                    set heigth axis
+                    barGlyph heigth axis:
                 </td>
                 <td>
                     <select name="" id="" value={config.barGlyphConfig.heightAxis} onChange={(e) => handleSetBarGlyphHeightAxis(e.target.value)}>
@@ -105,6 +118,7 @@ export default function ControlPannel() {
                     </select>
                 </td>
             </tr>
+
         </table>
     </>)
 }

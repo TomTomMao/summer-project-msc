@@ -124,7 +124,11 @@ type BarMonthViewProps = {
 
 function MonthView(props: BarMonthViewProps) {
     const { month, currentYear, detailDay, onShowDayDetail } = props
-    let viewType: 'bar' | 'pie' = 'pie';
+    const config = useContext(ConfigContext);
+    if (config === null) {
+        throw new Error("config is loading, but the month view is already amounted");
+    }
+    const glyphType = config.calendarViewConfig.glyphType;
     function handleShowDayDetail(day: number) {
         onShowDayDetail(day, month, currentYear);
     }
@@ -141,7 +145,7 @@ function MonthView(props: BarMonthViewProps) {
                 detailDay: props.detailDay
             }
             return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
-                {viewType === 'pie' ? <PieDayView {...pieDayViewProps} key={`${month}-${i + 1}`} /> : <BarDayView {...barDayViewProps} key={`${month}-${i + 1}`} />}
+                {glyphType === 'pie' ? <PieDayView {...pieDayViewProps} key={`${month}-${i + 1}`} /> : <BarDayView {...barDayViewProps} key={`${month}-${i + 1}`} />}
             </td>
         })}
     </tr>)
