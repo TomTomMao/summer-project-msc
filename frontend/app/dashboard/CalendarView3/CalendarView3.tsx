@@ -226,14 +226,9 @@ function BarDayView(props: BarDayViewProps) {
         return barsOfEachYear
     }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc])
 
-    return (
-        // <td onClick={handleShowDayDetail} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
-        <svg width={width} height={height}>
-            {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
-            {/* <g>{bars}</g> */}
-        </svg>
-        // </td>
-    )
+    return (<svg width={width} height={height}>
+        {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
+    </svg>)
 }
 /**
  * 
@@ -348,11 +343,13 @@ export function PieDayView(props: PieDayViewProps) {
             endAngle: p.endAngle
         })
     )
+    const highlightMode = data.highLightedTransactionNumberSet.size > 0
     return (
         <svg width={width} height={height}>
             <g transform={`translate(${width * 0.5},${height * 0.5})`}>
                 {arcs.map((arc, i) => {
-                    return <path key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))} />;
+                    return <path key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))}
+                        opacity={highlightMode && !data.highLightedTransactionNumberSet.has(dayData[i].transactionNumber) ? 0.1 : 1} />;
                 })}
             </g>
         </svg>)
