@@ -22,7 +22,7 @@ export const ValueGetterContext = createContext(initValueGetter)
  */
 export const temporalValueGetter = {
     x: (transactionData: TransactionData) => transactionData.date === null ? 0 : daysIntoYear(transactionData.date),
-    y: (transactionData: TransactionData) => transactionData.isCredit() ? transactionData.creditAmount : transactionData.debitAmount,
+    y: (transactionData: TransactionData) => transactionData.balance,
     colour: (transactionData: TransactionData) => transactionData.category
 }
 export const temporalValueGetterSwapped = {

@@ -29,7 +29,7 @@ export interface DomainLimits {
 
 export type PublicScale = { colourScale: d3.ScaleOrdinal<string, string, never> };
 export type PublicValueGetter = { colour: (d: TransactionData) => string; }
-const publicValueGetter = { colour: (d: TransactionData) => d.category }
+const publicValueGetter = { colour: (d: TransactionData) => d.type }
 
 export default function Page() {
     const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)

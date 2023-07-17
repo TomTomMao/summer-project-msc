@@ -26,7 +26,7 @@ type CalendarViewProps = {
     initCurrentYear: number;
     // heightScaleType: 'log' | 'linear',
     colourScale: PublicScale['colourScale']
-    colourValueGetter: PublicValueGetter['colour']
+    colourValueGetter: publicValueGetter['colour']
 };
 
 export type Day = {
