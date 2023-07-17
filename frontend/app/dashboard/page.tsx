@@ -166,7 +166,7 @@ export default function Page() {
                                 </div>
                             </div>
                         </div>
-                        <FolderableContainer label="detail of brushed points">
+                        <FolderableContainer label="detail of brushed points" initIsFolded={true}>
                             <TableView transactionDataArr={transactionDataArr}
                                 handleClearSelect={() => setBrushedTransactionNumberSet(new Set())}
                                 transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
