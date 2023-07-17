@@ -123,12 +123,16 @@ type BarMonthViewProps = {
 }
 
 function MonthView(props: BarMonthViewProps) {
-    const { month, currentYear, detailDay } = props
-    const viewType = 'pie'
+    const { month, currentYear, detailDay, onShowDayDetail } = props
+    let viewType: 'bar' | 'pie' = 'pie';
+    function handleShowDayDetail(day: number) {
+        onShowDayDetail(day, month, currentYear);
+    }
     // month: 1to12 
     return (<tr>
         <td style={{ color: detailDay && detailDay.month === month && detailDay.year === currentYear ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
         {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i => {
+            const isDetailDay = detailDay !== null && detailDay.day === i + 1 && detailDay.month === month && detailDay.year === currentYear;
             const barDayViewProps: BarDayViewProps = { day: i + 1, ...props }
             const pieDayViewProps: PieDayViewProps = {
                 day: i + 1, month: props.month, currentYear: props.currentYear, data: props.data,
@@ -136,7 +140,9 @@ function MonthView(props: BarMonthViewProps) {
                 onShowDayDetail: props.onShowDayDetail,
                 detailDay: props.detailDay
             }
-            return viewType === 'pie' ? <PieDayView {...pieDayViewProps} key={`${month}-${i + 1}`} /> : <BarDayView {...barDayViewProps} key={`${month}-${i + 1}`} />
+            return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
+                {viewType === 'pie' ? <PieDayView {...pieDayViewProps} key={`${month}-${i + 1}`} /> : <BarDayView {...barDayViewProps} key={`${month}-${i + 1}`} />}
+            </td>
         })}
     </tr>)
 
@@ -223,12 +229,12 @@ function BarDayView(props: BarDayViewProps) {
     }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc])
 
     return (
-        <td onClick={handleShowDayDetail} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
-            <svg width={width} height={height}>
-                {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
-                {/* <g>{bars}</g> */}
-            </svg>
-        </td>
+        // <td onClick={handleShowDayDetail} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
+        <svg width={width} height={height}>
+            {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year} >{d.bars}</g> })}
+            {/* <g>{bars}</g> */}
+        </svg>
+        // </td>
     )
 }
 /**
