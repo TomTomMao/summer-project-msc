@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { TransactionData, RFMData, TransactionDataAttrs } from "../DataObject";
-import { PublicScale, publicValueGetter } from "../page";
+import { PublicScale, PublicValueGetter } from "../page";
 
 export interface DescriptionAndIsCredit {
     transactionDescription: string;
@@ -13,7 +13,7 @@ type Props = {
     transactionNumberSet: Set<TransactionData['transactionNumber']>;
     handleClearSelect: (() => void)
     colourScale: PublicScale['colourScale']
-    colourValueGetter: publicValueGetter['colour']
+    colourValueGetter: PublicValueGetter['colour']
 }
 /**
  * show the transactions that has the number in the transactionNumberSet
