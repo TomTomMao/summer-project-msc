@@ -98,15 +98,11 @@ export function ClusterView(props: Props) {
     // cache the circles
     const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, brushedTransactionNumberSet, valueGetterWithSwap, scales), [transactionDataArr, valueGetter, brushedTransactionNumberSet, useLogScale])
     useEffect(() => {
-        console.log('using brush')
         //https://github.com/d3/d3-brush
         const brushG = d3.select(brushGRef.current)
         const brush = d3.brush().extent([[0, 0], [width, height]]).on("brush end", ({ selection }) => handleBrush(selection))
         brushG.call(brush)
-        return function () {
-            // brushG.call(brush.move);
-            brushG.on('.brush', null)
-        }
+        return () => { brushG.on('.brush', null) }
     }, [containerWidth, containerHeight, isSwap, useLogScale])
 
     return (<>
@@ -140,7 +136,7 @@ function getCircles(transactionDataArr: TransactionData[],
                     r={DEFAULT_RADIUS}
                     fill={scales.colourScale(valueGetterWithSwap.colour(transactionData)).valueOf()}
                     opacity={((!brushed) || isCircleHighlighted) ? 1 : 0.1}
-                    stroke={brushed && isCircleHighlighted ? 'black' : undefined}
+                    // stroke={brushed && isCircleHighlighted ? 'black' : undefined}
                 />
             );
         });
@@ -154,7 +150,7 @@ function getCircles(transactionDataArr: TransactionData[],
                     r={DEFAULT_RADIUS}
                     fill={scales.colourScale(valueGetterWithSwap.colour(transactionData)).valueOf()}
                     opacity={((!brushed) || isCircleHighlighted) ? 1 : 0.1}
-                    stroke={brushed && isCircleHighlighted ? 'black' : undefined}
+                    // stroke={brushed && isCircleHighlighted ? 'black' : undefined}
                 />
             );
         });
