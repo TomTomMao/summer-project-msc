@@ -163,8 +163,6 @@ type BarDayViewProps = {
     data: Data,
     scales: BarCalendarViewSharedScales,
     valueGetter: BarCalendarViewValueGetter,
-    onShowDayDetail: (day: number, month: number, year: number) => void,
-    detailDay: null | Day
 }
 /**
  * use public scale for transaction amount and public colours scale for Category
@@ -173,9 +171,8 @@ type BarDayViewProps = {
  * @param month the number of the month in the year between 1 to 12
  */
 function BarDayView(props: BarDayViewProps) {
-    const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail, detailDay } = props
+    const { day, month, currentYear, data, scales, valueGetter } = props
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
-    const isDetailDay = detailDay !== null && day === detailDay.day && month === detailDay.month && currentYear === detailDay.year
     const maxTransactionCountOfDay: number = 28; // todo, take it from the calendarview component
     // configs
     const config = useContext(ConfigContext)
@@ -188,9 +185,6 @@ function BarDayView(props: BarDayViewProps) {
     const highlightMode = highLightedTransactionNumberSet.size > 0; // for deciding the style of rect
     const { heightScaleLog, heightScaleLinear, colourScale } = scales // heightScale for bar glyph, colourScale for category
     const heightScale = heightAxis === 'log' ? heightScaleLog : heightScaleLinear
-    function handleShowDayDetail() {
-        onShowDayDetail(day, month, currentYear);
-    }
 
     // cache the bars of all the years.
     const barsOfEachYear: { year: number, bars: JSX.Element[] }[] = useMemo(() => {
@@ -350,13 +344,12 @@ export function PieDayView(props: PieDayViewProps) {
             endAngle: p.endAngle
         })
     )
-    return (<td >
+    return (
         <svg width={width} height={height}>
             <g transform={`translate(${width * 0.5},${height * 0.5})`}>
                 {arcs.map((arc, i) => {
                     return <path key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))} />;
                 })}
             </g>
-        </svg>
-    </td>)
+        </svg>)
 }
