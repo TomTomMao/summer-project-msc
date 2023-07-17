@@ -32,7 +32,7 @@ type CalendarViewProps = {
     colourValueGetter: publicValueGetter['colour']
 };
 
-const barGlyphValueGetter = {
+const barGlyphValueGetter: BarCalendarViewValueGetter = {
     x: (d: TransactionData) => d.transactionNumber,
     height: (d: TransactionData) => d.transactionAmount,
     colour: (d: TransactionData) => d.category
@@ -124,12 +124,19 @@ type BarMonthViewProps = {
 
 function MonthView(props: BarMonthViewProps) {
     const { month, currentYear, detailDay } = props
+    const viewType = 'pie'
     // month: 1to12 
     return (<tr>
         <td style={{ color: detailDay && detailDay.month === month && detailDay.year === currentYear ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
         {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i => {
             const barDayViewProps: BarDayViewProps = { day: i + 1, ...props }
-            return <DayView {...barDayViewProps} key={`${month}-${i + 1}`} />
+            const pieDayViewProps: PieDayViewProps = {
+                day: i + 1, month: props.month, currentYear: props.currentYear, data: props.data,
+                scales: { colourScale: props.scales.colourScale }, valueGetter: pieCalendarViewValueGetter,
+                onShowDayDetail: props.onShowDayDetail,
+                detailDay: props.detailDay
+            }
+            return viewType === 'pie' ? <PieDayView {...pieDayViewProps} key={`${month}-${i + 1}`} /> : <BarDayView {...barDayViewProps} key={`${month}-${i + 1}`} />
         })}
     </tr>)
 
@@ -159,7 +166,7 @@ type BarDayViewProps = {
  * @param day the number of the day in the month between 1 to 31
  * @param month the number of the month in the year between 1 to 12
  */
-function DayView(props: BarDayViewProps) {
+function BarDayView(props: BarDayViewProps) {
     const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail, detailDay } = props
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
     const isDetailDay = detailDay !== null && day === detailDay.day && month === detailDay.month && currentYear === detailDay.year
@@ -293,4 +300,57 @@ function getDataFromTransactionDataMapYMD(transactionDataMapYMD: TransactionData
     // console.log('currDayData:', currDayData)
     return currDayData === undefined ? [] : currDayData;
 
+}
+
+type PieCalendarViewSharedScales = {
+    colourScale: PublicScale['colourScale']
+}
+type PieCalendarViewValueGetter = {
+    colour: (d: TransactionData) => string;
+    value: (d: TransactionData) => number;
+    name: (d: TransactionData) => string;
+}
+type PieDayViewProps = {
+    /**1to31 */
+    day: number,
+    /**1to12 */
+    month: number,
+    currentYear: number,
+    data: Data,
+    scales: PieCalendarViewSharedScales,
+    valueGetter: PieCalendarViewValueGetter,
+    onShowDayDetail: (day: number, month: number, year: number) => void,
+    detailDay: null | Day
+}
+const pieCalendarViewValueGetter: PieCalendarViewValueGetter = {
+    colour: (d: TransactionData) => d.category,
+    value: (d: TransactionData) => d.transactionAmount,
+    name: (d: TransactionData) => d.transactionNumber
+}
+export function PieDayView(props: PieDayViewProps) {
+    //reference: Holtz, Y. (n.d.). Pie chart with React. Retrieved 17 July 2023, from https://www.react-graph-gallery.com/pie-plot
+    const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail, detailDay } = props;
+    const dayData = getDataFromTransactionDataMapYMD(data.transactionDataMapYMD, day, month, currentYear);
+    const { colourScale } = scales;
+    const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
+    const pieGenerator = d3.pie<TransactionData>().value(valueGetter.value)
+    const arcGenerator = d3.arc()
+    const pie = pieGenerator(dayData);
+    const arcs = pie.map((p) =>
+        arcGenerator({
+            innerRadius: 0,
+            outerRadius: width / 2,
+            startAngle: p.startAngle,
+            endAngle: p.endAngle
+        })
+    )
+    return (<td >
+        <svg width={width} height={height}>
+            <g transform={`translate(${width * 0.5},${height * 0.5})`}>
+                {arcs.map((arc, i) => {
+                    return <path key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))} />;
+                })}
+            </g>
+        </svg>
+    </td>)
 }
