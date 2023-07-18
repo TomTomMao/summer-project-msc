@@ -61,6 +61,7 @@ export function ClusterView(props: Props) {
     const valueGetterWithSwap = { ...valueGetter, getXSwap: valueGetter.y, getYSwap: valueGetter.x }
 
     function handleBrush(selection: [[number, number], [number, number]] | null) {
+        console.time('handleBrush')
         if (selection === null) {
             setBrushedTransactionNumberSet(new Set());
             return;
@@ -83,9 +84,10 @@ export function ClusterView(props: Props) {
                 const dataYValue = valueGetterWithSwap.getYSwap(transactionData);
                 return dataXValue >= domainXMin && dataXValue <= domainXMax &&
                     dataYValue >= domainYMin && dataYValue <= domainYMax
-            }).map(d => d.transactionNumber))
-            setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
-        }
+                }).map(d => d.transactionNumber))
+                setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
+            }
+            console.timeEnd('handleBrush')
     }
 
     const margin = DEFAULT_MARGIN;
@@ -95,7 +97,9 @@ export function ClusterView(props: Props) {
     const { xScale, yScale, xScaleSwap, yScaleSwap } = useMemo(() =>
         getScales(transactionDataArr, valueGetterWithSwap, width, height)(useLogScale), [transactionDataArr, valueGetter, useLogScale])
     const scales: ClusterViewScale = { xScale, yScale, xScaleSwap, yScaleSwap, colourScale }
-    // cache the circles
+    // cache the circles 
+
+    // todo test time
     const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, brushedTransactionNumberSet, valueGetterWithSwap, scales), [transactionDataArr, valueGetter, brushedTransactionNumberSet, useLogScale])
     useEffect(() => {
         //https://github.com/d3/d3-brush
