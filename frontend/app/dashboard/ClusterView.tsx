@@ -56,7 +56,7 @@ const DEFAULT_STROKE_WIDTH = 1;
  */
 export function ClusterView(props: Props) {
     const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, useLogScale = true, colourScale } = props;
-    const [isSwap, setIsSwap] = useState(false);
+    const [isSwap, setIsSwap] = useState(false);    
     
     const brushGRef = useRef(null)
     const valueGetterWithSwap = useMemo(() => {
@@ -121,7 +121,7 @@ export function ClusterView(props: Props) {
         const nextSwapCircles: JSX.Element[] = getCirclesFromCircleDataMap(circleDataSwappedMap, brushedTransactionNumberSet);
         console.timeEnd('updating <circle> element')
         return { circles: nextCircles, swapCircles: nextSwapCircles }
-    }, [circleDataMap, circleDataSwappedMap, brushedTransactionNumberSet, isSwap])
+    }, [circleDataMap, circleDataSwappedMap, brushedTransactionNumberSet])
 
 
     useEffect(() => {
