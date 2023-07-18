@@ -1,10 +1,10 @@
 'use client';
 import { useState, useEffect, useRef, useContext, useMemo, Dispatch, SetStateAction } from "react";
-import { TransactionData } from "./DataObject";
+import { TransactionData } from "../DataObject";
 import * as d3 from 'd3';
-import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
-import { AxisBottom, AxisLeft } from "./Axis";
-import { PublicScale } from "./page";
+import { DataPerTransactionDescription } from "../CalendarView3/DataPerTransactionDescription";
+import { AxisBottom, AxisLeft } from "../Axis";
+import { PublicScale } from "../page";
 
 /**
  * render a cluster view using scatter plot

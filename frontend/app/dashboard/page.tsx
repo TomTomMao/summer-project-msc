@@ -5,7 +5,7 @@ import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFM
 import CalendarView3 from "./CalendarView3/CalendarView3";
 import TableView, { DescriptionAndIsCredit } from "./TableView/TableView";
 import { ValueGetterContext, initValueGetter, temporalValueGetter, temporalValueGetterSwapped } from "./CalendarView3/Contexts/ValueGetterContext";
-import { ClusterView, getDomainValueFromDataPerTransactionDescription } from "./ClusterView";
+import { ClusterView, getDomainValueFromDataPerTransactionDescription } from "./ClusterView/ClusterView";
 import { DataPerTransactionDescription } from "./CalendarView3/DataPerTransactionDescription";
 import { getDataPerTransactionDescription } from "./CalendarView3/getDataPerTransactionDescription";
 import { getRFMDataMapFromArr } from "./CalendarView3/getRFMDataMapFromArr";
