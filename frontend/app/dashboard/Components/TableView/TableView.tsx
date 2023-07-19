@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
-import { TransactionData, RFMData, TransactionDataAttrs } from "../DataObject";
-import { PublicScale, PublicValueGetter } from "../page";
+import { TransactionData, RFMData, TransactionDataAttrs } from "../../utilities/DataObject";
+import { PublicScale, PublicValueGetter } from "../../page";
 
 export interface DescriptionAndIsCredit {
     transactionDescription: string;

@@ -1,7 +1,7 @@
 import { useContext } from "react"
 import { Action, ConfigContext, ConfigDispatchContext } from "../ConfigProvider"
 import { assert } from "console"
-import { TransactionData, TransactionDataAttrs } from "../DataObject"
+import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObject"
 import next from "next/types"
 
 /**

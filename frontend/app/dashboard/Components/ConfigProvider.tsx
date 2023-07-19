@@ -1,5 +1,5 @@
 import React, { Dispatch, createContext, useReducer } from "react";
-import { TransactionDataAttrs } from "./DataObject";
+import { TransactionDataAttrs } from "../utilities/DataObject";
 const initConfig: Config = {
     barGlyphConfig: {
         isSharedBandWidth: false,

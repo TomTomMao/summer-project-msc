@@ -1,13 +1,13 @@
 import { useContext, useEffect, useMemo, useState } from "react"
-import { TransactionData, TransactionDataAttrs } from "../DataObject"
+import { TransactionData, TransactionDataAttrs } from "../utilities/DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import * as d3 from 'd3'
 
 import assert from "assert";
-import TableView from "../TableView/TableView";
+import TableView from "../components/TableView/TableView";
 import { CalendarViewCellWidth, PublicScale, PublicValueGetter } from "../page";
-import { ConfigContext } from "../ConfigProvider";
-import FolderableContainer from "../Components/FolderableContainer";
+import { ConfigContext } from "../components/ConfigProvider";
+import FolderableContainer from "../components/FolderableContainer";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView } from "./DayViews/PieDayView";
 import { barGlyphValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
 
@@ -26,7 +26,7 @@ type CalendarViewProps = {
     initCurrentYear: number;
     // heightScaleType: 'log' | 'linear',
     colourScale: PublicScale['colourScale']
-    colourValueGetter: publicValueGetter['colour']
+    colourValueGetter: PublicValueGetter['colour']
 };
 
 export type Day = {

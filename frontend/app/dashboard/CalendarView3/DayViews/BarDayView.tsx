@@ -1,11 +1,22 @@
 import { useContext, useMemo } from "react";
-import { TransactionData } from "../../DataObject";
+import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
 import assert from "assert";
-import { BarGlyphScales, BarGlyphScalesLinearHeight, BarGlyphScalesLogHeight } from "../../Glyphs/BarGlyph/BarGlyph";
 import { CalendarViewCellHeight, CalendarViewCellWidth } from "../../page";
-import { ConfigContext } from "../../ConfigProvider";
+import { ConfigContext } from "../../components/ConfigProvider";
 import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
+
+export type BarGlyphScalesLinearHeight = {
+    xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
+    heightScale: d3.ScaleLinear<number, number, never>,
+    colourScale: d3.ScaleOrdinal<string, string, never>
+}
+export type BarGlyphScalesLogHeight = {
+    xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
+    heightScale: d3.ScaleLogarithmic<number, number, never>,
+    colourScale: d3.ScaleOrdinal<string, string, never>
+}
+export type BarGlyphScales = BarGlyphScalesLogHeight | BarGlyphScalesLinearHeight
 
 export const barGlyphValueGetter: BarCalendarViewValueGetter = {
     x: (d: TransactionData) => d.transactionNumber,

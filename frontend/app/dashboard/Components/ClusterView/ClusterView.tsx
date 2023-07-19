@@ -1,10 +1,9 @@
 'use client';
 import { useState, useEffect, useRef, useContext, useMemo, Dispatch, SetStateAction } from "react";
-import { TransactionData } from "../DataObject";
+import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
-import { DataPerTransactionDescription } from "../CalendarView3/DataPerTransactionDescription";
 import { AxisBottom, AxisLeft } from "../Axis";
-import { PublicScale } from "../page";
+import { PublicScale } from "../../page";
 const BRUSH_MODE = 'brush end'
 /**
  * render a cluster view using scatter plot
@@ -212,64 +211,6 @@ function getCircleDataMap(transactionDataArr: TransactionData[],
     return circleDataMap
 }
 
-/**
- * 
- * @param circleDataMap a map where the key is transaction number and value is the circle data of the transaction
- * @param brushedTransactionNumberSet a set where all the elements in it are the transaction number of the brushed transaction
- * @returns 
- */
-function getCirclesFromCircleDataMap(circleDataMap: CircleDataMap, brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>): JSX.Element[] {
-    const brushed = brushedTransactionNumberSet.size
-    const circles = new Array<JSX.Element>()
-    circleDataMap.forEach((circleData: CircleData, key: string) => {
-        const isCircleHighlighted = brushedTransactionNumberSet.has(circleData.key)
-        const opacity = ((!brushed) || isCircleHighlighted) ? 1 : 0.1
-        const circle = <circle key={circleData.key} cx={circleData.cx} cy={circleData.cy} r={circleData.r} fill={circleData.fill} opacity={opacity} />
-        circles.push(circle)
-    })
-    return circles
-}
-
-function getCircles(transactionDataArr: TransactionData[],
-    brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>,
-    valueGetterWithSwap: ClusterViewValueGetterWithSwap,
-    scales: ClusterViewScale) {
-    return () => {
-        console.time('getCircles')
-        const brushed = brushedTransactionNumberSet.size;
-        const circles = transactionDataArr.map(transactionData => {
-            const isCircleHighlighted = brushedTransactionNumberSet.has(transactionData.transactionNumber);
-            return (
-                <circle
-                    key={transactionData.transactionNumber}
-                    cx={scales.xScale(valueGetterWithSwap.x(transactionData))}
-                    cy={scales.yScale(valueGetterWithSwap.y(transactionData))}
-                    r={DEFAULT_RADIUS}
-                    fill={scales.colourScale(valueGetterWithSwap.colour(transactionData)).valueOf()}
-                    opacity={((!brushed) || isCircleHighlighted) ? 1 : 0.1}
-                // stroke={brushed && isCircleHighlighted ? 'black' : undefined}
-                />
-            );
-        });
-        const swapCircles = transactionDataArr.map(transactionData => {
-            const isCircleHighlighted = brushedTransactionNumberSet.has(transactionData.transactionNumber);
-            return (
-                <circle
-                    key={transactionData.transactionNumber}
-                    cx={scales.xScaleSwap(valueGetterWithSwap.getXSwap(transactionData))}
-                    cy={scales.yScaleSwap(valueGetterWithSwap.getYSwap(transactionData))}
-                    r={DEFAULT_RADIUS}
-                    fill={scales.colourScale(valueGetterWithSwap.colour(transactionData)).valueOf()}
-                    opacity={((!brushed) || isCircleHighlighted) ? 1 : 0.1}
-                // stroke={brushed && isCircleHighlighted ? 'black' : undefined}
-                />
-            );
-        });
-        console.timeEnd('getCircles')
-        return { circles: circles, swapCircles: swapCircles };
-    };
-}
-
 
 function getScales(transactionDataArr: TransactionData[],
     valueGetterWithSwap: ClusterViewValueGetterWithSwap,
@@ -305,54 +246,6 @@ function getScales(transactionDataArr: TransactionData[],
         }
         return { xScale, yScale, xScaleSwap, yScaleSwap };
     };
-}
-
-/**
- * returns the min and max values of x,y,colour,size domains;
- * @param dataPerTransactionDescriptionArr this object provide an array of data
- * @param valueGetter this object provide the valueGetter functions include x, y, colour and size getter.
- * @returns min max domain values like this: { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax }
- */
-export function getDomainValueFromDataPerTransactionDescription(dataPerTransactionDescriptionArr: DataPerTransactionDescription[], valueGetter: {
-    x: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
-    y: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
-    colour: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
-    size: (dataPerTransactionDescription: DataPerTransactionDescription) => number;
-    shape: (dataPerTransactionDescription: DataPerTransactionDescription) => boolean;
-}): { xDomainMin: number; xDomainMax: number; yDomainMin: number; yDomainMax: number; colourDomainMin: number; colourDomainMax: number; sizeDomainMin: number; sizeDomainMax: number; } {
-    const xDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.x);
-    const xDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.x);
-    const yDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.y);
-    const yDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.y);
-    const colourDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.colour);
-    const colourDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.colour);
-    const sizeDomainMin = d3.min(dataPerTransactionDescriptionArr, valueGetter.size);
-    const sizeDomainMax = d3.max(dataPerTransactionDescriptionArr, valueGetter.size);
-    if (xDomainMin === undefined) {
-        throw new Error("invalid xDomainMin value");
-    }
-    if (xDomainMax === undefined) {
-        throw new Error("invalid xDomainMax value");
-    }
-    if (yDomainMin === undefined) {
-        throw new Error("invalid yDomainMin value");
-    }
-    if (yDomainMax === undefined) {
-        throw new Error("invalid yDomainMax value");
-    }
-    if (colourDomainMin === undefined) {
-        throw new Error("invalid colourDomainMin value");
-    }
-    if (colourDomainMax === undefined) {
-        throw new Error("invalid colourDomainMax value");
-    }
-    if (sizeDomainMin === undefined) {
-        throw new Error("invalid sizeDomainMin value");
-    }
-    if (sizeDomainMax === undefined) {
-        throw new Error("invalid sizeDomainMax value");
-    }
-    return { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax };
 }
 
 type CircleProps = {
