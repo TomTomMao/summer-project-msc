@@ -2,6 +2,7 @@ import { TransactionData } from "../../DataObject";
 import * as d3 from 'd3';
 import { CalendarViewCellHeight, CalendarViewCellWidth, PublicScale } from "../../page";
 import { Data, Day, getDataFromTransactionDataMapYMD } from "../CalendarView3";
+import { useEffect, useMemo, useRef } from "react";
 
 type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'];
@@ -31,27 +32,40 @@ export const pieCalendarViewValueGetter: PieCalendarViewValueGetter = {
 export function PieDayView(props: PieDayViewProps) {
     //reference: Holtz, Y. (n.d.). Pie chart with React. Retrieved 17 July 2023, from https://www.react-graph-gallery.com/pie-plot
     const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail, detailDay } = props;
-    const dayData = getDataFromTransactionDataMapYMD(data.transactionDataMapYMD, day, month, currentYear);
+    const dayData = useMemo(() => {
+        return getDataFromTransactionDataMapYMD(data.transactionDataMapYMD, day, month, currentYear);
+    }, [day, month, currentYear])
+    const highLightedTransactionNumberSet = data.highLightedTransactionNumberSet
     const { colourScale } = scales;
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
-    const pieGenerator = d3.pie<TransactionData>().value(valueGetter.value);
-    const arcGenerator = d3.arc();
-    const pie = pieGenerator(dayData);
-    const arcs = pie.map((p) => arcGenerator({
-        innerRadius: 0,
-        outerRadius: width / 2,
-        startAngle: p.startAngle,
-        endAngle: p.endAngle
-    })
-    );
+    const ref=useRef(null)
+    const arcs = useMemo(() => {
+        console.time('getArcs')
+        const pieGenerator = d3.pie<TransactionData>().value(valueGetter.value);
+        const arcGenerator = d3.arc();
+        const pie = pieGenerator(dayData);
+        const arcs = pie.map((p) => arcGenerator({
+            innerRadius: 0,
+            outerRadius: width / 2,
+            startAngle: p.startAngle,
+            endAngle: p.endAngle
+        }));
+        console.timeEnd('getArcs')
+        return arcs
+    }, [valueGetter, dayData])
     const highlightMode = data.highLightedTransactionNumberSet.size > 0;
+    const paths = useMemo(() => {
+        return arcs.map((arc, i) => {
+            return <path id={dayData[i].transactionNumber+'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))}
+                opacity={highlightMode && !data.highLightedTransactionNumberSet.has(dayData[i].transactionNumber) ? 0.1 : 1}
+            />;
+        })
+    }, [arcs, colourScale, valueGetter, dayData, highLightedTransactionNumberSet])
+
     return (
         <svg width={width} height={height}>
-            <g transform={`translate(${width * 0.5},${height * 0.5})`}>
-                {arcs.map((arc, i) => {
-                    return <path key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))}
-                        opacity={highlightMode && !data.highLightedTransactionNumberSet.has(dayData[i].transactionNumber) ? 0.1 : 1} />;
-                })}
+            <g ref={ref} transform={`translate(${width * 0.5},${height * 0.5})`}>
+                {paths}
             </g>
         </svg>);
 }

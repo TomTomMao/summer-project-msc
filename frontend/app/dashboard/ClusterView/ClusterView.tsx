@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import { DataPerTransactionDescription } from "../CalendarView3/DataPerTransactionDescription";
 import { AxisBottom, AxisLeft } from "../Axis";
 import { PublicScale } from "../page";
-
+const BRUSH_MODE = 'end'
 /**
  * render a cluster view using scatter plot
  *
@@ -125,7 +125,9 @@ export function ClusterView(props: Props) {
         console.time('updating opacity')
         // set all points to highlighted if no point get brushed
         if (brushedTransactionNumberSet.size === 0) {
-            d3.selectAll('circle').attr('opacity', 1)
+            transactionDataArr.forEach(({ transactionNumber }) => {
+                document.getElementById(transactionNumber).style.opacity = '1'
+            })
         } else {
             const highLightInfo = transactionDataArr.map(transactionData => {
                 return { id: transactionData.transactionNumber, isHighLighted: brushedTransactionNumberSet.has(transactionData.transactionNumber) }
@@ -146,7 +148,7 @@ export function ClusterView(props: Props) {
     useEffect(() => {
         //https://github.com/d3/d3-brush
         const brushG = d3.select(brushGRef.current)
-        const brush = d3.brush().extent([[0, 0], [width, height]]).on("brush end", ({ selection }) => handleBrush(selection))
+        const brush = d3.brush().extent([[0, 0], [width, height]]).on(BRUSH_MODE, ({ selection }) => handleBrush(selection))
         brushG.call(brush)
         return () => { brushG.on('.brush', null) }
     }, [containerWidth, containerHeight, isSwap, useLogScale])
