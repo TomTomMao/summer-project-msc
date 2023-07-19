@@ -56,8 +56,8 @@ const DEFAULT_STROKE_WIDTH = 1;
  */
 export function ClusterView(props: Props) {
     const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, useLogScale = true, colourScale } = props;
-    const [isSwap, setIsSwap] = useState(false);    
-    
+    const [isSwap, setIsSwap] = useState(false);
+
     const brushGRef = useRef(null)
     const valueGetterWithSwap = useMemo(() => {
         return { ...valueGetter, getXSwap: valueGetter.y, getYSwap: valueGetter.x };
@@ -105,23 +105,29 @@ export function ClusterView(props: Props) {
 
 
     // cache the circles 
-    const { circleDataMap, circleDataSwappedMap } = useMemo(() => {
+    const { circleDataMap, circleDataSwappedMap, circleDataArr, circleDataSwappedArr } = useMemo(() => {
         console.time('re-calculating circleDataMap and circleDattaSwappedMap')
         const circleDataMap = getCircleDataMap(transactionDataArr, valueGetterWithSwap, scales, false);
         const circleDataSwappedMap = getCircleDataMap(transactionDataArr, valueGetterWithSwap, scales, true);
         console.timeEnd('re-calculating circleDataMap and circleDattaSwappedMap')
-        return { circleDataMap, circleDataSwappedMap }
+        const circleDataArr: CircleData[] = [];
+        const circleDataSwappedArr: CircleData[] = [];
+        circleDataMap.forEach((circleData, key) => { circleDataArr.push(circleData) })
+        circleDataSwappedMap.forEach((circleDataSwapped, key) => { circleDataSwappedArr.push(circleDataSwapped) })
+        return { circleDataMap, circleDataSwappedMap, circleDataArr, circleDataSwappedArr }
     }, [transactionDataArr, valueGetterWithSwap, scales])
+
 
     // old getCircles function is responsible for visual mapping, it is removed by the new getCirclesFromCircleData, no visual mapping needed.
     // const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, brushedTransactionNumberSet, valueGetterWithSwap, scales), [transactionDataArr, valueGetter, brushedTransactionNumberSet, useLogScale])
     const { circles, swapCircles }: { circles: JSX.Element[], swapCircles: JSX.Element[] } = useMemo(() => {
         console.time('updating <circle> element')
-        const nextCircles: JSX.Element[] = getCirclesFromCircleDataMap(circleDataMap, brushedTransactionNumberSet);
-        const nextSwapCircles: JSX.Element[] = getCirclesFromCircleDataMap(circleDataSwappedMap, brushedTransactionNumberSet);
+        const brushed = brushedTransactionNumberSet.size;
+        const circles = circleDataArr.map(d=><Circle cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} isHighlighted={(brushed && !brushedTransactionNumberSet.has(d.key)) ? false : true } />)
+        const swapCircles = circleDataSwappedArr.map(d=><Circle cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} isHighlighted={(brushed && !brushedTransactionNumberSet.has(d.key)) ? false : true} />)
         console.timeEnd('updating <circle> element')
-        return { circles: nextCircles, swapCircles: nextSwapCircles }
-    }, [circleDataMap, circleDataSwappedMap, brushedTransactionNumberSet])
+        return { circles, swapCircles }
+    }, [circleDataArr, circleDataSwappedArr, brushedTransactionNumberSet])
 
 
     useEffect(() => {
@@ -334,3 +340,13 @@ export function getDomainValueFromDataPerTransactionDescription(dataPerTransacti
     return { xDomainMin, xDomainMax, yDomainMin, yDomainMax, colourDomainMin, colourDomainMax, sizeDomainMin, sizeDomainMax };
 }
 
+type CircleProps = {
+    cx: number,
+    cy: number,
+    r: number,
+    fill: string,
+    isHighlighted: boolean
+}
+function Circle(props: CircleProps) {
+    return <circle cx={props.cx} cy={props.cy} r={props.r} fill={props.fill} opacity={props.isHighlighted ? 1 : 0.1} />
+}
