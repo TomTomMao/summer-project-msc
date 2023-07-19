@@ -105,7 +105,7 @@ export function ClusterView(props: Props) {
 
 
     // cache the circles 
-    const { circleDataMap, circleDataSwappedMap, circleDataArr, circleDataSwappedArr } = useMemo(() => {
+    const { circles, swapCircles } = useMemo(() => {
         console.time('re-calculating circleDataMap and circleDattaSwappedMap')
         const circleDataMap = getCircleDataMap(transactionDataArr, valueGetterWithSwap, scales, false);
         const circleDataSwappedMap = getCircleDataMap(transactionDataArr, valueGetterWithSwap, scales, true);
@@ -114,20 +114,33 @@ export function ClusterView(props: Props) {
         const circleDataSwappedArr: CircleData[] = [];
         circleDataMap.forEach((circleData, key) => { circleDataArr.push(circleData) })
         circleDataSwappedMap.forEach((circleDataSwapped, key) => { circleDataSwappedArr.push(circleDataSwapped) })
-        return { circleDataMap, circleDataSwappedMap, circleDataArr, circleDataSwappedArr }
-    }, [transactionDataArr, valueGetterWithSwap, scales])
-
-
-    // old getCircles function is responsible for visual mapping, it is removed by the new getCirclesFromCircleData, no visual mapping needed.
-    // const { circles, swapCircles } = useMemo(getCircles(transactionDataArr, brushedTransactionNumberSet, valueGetterWithSwap, scales), [transactionDataArr, valueGetter, brushedTransactionNumberSet, useLogScale])
-    const { circles, swapCircles }: { circles: JSX.Element[], swapCircles: JSX.Element[] } = useMemo(() => {
         console.time('updating <circle> element')
-        const brushed = brushedTransactionNumberSet.size;
-        const circles = circleDataArr.map(d=><Circle cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} isHighlighted={(brushed && !brushedTransactionNumberSet.has(d.key)) ? false : true } />)
-        const swapCircles = circleDataSwappedArr.map(d=><Circle cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} isHighlighted={(brushed && !brushedTransactionNumberSet.has(d.key)) ? false : true} />)
+        const circles = circleDataArr.map(d => <Circle id={d.key} key={d.key} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />)
+        const swapCircles = circleDataSwappedArr.map(d => <Circle id={d.key} key={d.key} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />)
         console.timeEnd('updating <circle> element')
         return { circles, swapCircles }
-    }, [circleDataArr, circleDataSwappedArr, brushedTransactionNumberSet])
+    }, [transactionDataArr, valueGetterWithSwap, scales])
+
+    useEffect(() => {
+        console.time('updating opacity')
+        // set all points to highlighted if no point get brushed
+        if (brushedTransactionNumberSet.size === 0) {
+            d3.selectAll('circle').attr('opacity', 1)
+        } else {
+            const highLightInfo = transactionDataArr.map(transactionData => {
+                return { id: transactionData.transactionNumber, isHighLighted: brushedTransactionNumberSet.has(transactionData.transactionNumber) }
+            })
+            highLightInfo.forEach(({ id, isHighLighted }) => {
+                if (isHighLighted) {
+                    document.getElementById(id).style.opacity = '1'
+                } else {
+                    document.getElementById(id).style.opacity = '0.1'
+                }
+            })
+        }
+        console.timeEnd('updating opacity')
+    }, [brushedTransactionNumberSet])
+
 
 
     useEffect(() => {
@@ -341,12 +354,12 @@ export function getDomainValueFromDataPerTransactionDescription(dataPerTransacti
 }
 
 type CircleProps = {
+    id: string, // used for highlight
     cx: number,
     cy: number,
     r: number,
     fill: string,
-    isHighlighted: boolean
 }
 function Circle(props: CircleProps) {
-    return <circle cx={props.cx} cy={props.cy} r={props.r} fill={props.fill} opacity={props.isHighlighted ? 1 : 0.1} />
+    return <circle id={props.id} cx={props.cx} cy={props.cy} r={props.r} fill={props.fill} />
 }
