@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import { DataPerTransactionDescription } from "../CalendarView3/DataPerTransactionDescription";
 import { AxisBottom, AxisLeft } from "../Axis";
 import { PublicScale } from "../page";
-const BRUSH_MODE = 'end'
+const BRUSH_MODE = 'brush end'
 /**
  * render a cluster view using scatter plot
  *
