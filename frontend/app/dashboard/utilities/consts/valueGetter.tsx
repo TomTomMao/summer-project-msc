@@ -1,4 +1,4 @@
-import { TransactionData } from "../../utilities/DataObject"
+import { TransactionData } from "../DataObject"
 
 /**
  * mapping data to x,y,colour
