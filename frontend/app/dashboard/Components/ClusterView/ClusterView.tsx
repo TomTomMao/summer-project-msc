@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useContext, useMemo, Dispatch, SetStateAct
 import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
 import { AxisBottom, AxisLeft } from "../Axis";
-import { PublicScale } from "../../page";
+import { PublicScale } from "../../utilities/types";
 const BRUSH_MODE = 'brush end'
 /**
  * render a cluster view using scatter plot
@@ -57,18 +57,25 @@ export function ClusterView(props: Props) {
     const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, useLogScale = true, colourScale } = props;
     const [isSwap, setIsSwap] = useState(false);
 
-    const brushGRef = useRef(null)
+    const brushGRef = useRef<SVGGElement | null>(null)
     const valueGetterWithSwap = useMemo(() => {
         return { ...valueGetter, getXSwap: valueGetter.y, getYSwap: valueGetter.x };
     }, [])
 
-    function handleBrush(selection: [[number, number], [number, number]] | null) {
+    function handleBrush(event: d3.D3BrushEvent<SVGGElement>) {
         console.time('handleBrush')
-        if (selection === null) {
+        if (event.selection === null) {
             setBrushedTransactionNumberSet(new Set());
             return;
         }
-        const [[x0, y0], [x1, y1]]: [[number, number], [number, number]] = selection; // ref this line: https://observablehq.com/@d3/brushable-scatterplot
+        let x0: number, y0: number, x1: number, y1: number;
+        const selection = event.selection
+        if (Array.isArray(selection) && Array.isArray(selection[0]) && Array.isArray(selection[1])) {
+            [[x0, y0], [x1, y1]] = selection; // ref this line: https://observablehq.com/@d3/brushable-scatterplot
+        } else {
+            throw new Error("selection type is not valid");
+
+        }
         if (isSwap === false) {
             const [[domainXMin, domainXMax], [domainYMin, domainYMax]] = [[scales.xScale.invert(x0), scales.xScale.invert(x1)], [scales.yScale.invert(y1), scales.yScale.invert(y0)]];
             const nextBrushedTransactionNumberSet = new Set(transactionDataArr.filter(transactionData => {
@@ -125,18 +132,16 @@ export function ClusterView(props: Props) {
         // set all points to highlighted if no point get brushed
         if (brushedTransactionNumberSet.size === 0) {
             transactionDataArr.forEach(({ transactionNumber }) => {
-                document.getElementById(transactionNumber).style.opacity = '1'
+                const circleElement: HTMLElement | null = document.getElementById(transactionNumber)
+                if (circleElement !== null) { circleElement.style.opacity = '1' };
             })
         } else {
             const highLightInfo = transactionDataArr.map(transactionData => {
                 return { id: transactionData.transactionNumber, isHighLighted: brushedTransactionNumberSet.has(transactionData.transactionNumber) }
             })
             highLightInfo.forEach(({ id, isHighLighted }) => {
-                if (isHighLighted) {
-                    document.getElementById(id).style.opacity = '1'
-                } else {
-                    document.getElementById(id).style.opacity = '0.1'
-                }
+                const circleElement: HTMLElement | null = document.getElementById(id)
+                if (circleElement !== null) { circleElement.style.opacity = isHighLighted ? '1' : '0.1' };
             })
         }
         console.timeEnd('updating opacity')
@@ -146,10 +151,12 @@ export function ClusterView(props: Props) {
 
     useEffect(() => {
         //https://github.com/d3/d3-brush
-        const brushG = d3.select(brushGRef.current)
-        const brush = d3.brush().extent([[0, 0], [width, height]]).on(BRUSH_MODE, ({ selection }) => handleBrush(selection))
-        brushG.call(brush)
-        return () => { brushG.on('.brush', null) }
+        if (brushGRef.current !== null) {
+            const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current)
+            const brush = d3.brush<SVGGElement>().extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush))
+            brush(brushG)
+            return () => { brushG.on('.brush', null) }
+        }
     }, [containerWidth, containerHeight, isSwap, useLogScale])
 
     return (<>

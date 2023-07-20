@@ -5,11 +5,12 @@ import * as d3 from 'd3'
 
 import assert from "assert";
 import TableView from "../components/TableView/TableView";
-import { CalendarViewCellWidth, PublicScale, PublicValueGetter } from "../page";
 import { ConfigContext } from "../components/ConfigProvider";
 import FolderableContainer from "../components/FolderableContainer";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView } from "./DayViews/PieDayView";
 import { barGlyphValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
+import { CalendarViewCellWidth } from "../utilities/consts";
+import { PublicScale, PublicValueGetter } from "../utilities/types";
 
 
 

@@ -1,8 +1,9 @@
 import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
-import { CalendarViewCellHeight, CalendarViewCellWidth, PublicScale } from "../../page";
 import { Data, Day, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useEffect, useMemo, useRef } from "react";
+import { CalendarViewCellHeight, CalendarViewCellWidth } from "../../utilities/consts";
+import { PublicScale } from "../../utilities/types";
 
 type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'];

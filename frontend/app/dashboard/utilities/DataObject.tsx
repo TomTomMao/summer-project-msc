@@ -31,7 +31,7 @@ export interface ITransactionDataFromAPI {
 }
 
 
-export type TransactionDataAttrs = "transactionAmount"| "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry";
+export type TransactionDataAttrs = "transactionAmount" | "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry";
 /**
  * a class represent a record of transaction
  */
@@ -90,14 +90,17 @@ export class TransactionData {
         assert(TransactionData.getColumnNames().includes(key))
 
         if (desc === false) {
+            // number value
             if (['debitAmount', 'creditAmount', 'balance', 'date'].includes(key)) {
                 return (a: TransactionData, b: TransactionData) => {
-                    return a[key] - b[key];
+                    return (a[key] as number) - (b[key] as number);
                 }
+                // string can be convert to number
             } else if (key === 'transactionNumber') {
                 return (a: TransactionData, b: TransactionData) => {
                     return parseInt(a[key]) - parseInt(b[key]);
                 }
+                // string
             } else {
                 return (a: TransactionData, b: TransactionData) => {
                     return (a[key]) > (b[key]) ? 1 : -1;
@@ -106,7 +109,7 @@ export class TransactionData {
         } else {
             if (['debitAmount', 'creditAmount', 'balance', 'date'].includes(key)) {
                 return (a: TransactionData, b: TransactionData) => {
-                    return b[key] - a[key];
+                    return (b[key] as number) - (a[key] as number);
                 }
             } else if (key === 'transactionNumber') {
                 return (a: TransactionData, b: TransactionData) => {
@@ -129,6 +132,11 @@ export class TransactionData {
             return true
         } else {
             throw new Error('both creditamount and debit amount is greater than 0');
+        }
+    }
+    private getValue(key: TransactionDataAttrs) {
+        if (['debitAmount', 'creditAmount', 'balance', 'date'].includes(key)) {
+            return
         }
     }
 
@@ -336,6 +344,9 @@ export function curryCleanFetchedTransactionData(returnType: string, parseTime: 
                  */
                 const transanctionNumber: string = d['Transaction Number'];
                 const date: Date | null = parseTime(d['Transaction Date']);
+                if (date === null) {
+                    throw new Error(`date can't not be parese as Date; transaction numbe: ${d["Transaction Number"]}`, );
+                }
                 const transactionType: string = d['Transaction Type'];
                 const transactionDescription: string = d['Transaction Description'];
                 const debitAmount: number = (d['Debit Amount'] == '' ? 0 : parseFloat(d['Debit Amount']));

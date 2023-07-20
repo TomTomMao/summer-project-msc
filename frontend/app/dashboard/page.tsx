@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useMemo } from "react"
-import { timeParse } from 'd3'
 import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData } from "./utilities/DataObject";
 import CalendarView3 from "./CalendarView3/CalendarView3";
 import TableView from "./components/TableView/TableView";
@@ -12,17 +11,10 @@ import * as d3 from 'd3';
 import { ConfigProvider } from "./components/ConfigProvider";
 import ControlPannel from "./components/ControlPannel/ControlPannel";
 import FolderableContainer from "./components/FolderableContainer";
+import { PublicScale } from "./utilities/types";
+import { parseTime, ClusterViewHeight, ClusterViewWidth, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
 
-const parseTime = timeParse('%d/%m/%Y')
-const apiUrl = 'http://localhost:3030';
-const ClusterViewHeight = 400;
-const ClusterViewWidth = 500;
-export const CalendarViewCellWidth = 17;
-export const CalendarViewCellHeight = 17;
 
-export type PublicScale = { colourScale: d3.ScaleOrdinal<string, string, never> };
-export type PublicValueGetter = { colour: (d: TransactionData) => string; }
-const publicValueGetter = { colour: (d: TransactionData) => d.category }
 
 export default function Page() {
     const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
@@ -37,7 +29,7 @@ export default function Page() {
         if (transactionDataArr === null) {
             return null
         }
-        const colourDomain = Array.from(new Set(transactionDataArr.map(publicValueGetter.colour)))
+        const colourDomain = Array.from(new Set(transactionDataArr.map(PUBLIC_VALUEGETTER.colour)))
         const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse(); // ref: https://observablehq.com/@d3/pie-chart/2?intent=fork
         const colourScale: PublicScale['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
         return colourScale
@@ -90,7 +82,7 @@ export default function Page() {
                                     initCurrentYear={2016}
                                     highLightedTransactionNumberSet={brushedTransactionNumberSet}
                                     colourScale={colourScale}
-                                    colourValueGetter={publicValueGetter.colour}
+                                    colourValueGetter={PUBLIC_VALUEGETTER.colour}
                                 ></CalendarView3>
                             </div>
                         </div>
@@ -99,7 +91,7 @@ export default function Page() {
                         <TableView transactionDataArr={transactionDataArr}
                             handleClearSelect={() => setBrushedTransactionNumberSet(new Set())}
                             transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
-                            colourValueGetter={publicValueGetter.colour}></TableView></FolderableContainer>
+                            colourValueGetter={PUBLIC_VALUEGETTER.colour}></TableView></FolderableContainer>
                     <ColourLegendList colourMappings={[]}></ColourLegendList>
                 </ConfigProvider>
             </div>
