@@ -42,7 +42,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
 
     // config
     const config = useContext(ConfigContext)
-    const {containerWidth, containerHeight} = config.calendarViewConfig
+    const { containerWidth, containerHeight } = config.calendarViewConfig
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
         setDetailDay({ day: day, month: month, year: year })
@@ -72,7 +72,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
 
 
     return (
-        <div>
+        <>
             <table className="smallLetterTable">
                 <thead>
                     <tr>
@@ -96,7 +96,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                     onClearDetail={() => setDetailDay(null)}
                 /></FolderableContainer>}
             </div>
-        </div >
+        </ >
     )
 }
 

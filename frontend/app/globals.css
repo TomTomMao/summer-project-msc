@@ -22,27 +22,28 @@ button {
     padding: 0.3em 1em
 }
 button:hover {
-    background-color: rgb(196, 196, 196);
+    background-color: rgb(231, 255, 255);
     transition: 0.2s;
 }
 
 
 /* controllpannel */
 .controlPannelFolderableContainer {
-    background-color: azure;
+    background-color: rgb(197, 197, 197);
     padding: 0.1em 0.4em;
-    border-radius: 1em;
+    border-radius: 0.2em;
     padding-bottom: 0.3em;
+    margin-left: 3em;
 }
 .controlPannelFolderableContainer button {
-    background-color: azure;
+    background-color: rgb(198, 198, 198);
     color: black;
-    border-radius: 1em;
+    border-radius: 0.2em;
     border:0px;
     margin:auto
 }
 .controlPannelFolderableContainer button:hover {
-    background-color: rgb(197, 248, 248);
+    background-color: rgb(231, 255, 255);
     color: black;
 }
 .controlPannel{
@@ -68,18 +69,15 @@ button:hover {
 /* calendar view */
 
 .calendarView {
-    position: relative;
-    z-index: 1;
-    top: 2em
+    padding: 2em 2em 2em 2em;
+    background-color: white;
 }
+
 
 
 /* cluster view */
 .clusterView {
     background-color: white;
-    /* border-radius: 1em;
-    margin: 2em 2em; */
     font-size: 12px;
-    /* padding-bottom: 2em;
-    padding-left: 2em; */
+    padding: 2em 2em 2em 2em;
 }

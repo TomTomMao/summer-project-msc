@@ -87,19 +87,24 @@ export default function App() {
                         </ExpandableContainer>
                     </div>
                     <div className="col-span-7">
-                        <div className="controlPannelFolderableContainer floatDiv">
-                            <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                <div className="controlPannel"><ControlPannel /></div>
-                            </FolderableContainer>
-                        </div>
-                        <div className="calendarView">
-                            <CalendarView3 transactionDataArr={transactionDataArr}
-                                initCurrentYear={2016}
-                                highLightedTransactionNumberSet={brushedTransactionNumberSet}
-                                colourScale={colourScale}
-                                colourValueGetter={PUBLIC_VALUEGETTER.colour}
-                            ></CalendarView3>
-                        </div>
+                        <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'calendar view') }}
+                            initStyle={getExpandableContainerStyle('initStyle')}
+                            expandedStyle={getExpandableContainerStyle('expandedStyle')}
+                        >
+                            <div className="controlPannelFolderableContainer floatDiv">
+                                <FolderableContainer label="ControlPannel" initIsFolded={true}>
+                                    <div className="controlPannel"><ControlPannel /></div>
+                                </FolderableContainer>
+                            </div>
+                            <div className="calendarView">
+                                <CalendarView3 transactionDataArr={transactionDataArr}
+                                    initCurrentYear={2016}
+                                    highLightedTransactionNumberSet={brushedTransactionNumberSet}
+                                    colourScale={colourScale}
+                                    colourValueGetter={PUBLIC_VALUEGETTER.colour}
+                                ></CalendarView3>
+                            </div>
+                        </ExpandableContainer>
                     </div>
                 </div>
                 <FolderableContainer label="detail of brushed points" initIsFolded={true}>
