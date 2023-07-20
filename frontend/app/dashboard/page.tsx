@@ -8,11 +8,11 @@ import { ClusterView } from "./components/ClusterView/ClusterView";
 
 import ColourLegendList from "./components/ColourLegend/ColourLegend";
 import * as d3 from 'd3';
-import { ConfigProvider } from "./components/ConfigProvider";
+import { Config, ConfigProvider } from "./components/ConfigProvider";
 import ControlPannel from "./components/ControlPannel/ControlPannel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
 import { PublicScale } from "./utilities/types";
-import { parseTime, ClusterViewHeight, ClusterViewWidth, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
+import { parseTime, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
 
 
 
@@ -21,7 +21,6 @@ export default function Page() {
     const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set()) // cluster view's points in the brusher
 
     // cluster view's initial y axis's scale
-    const [clusterUseLog, setClusterUseLog] = useState(false);
     const [clusterViewValueGetter, setClusterViewValueGetter] = useState(temporalValueGetter);
 
     // public colour scale
@@ -57,19 +56,12 @@ export default function Page() {
                 <ConfigProvider>
                     <div className="grid grid-cols-12">
                         <div className="col-span-5 clusterView">
-                            <ClusterView transactionDataArr={transactionDataArr}
-                                containerHeight={ClusterViewHeight}
-                                containerWidth={ClusterViewWidth} valueGetter={clusterViewValueGetter}
+                            <ClusterView transactionDataArr={transactionDataArr} valueGetter={clusterViewValueGetter}
                                 brushedTransactionNumberSet={brushedTransactionNumberSet}
                                 setBrushedTransactionNumberSet={setBrushedTransactionNumberSet}
-                                useLogScale={clusterUseLog}
                                 colourScale={colourScale}
                             />
-                            scatter plots:
-                            <label htmlFor="clusterUseLog">log</label>
-                            <input type="radio" name="clusterUseLog" id="" checked={clusterUseLog} onChange={() => setClusterUseLog(true)} />
-                            <label htmlFor="clusterUseLinear">linear</label>
-                            <input type="radio" name="clusterUseLinear" id="" checked={!clusterUseLog} onChange={() => setClusterUseLog(false)} />
+                            
                         </div>
                         <div className="col-span-7">
                             <div className="controlPannelFolderableContainer floatDiv">
@@ -135,3 +127,4 @@ async function fetchData(parseTime: (dateString: string) => Date | null) {
 
     }
 }
+

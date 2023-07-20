@@ -4,6 +4,7 @@ import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
 import { AxisBottom, AxisLeft } from "../Axis";
 import { PublicScale } from "../../utilities/types";
+import { Config, ConfigContext, ConfigDispatchContext } from "../ConfigProvider";
 const BRUSH_MODE = 'brush end'
 /**
  * render a cluster view using scatter plot
@@ -32,14 +33,11 @@ type ClusterViewPrivateScale = {
     yScaleSwap: d3.ScaleLinear<number, number, never>;
 }
 type ClusterViewScale = ClusterViewPrivateScale & { colourScale: PublicScale['colourScale'] }
-type Props = {
+type ClusterViewProps = {
     transactionDataArr: TransactionData[];
-    containerHeight: number;
-    containerWidth: number;
     valueGetter: ClusterViewValueGetter;
     brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>;
     setBrushedTransactionNumberSet: Dispatch<SetStateAction<Set<TransactionData['transactionNumber']>>>;
-    useLogScale: boolean;
     colourScale: PublicScale['colourScale']
 }
 
@@ -53,16 +51,23 @@ const DEFAULT_STROKE_WIDTH = 1;
  * @param props
  * @returns 
  */
-export function ClusterView(props: Props) {
-    const { transactionDataArr, containerHeight, containerWidth, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, useLogScale = true, colourScale } = props;
+export function ClusterView(props: ClusterViewProps) {
+    const { transactionDataArr, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, colourScale } = props;
     const [isSwap, setIsSwap] = useState(false);
+
+    // configs
+    const { containerWidth, containerHeight, mainScale } = useContext(ConfigContext).clusterViewConfig;
+    const useLogScale = mainScale === 'log' ? true : false;
+    // config dispatcher
+    const dispatch = useContext(ConfigDispatchContext);
+
 
     const brushGRef = useRef<SVGGElement | null>(null)
     const valueGetterWithSwap = useMemo(() => {
         return { ...valueGetter, getXSwap: valueGetter.y, getYSwap: valueGetter.x };
     }, [])
 
-    function handleBrush(event: d3.D3BrushEvent<SVGGElement>) {
+    function handleBrush(event: d3.D3BrushEvent<SVGGElement>): void {
         console.time('handleBrush')
         if (event.selection === null) {
             setBrushedTransactionNumberSet(new Set());
@@ -97,6 +102,13 @@ export function ClusterView(props: Props) {
             setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
         }
         console.timeEnd('handleBrush')
+    }
+    function handleSetMainScale(newMainScale: Config['clusterViewConfig']['mainScale']) {
+        if (dispatch === null) {
+            throw new Error("page is still initialising");
+        } else {
+            dispatch({ targetChart: 'cluster view', type: 'set main scale', newMainScale: newMainScale })
+        }
     }
 
     const margin = DEFAULT_MARGIN;
@@ -169,6 +181,11 @@ export function ClusterView(props: Props) {
             </g>
         </svg>
         <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
+        main axis
+        <label htmlFor="clusterUseLog">log</label>
+        <input type="radio" name="clusterUseLog" id="" checked={useLogScale} onChange={() => handleSetMainScale('log')} />
+        <label htmlFor="clusterUseLinear">linear</label>
+        <input type="radio" name="clusterUseLinear" id="" checked={!useLogScale} onChange={() => handleSetMainScale('linear')} />
     </>
     );
 }

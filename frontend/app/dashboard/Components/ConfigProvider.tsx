@@ -11,6 +11,11 @@ const initConfig: Config = {
         glyphType: 'pie',
         containerWidth: 20,
         containerHeight: 20
+    },
+    clusterViewConfig: {
+        containerWidth: 500,
+        containerHeight: 500,
+        mainScale: 'log'
     }
 }
 export const ConfigContext = createContext<Config>(initConfig);
@@ -59,13 +64,48 @@ function barGlyphConfigReducer(barGlyphConfig: BarGlyphConfig, action: BarGlyphC
     }
 }
 
-export type Config = {
-    barGlyphConfig: BarGlyphConfig,
-    calendarViewConfig: CalendarConfig
+type ClusterViewConfig = {
+    containerWidth: number,
+    containerHeight: number,
+    mainScale: 'log' | 'linear'
 }
 
-export type Action = BarGlyphConfigAction | CalendarViewConfigAction
+type ClusterViewAction = {
+    targetChart: 'cluster view',
+    type: 'set main scale',
+    newMainScale: ClusterViewConfig['mainScale']
+} | {
+    targetChart: 'cluster view',
+    type: 'set container width',
+    newContainerWidth: number
+} | {
+    targetChart: 'cluster view',
+    type: 'set container height',
+    newContainerHeight: number
+} | {
+    targetChart: 'cluster view',
+    type: 'set container size',
+    newContainerWidth: number,
+    newContainerHeight: number
+}
 
+function clusterViewConfigReducer(clusterViewConfig: ClusterViewConfig, action: ClusterViewAction): ClusterViewConfig {
+    switch (action.type) {
+        case 'set main scale':
+            return { ...clusterViewConfig, mainScale: action.newMainScale};
+        // todo add other cases
+        default:
+            throw new Error('undefined action type')
+    }
+}
+
+export type Config = {
+    barGlyphConfig: BarGlyphConfig,
+    calendarViewConfig: CalendarConfig,
+    clusterViewConfig: ClusterViewConfig
+}
+
+export type Action = BarGlyphConfigAction | CalendarViewConfigAction | ClusterViewAction
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
     const [config, dispatch] = useReducer(configReducer, initConfig);
@@ -85,6 +125,9 @@ function configReducer(config: Config, action: Action): Config {
         case 'bar glyph':
             const nextBarGlyphConfig = barGlyphConfigReducer(config.barGlyphConfig, action)
             return { ...config, barGlyphConfig: nextBarGlyphConfig };
+        case 'cluster view':
+            const nextClusterViewConfig = clusterViewConfigReducer(config.clusterViewConfig, action);
+            return { ...config, clusterViewConfig: nextClusterViewConfig }
         default:
             throw new Error("undefined targetChart");
     }
