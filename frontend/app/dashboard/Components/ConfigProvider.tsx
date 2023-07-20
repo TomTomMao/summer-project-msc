@@ -9,17 +9,17 @@ const initConfig: Config = {
     },
     calendarViewConfig: {
         glyphType: 'pie',
-        cellWidth: 20,
-        cellHeight: 20
+        containerWidth: 20,
+        containerHeight: 20
     }
 }
-export const ConfigContext = createContext<Config | null>(null);
+export const ConfigContext = createContext<Config>(initConfig);
 export const ConfigDispatchContext = createContext<Dispatch<Action> | null>(null);
 
 type CalendarConfig = {
     glyphType: 'bar' | 'pie',
-    cellWidth: number,
-    cellHeight: number
+    containerWidth: number,
+    containerHeight: number
 }
 type CalendarViewConfigAction = { targetChart: 'calendar view', type: 'change glyph type', glyphType: 'pie' | 'bar' }
 function calendarViewConfigReducer(calendarConfig: CalendarConfig, action: CalendarViewConfigAction): CalendarConfig {

@@ -5,7 +5,6 @@ import assert from "assert";
 
 import { ConfigContext } from "../../ConfigProvider";
 import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
-import { CalendarViewCellHeight, CalendarViewCellWidth } from "../../../utilities/consts";
 
 export type BarGlyphScalesLinearHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
@@ -52,12 +51,12 @@ export type BarDayViewProps = {
  */
 export function BarDayView(props: BarDayViewProps) {
     const { day, month, currentYear, data, scales, valueGetter } = props;
-    const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
     const maxTransactionCountOfDay: number = 28; // todo, take it from the calendarview component
-
+    
     // configs
     const config = useContext(ConfigContext);
     assert(config !== null);
+    const {containerWidth, containerHeight} = config.calendarViewConfig;
     const { isSharedBandWidth, sortingKey, isDesc, heightAxis } = config.barGlyphConfig;
     const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc]);
 
@@ -81,7 +80,7 @@ export function BarDayView(props: BarDayViewProps) {
                 for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`); }
             }
 
-            const xScale = d3.scaleBand().domain(xDomain).range([0, width]);
+            const xScale = d3.scaleBand().domain(xDomain).range([0, containerWidth]);
             const bars: JSX.Element[] = dayData.map(d => {
                 const bandWidth = xScale.bandwidth();
                 const rectHeight = heightScale(valueGetter.height(d));
@@ -90,9 +89,9 @@ export function BarDayView(props: BarDayViewProps) {
                     <rect
                         key={d.transactionNumber}
                         x={xScale(valueGetter.x(d))}
-                        y={height - rectHeight}
+                        y={containerHeight - rectHeight}
                         width={bandWidth}
-                        height={height}
+                        height={containerHeight}
                         fill={colourScale(valueGetter.colour(d))}
                         opacity={highlightMode && !isThisDataHighLighted ? 0.1 : 1} />
                 );
@@ -102,7 +101,7 @@ export function BarDayView(props: BarDayViewProps) {
         return barsOfEachYear;
     }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc]);
 
-    return (<svg width={width} height={height}>
+    return (<svg width={containerWidth} height={containerHeight}>
         {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year}>{d.bars}</g>; })}
     </svg>);
 }

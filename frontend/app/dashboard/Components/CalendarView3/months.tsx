@@ -9,8 +9,8 @@ export const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /**
  * given the year number and month number, return the number of days in the month.
- * @param {year} number the year number, year must >=2015 and <=2022
- * @param {month} number the month number, between 1 to 12
+ * @param year the year number, year must >=2015 and <=2022
+ * @param month the month number, between 1 to 12
  */
 export function getNumberOfDaysInMonth(year: number, month: number): number {
     if (year < 2015 || year > 2022) {

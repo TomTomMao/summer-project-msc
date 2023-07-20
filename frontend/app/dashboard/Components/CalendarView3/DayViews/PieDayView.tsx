@@ -1,9 +1,9 @@
 import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
 import { Data, Day, getDataFromTransactionDataMapYMD } from "../CalendarView3";
-import { useMemo, useRef } from "react";
-import { CalendarViewCellHeight, CalendarViewCellWidth } from "../../../utilities/consts";
+import { useContext, useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
+import { ConfigContext } from "../../ConfigProvider";
 
 type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'];
@@ -38,7 +38,10 @@ export function PieDayView(props: PieDayViewProps) {
     }, [day, month, currentYear])
     const highLightedTransactionNumberSet = data.highLightedTransactionNumberSet
     const { colourScale } = scales;
-    const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
+
+    // configs
+    const config = useContext(ConfigContext)
+    const { containerWidth, containerHeight } = config.calendarViewConfig;
     const ref = useRef(null)
     const arcs = useMemo(() => {
         console.time('getArcs')
@@ -47,7 +50,7 @@ export function PieDayView(props: PieDayViewProps) {
         const pie = pieGenerator(dayData);
         const arcs = pie.map((p) => arcGenerator({
             innerRadius: 0,
-            outerRadius: width / 2,
+            outerRadius: containerWidth / 2,
             startAngle: p.startAngle,
             endAngle: p.endAngle
         }));
@@ -64,8 +67,8 @@ export function PieDayView(props: PieDayViewProps) {
     }, [arcs, colourScale, valueGetter, dayData, highLightedTransactionNumberSet])
 
     return (
-        <svg width={width} height={height}>
-            <g ref={ref} transform={`translate(${width * 0.5},${height * 0.5})`}>
+        <svg width={containerWidth} height={containerHeight}>
+            <g ref={ref} transform={`translate(${containerWidth * 0.5},${containerHeight * 0.5})`}>
                 {paths}
             </g>
         </svg>);

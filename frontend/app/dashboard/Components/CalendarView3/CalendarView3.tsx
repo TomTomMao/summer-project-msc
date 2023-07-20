@@ -9,7 +9,6 @@ import { ConfigContext } from "../ConfigProvider";
 import FolderableContainer from "../Containers/FolderableContainer";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView } from "./DayViews/PieDayView";
 import { barGlyphValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
-import { CalendarViewCellWidth } from "../../utilities/consts";
 import { PublicScale, PublicValueGetter } from "../../utilities/types";
 
 
@@ -41,6 +40,9 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const [detailDay, setDetailDay] = useState<null | Day>(null)
 
+    // config
+    const config = useContext(ConfigContext)
+    const {containerWidth, containerHeight} = config.calendarViewConfig
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
         setDetailDay({ day: day, month: month, year: year })
@@ -57,8 +59,8 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     // create public height scale for the bar glyph
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height); // height for bar glyph
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
-    const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, CalendarViewCellWidth]);
-    const heightScaleLog: BarCalendarViewSharedScales['heightScaleLog'] = d3.scaleLog(heightDomain, [0, CalendarViewCellWidth]);
+    const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, containerHeight]);
+    const heightScaleLog: BarCalendarViewSharedScales['heightScaleLog'] = d3.scaleLog(heightDomain, [0, containerHeight]);
     const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScaleLinear, heightScaleLog, colourScale } // colourScale shared with other views
     // create shared number of bars, the number will be used for control the xDomain's Size
     const maxTransactionCountOfDay = useMemo(() => {
