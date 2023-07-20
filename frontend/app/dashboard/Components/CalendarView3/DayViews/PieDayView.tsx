@@ -1,9 +1,9 @@
-import { TransactionData } from "../../utilities/DataObject";
+import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
 import { Data, Day, getDataFromTransactionDataMapYMD } from "../CalendarView3";
-import { useEffect, useMemo, useRef } from "react";
-import { CalendarViewCellHeight, CalendarViewCellWidth } from "../../utilities/consts";
-import { PublicScale } from "../../utilities/types";
+import { useMemo, useRef } from "react";
+import { CalendarViewCellHeight, CalendarViewCellWidth } from "../../../utilities/consts";
+import { PublicScale } from "../../../utilities/types";
 
 type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'];
@@ -39,7 +39,7 @@ export function PieDayView(props: PieDayViewProps) {
     const highLightedTransactionNumberSet = data.highLightedTransactionNumberSet
     const { colourScale } = scales;
     const [width, height] = [CalendarViewCellWidth, CalendarViewCellHeight];
-    const ref=useRef(null)
+    const ref = useRef(null)
     const arcs = useMemo(() => {
         console.time('getArcs')
         const pieGenerator = d3.pie<TransactionData>().value(valueGetter.value);
@@ -57,7 +57,7 @@ export function PieDayView(props: PieDayViewProps) {
     const highlightMode = data.highLightedTransactionNumberSet.size > 0;
     const paths = useMemo(() => {
         return arcs.map((arc, i) => {
-            return <path id={dayData[i].transactionNumber+'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))}
+            return <path id={dayData[i].transactionNumber + 'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))}
                 opacity={highlightMode && !data.highLightedTransactionNumberSet.has(dayData[i].transactionNumber) ? 0.1 : 1}
             />;
         })

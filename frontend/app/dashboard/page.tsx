@@ -1,16 +1,16 @@
 'use client'
 import { useState, useEffect, useMemo } from "react"
 import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData } from "./utilities/DataObject";
-import CalendarView3 from "./CalendarView3/CalendarView3";
+import CalendarView3 from "./components/CalendarView3/CalendarView3";
 import TableView from "./components/TableView/TableView";
 import { temporalValueGetter } from "./utilities/consts/valueGetter";
 import { ClusterView } from "./components/ClusterView/ClusterView";
 
-import ColourLegendList from "./components/ColourLegend";
+import ColourLegendList from "./components/ColourLegend/ColourLegend";
 import * as d3 from 'd3';
 import { ConfigProvider } from "./components/ConfigProvider";
 import ControlPannel from "./components/ControlPannel/ControlPannel";
-import FolderableContainer from "./components/FolderableContainer";
+import FolderableContainer from "./components/Containers/FolderableContainer";
 import { PublicScale } from "./utilities/types";
 import { parseTime, ClusterViewHeight, ClusterViewWidth, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
 
