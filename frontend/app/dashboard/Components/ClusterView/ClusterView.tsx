@@ -56,7 +56,11 @@ export function ClusterView(props: ClusterViewProps) {
     const [isSwap, setIsSwap] = useState(false);
 
     // configs
-    const { containerWidth, containerHeight, mainScale } = useContext(ConfigContext).clusterViewConfig;
+    let { containerWidth, containerHeight, mainScale, expandedContainerWidth, expandedContainerHeight, isExpanded } = useContext(ConfigContext).clusterViewConfig;
+    if (isExpanded) {
+        containerHeight = expandedContainerHeight;
+        containerWidth = expandedContainerWidth;
+    }
     const useLogScale = mainScale === 'log' ? true : false;
     // config dispatcher
     const dispatch = useContext(ConfigDispatchContext);
@@ -119,7 +123,7 @@ export function ClusterView(props: ClusterViewProps) {
         console.log('recalculating scales')
         const { xScale, yScale, xScaleSwap, yScaleSwap } = getScales(transactionDataArr, valueGetterWithSwap, width, height)(useLogScale)
         return { xScale, yScale, xScaleSwap, yScaleSwap, colourScale }
-    }, [transactionDataArr, valueGetter, useLogScale])
+    }, [transactionDataArr, valueGetter, useLogScale, containerHeight, containerWidth])
 
 
     // cache the circles 
@@ -171,7 +175,7 @@ export function ClusterView(props: ClusterViewProps) {
         }
     }, [containerWidth, containerHeight, isSwap, useLogScale])
 
-    return (<>
+    return (<div className="clusterView">
         <svg width={containerWidth} height={containerHeight}>
             <g transform={`translate(${margin.left},${margin.top})`}>
                 <g>{isSwap ? swapCircles : circles}</g>
@@ -186,7 +190,7 @@ export function ClusterView(props: ClusterViewProps) {
         <input type="radio" name="clusterUseLog" id="" checked={useLogScale} onChange={() => handleSetMainScale('log')} />
         <label htmlFor="clusterUseLinear">linear</label>
         <input type="radio" name="clusterUseLinear" id="" checked={!useLogScale} onChange={() => handleSetMainScale('linear')} />
-    </>
+    </div>
     );
 }
 

@@ -9,12 +9,19 @@ const initConfig: Config = {
     },
     calendarViewConfig: {
         glyphType: 'pie',
+        // container width and height refer to the cell size of each day 
         containerWidth: 20,
-        containerHeight: 20
+        containerHeight: 20,
+        expandedContainerWidth: 25,
+        expandedContainerHeight: 25,
+        isExpanded: false,
     },
     clusterViewConfig: {
-        containerWidth: 500,
+        containerWidth: 650,
         containerHeight: 500,
+        expandedContainerWidth: 1500,
+        expandedContainerHeight: 700,
+        isExpanded: false,
         mainScale: 'log'
     }
 }
@@ -24,7 +31,10 @@ export const ConfigDispatchContext = createContext<Dispatch<Action> | null>(null
 type CalendarConfig = {
     glyphType: 'bar' | 'pie',
     containerWidth: number,
-    containerHeight: number
+    containerHeight: number,
+    expandedContainerWidth: number,
+    expandedContainerHeight: number,
+    isExpanded: boolean
 }
 type CalendarViewConfigAction = { targetChart: 'calendar view', type: 'change glyph type', glyphType: 'pie' | 'bar' }
 function calendarViewConfigReducer(calendarConfig: CalendarConfig, action: CalendarViewConfigAction): CalendarConfig {
@@ -67,6 +77,9 @@ function barGlyphConfigReducer(barGlyphConfig: BarGlyphConfig, action: BarGlyphC
 type ClusterViewConfig = {
     containerWidth: number,
     containerHeight: number,
+    expandedContainerWidth: number,
+    expandedContainerHeight: number,
+    isExpanded: boolean,
     mainScale: 'log' | 'linear'
 }
 
@@ -92,7 +105,7 @@ type ClusterViewAction = {
 function clusterViewConfigReducer(clusterViewConfig: ClusterViewConfig, action: ClusterViewAction): ClusterViewConfig {
     switch (action.type) {
         case 'set main scale':
-            return { ...clusterViewConfig, mainScale: action.newMainScale};
+            return { ...clusterViewConfig, mainScale: action.newMainScale };
         // todo add other cases
         default:
             throw new Error('undefined action type')
@@ -105,7 +118,41 @@ export type Config = {
     clusterViewConfig: ClusterViewConfig
 }
 
-export type Action = BarGlyphConfigAction | CalendarViewConfigAction | ClusterViewAction
+export type DashBoardAction =
+    /**expand one chart */
+    {
+        targetChart: 'dashboard',
+        type: 'expand',
+        chartToExpand: 'calendar view' | 'cluster view'
+    } | {
+        targetChart: 'dashboard',
+        type: 'fold',
+        chartToExpand: 'calendar view' | 'cluster view'
+    }
+// todo DRY is code
+function dashboardReducer(config: Config, action: DashBoardAction): Config {
+    switch (action.type) {
+        case 'expand':
+            if (action.chartToExpand === 'calendar view') {
+                const nextConfig = { ...config, calendarViewConfig: { ...config.calendarViewConfig, isExpanded: true } }
+                return nextConfig;
+            } else {
+                const nextConfig = { ...config, clusterViewConfig: { ...config.clusterViewConfig, isExpanded: true } }
+                return nextConfig
+            }
+        case 'fold':
+            if (action.chartToExpand === 'calendar view') {
+                const nextConfig = { ...config, calendarViewConfig: { ...config.calendarViewConfig, isExpanded: false } }
+                return nextConfig;
+            } else {
+                const nextConfig = { ...config, clusterViewConfig: { ...config.clusterViewConfig, isExpanded: false } }
+                return nextConfig
+            }
+        default:
+            throw new Error("invalid action type");
+    }
+}
+export type Action = BarGlyphConfigAction | CalendarViewConfigAction | ClusterViewAction | DashBoardAction
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
     const [config, dispatch] = useReducer(configReducer, initConfig);
@@ -127,7 +174,11 @@ function configReducer(config: Config, action: Action): Config {
             return { ...config, barGlyphConfig: nextBarGlyphConfig };
         case 'cluster view':
             const nextClusterViewConfig = clusterViewConfigReducer(config.clusterViewConfig, action);
-            return { ...config, clusterViewConfig: nextClusterViewConfig }
+            return { ...config, clusterViewConfig: nextClusterViewConfig };
+        case 'dashboard':
+            const nextConfig = dashboardReducer(config, action);
+            console.log('dispatching dashboard', nextConfig)
+            return nextConfig;
         default:
             throw new Error("undefined targetChart");
     }
