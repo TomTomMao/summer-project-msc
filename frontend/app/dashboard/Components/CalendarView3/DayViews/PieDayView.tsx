@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { Data, Day, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useContext, useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
-import { ConfigContext } from "../../ConfigProvider";
+import { Config, ConfigContext } from "../../ConfigProvider";
 
 type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'];
@@ -41,7 +41,8 @@ export function PieDayView(props: PieDayViewProps) {
 
     // configs
     const config = useContext(ConfigContext)
-    const { containerWidth, containerHeight } = config.calendarViewConfig;
+    const containerHeight: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerHeight : config.calendarViewConfig.containerHeight
+    const containerWidth: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerWidth : config.calendarViewConfig.containerWidth
     const ref = useRef(null)
     const arcs = useMemo(() => {
         console.time('getArcs')
@@ -56,7 +57,7 @@ export function PieDayView(props: PieDayViewProps) {
         }));
         console.timeEnd('getArcs')
         return arcs
-    }, [valueGetter, dayData])
+    }, [valueGetter, dayData, containerWidth])
     const highlightMode = data.highLightedTransactionNumberSet.size > 0;
     const paths = useMemo(() => {
         return arcs.map((arc, i) => {

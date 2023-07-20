@@ -5,7 +5,7 @@ import * as d3 from 'd3'
 
 import assert from "assert";
 import TableView from "../TableView/TableView";
-import { ConfigContext } from "../ConfigProvider";
+import { Config, ConfigContext } from "../ConfigProvider";
 import FolderableContainer from "../Containers/FolderableContainer";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView } from "./DayViews/PieDayView";
 import { barGlyphValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
@@ -42,7 +42,8 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
 
     // config
     const config = useContext(ConfigContext)
-    const { containerWidth, containerHeight } = config.calendarViewConfig
+    let containerHeight: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerHeight : config.calendarViewConfig.containerHeight
+    console.log(containerHeight)
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
         setDetailDay({ day: day, month: month, year: year })

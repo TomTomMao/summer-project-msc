@@ -3,7 +3,7 @@ import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
 import assert from "assert";
 
-import { ConfigContext } from "../../ConfigProvider";
+import { Config, ConfigContext } from "../../ConfigProvider";
 import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 
 export type BarGlyphScalesLinearHeight = {
@@ -52,11 +52,12 @@ export type BarDayViewProps = {
 export function BarDayView(props: BarDayViewProps) {
     const { day, month, currentYear, data, scales, valueGetter } = props;
     const maxTransactionCountOfDay: number = 28; // todo, take it from the calendarview component
-    
+
     // configs
     const config = useContext(ConfigContext);
-    assert(config !== null);
-    const {containerWidth, containerHeight} = config.calendarViewConfig;
+    const containerHeight: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerHeight : config.calendarViewConfig.containerHeight
+    const containerWidth: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerWidth : config.calendarViewConfig.containerWidth
+
     const { isSharedBandWidth, sortingKey, isDesc, heightAxis } = config.barGlyphConfig;
     const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc]);
 
@@ -99,7 +100,7 @@ export function BarDayView(props: BarDayViewProps) {
             barsOfEachYear.push({ year: year, bars: bars });
         }
         return barsOfEachYear;
-    }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc]);
+    }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc, containerHeight, containerWidth]);
 
     return (<svg width={containerWidth} height={containerHeight}>
         {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year}>{d.bars}</g>; })}
