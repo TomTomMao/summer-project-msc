@@ -8,13 +8,11 @@ import { ClusterView } from "./components/ClusterView/ClusterView";
 
 import ColourLegendList from "./components/ColourLegend/ColourLegend";
 import * as d3 from 'd3';
-import { ConfigContext, ConfigDispatchContext, ConfigProvider, DashBoardAction } from "./components/ConfigProvider";
 import ControlPannel from "./components/ControlPannel/ControlPannel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
 import { PublicScale } from "./utilities/types";
 import { parseTime, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
 import ExpandableContainer from "./components/Containers/ExpandableContainer";
-import { assert } from "console";
 import { useAppDispatch } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice"
@@ -56,7 +54,7 @@ export default function App() {
      * tell the components which are wrapped inside the expandablecontainer it is expanded or folded
      * @param chartToExpand chart to expand
      */
-    function handleSetExpand(nextIsExpand: boolean, chartToExpand: DashBoardAction['chartToExpand']) {
+    function handleSetExpand(nextIsExpand: boolean, chartToExpand: 'calendar view' | 'cluster view') {
         if (chartToExpand === 'calendar view') {
             if (nextIsExpand) {
                 dispatch(calendarViewSlice.expand())

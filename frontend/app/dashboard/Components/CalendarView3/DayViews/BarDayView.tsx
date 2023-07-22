@@ -2,11 +2,9 @@ import { useMemo } from "react";
 import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
 
-import { Config, ConfigContext } from "../../ConfigProvider";
 import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useAppSelector } from "@/app/hooks";
 import { selectHeightAxis, selectIsDesc, selectIsSharedBandWidth, selectSortingKey } from "./barDayViewSlice";
-import * as calendarViewSlice from '../calendarViewSlice'
 
 export type BarGlyphScalesLinearHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.

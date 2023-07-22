@@ -5,7 +5,6 @@ import * as d3 from 'd3'
 
 import assert from "assert";
 import TableView from "../TableView/TableView";
-import { Config, ConfigContext } from "../ConfigProvider";
 import FolderableContainer from "../Containers/FolderableContainer";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView } from "./DayViews/PieDayView";
 import { barGlyphValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
