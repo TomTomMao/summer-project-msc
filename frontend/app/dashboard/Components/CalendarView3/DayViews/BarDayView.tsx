@@ -1,10 +1,11 @@
 import { useContext, useMemo } from "react";
 import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
-import assert from "assert";
 
 import { Config, ConfigContext } from "../../ConfigProvider";
 import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
+import { useAppSelector } from "@/app/hooks";
+import { selectHeightAxis, selectIsDesc, selectIsSharedBandWidth, selectSortingKey } from "./barDayViewSlice";
 
 export type BarGlyphScalesLinearHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
@@ -18,11 +19,6 @@ export type BarGlyphScalesLogHeight = {
 }
 export type BarGlyphScales = BarGlyphScalesLogHeight | BarGlyphScalesLinearHeight
 
-export const barGlyphValueGetter: BarCalendarViewValueGetter = {
-    x: (d: TransactionData) => d.transactionNumber,
-    height: (d: TransactionData) => d.transactionAmount,
-    colour: (d: TransactionData) => d.category
-};
 export type BarCalendarViewValueGetter = {
     x: (d: TransactionData) => string;
     height: (d: TransactionData) => number;
@@ -32,6 +28,11 @@ export type BarCalendarViewSharedScales = {
     heightScaleLog: BarGlyphScalesLogHeight['heightScale'];
     heightScaleLinear: BarGlyphScalesLinearHeight['heightScale'];
     colourScale: BarGlyphScales['colourScale'];
+};
+export const barGlyphValueGetter: BarCalendarViewValueGetter = {
+    x: (d: TransactionData) => d.transactionNumber,
+    height: (d: TransactionData) => d.transactionAmount,
+    colour: (d: TransactionData) => d.category
 };
 export type BarDayViewProps = {
     /**1to31 */
@@ -54,11 +55,17 @@ export function BarDayView(props: BarDayViewProps) {
     const maxTransactionCountOfDay: number = 28; // todo, take it from the calendarview component
 
     // configs
+    const isSharedBandWidth = useAppSelector(selectIsSharedBandWidth)
+    const sortingKey = useAppSelector(selectSortingKey);
+    const isDesc = useAppSelector(selectIsDesc);
+    const heightAxis = useAppSelector(selectHeightAxis);
+
+
+    // configs // todo: move these data to calendarView component, and pass it down as props
     const config = useContext(ConfigContext);
     const containerHeight: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerHeight : config.calendarViewConfig.containerHeight
     const containerWidth: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerWidth : config.calendarViewConfig.containerWidth
-
-    const { isSharedBandWidth, sortingKey, isDesc, heightAxis } = config.barGlyphConfig;
+    
     const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc]);
 
     // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
