@@ -1,10 +1,12 @@
 'use client';
-import { useState, useEffect, useRef, useContext, useMemo, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, useRef, useMemo, Dispatch, SetStateAction } from "react";
 import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
 import { AxisBottom, AxisLeft } from "../Axis";
 import { PublicScale } from "../../utilities/types";
-import { Config, ConfigContext, ConfigDispatchContext } from "../ConfigProvider";
+import * as clusterViewSlice from './clusterViewSlice'
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+
 const BRUSH_MODE = 'brush end'
 /**
  * render a cluster view using scatter plot
@@ -56,14 +58,13 @@ export function ClusterView(props: ClusterViewProps) {
     const [isSwap, setIsSwap] = useState(false);
 
     // configs
-    let { containerWidth, containerHeight, mainScale, expandedContainerWidth, expandedContainerHeight, isExpanded } = useContext(ConfigContext).clusterViewConfig;
-    if (isExpanded) {
-        containerHeight = expandedContainerHeight;
-        containerWidth = expandedContainerWidth;
-    }
-    const useLogScale = mainScale === 'log' ? true : false;
+    const currentContainerWidth = useAppSelector(clusterViewSlice.selectCurrentContainerWidth);
+    const currentContainerHeight = useAppSelector(clusterViewSlice.selectCurrentContainerHeight);
+    const mainAxis = useAppSelector(clusterViewSlice.selectMainAxis);
+
+    const useLogScale = mainAxis === 'log' ? true : false;
     // config dispatcher
-    const dispatch = useContext(ConfigDispatchContext);
+    const dispatch = useAppDispatch();
 
 
     const brushGRef = useRef<SVGGElement | null>(null)
@@ -107,23 +108,17 @@ export function ClusterView(props: ClusterViewProps) {
         }
         console.timeEnd('handleBrush')
     }
-    function handleSetMainScale(newMainScale: Config['clusterViewConfig']['mainScale']) {
-        if (dispatch === null) {
-            throw new Error("page is still initialising");
-        } else {
-            dispatch({ targetChart: 'cluster view', type: 'set main scale', newMainScale: newMainScale })
-        }
-    }
+
 
     const margin = DEFAULT_MARGIN;
-    const width = containerWidth - margin.left - margin.right
-    const height = containerHeight - margin.top - margin.bottom;
+    const width = currentContainerWidth - margin.left - margin.right
+    const height = currentContainerHeight - margin.top - margin.bottom;
     // cache the scales
     const scales = useMemo(() => {
         console.log('recalculating scales')
         const { xScale, yScale, xScaleSwap, yScaleSwap } = getScales(transactionDataArr, valueGetterWithSwap, width, height)(useLogScale)
         return { xScale, yScale, xScaleSwap, yScaleSwap, colourScale }
-    }, [transactionDataArr, valueGetter, useLogScale, containerHeight, containerWidth])
+    }, [transactionDataArr, valueGetter, useLogScale, currentContainerHeight, currentContainerWidth])
 
 
     // cache the circles 
@@ -173,10 +168,10 @@ export function ClusterView(props: ClusterViewProps) {
             brush(brushG)
             return () => { brushG.on('.brush', null) }
         }
-    }, [containerWidth, containerHeight, isSwap, useLogScale])
+    }, [currentContainerWidth, currentContainerHeight, isSwap, useLogScale])
 
     return (<div className="clusterView">
-        <svg width={containerWidth} height={containerHeight}>
+        <svg width={currentContainerWidth} height={currentContainerHeight}>
             <g transform={`translate(${margin.left},${margin.top})`}>
                 <g>{isSwap ? swapCircles : circles}</g>
                 <g ref={brushGRef}></g>
@@ -187,9 +182,9 @@ export function ClusterView(props: ClusterViewProps) {
         <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
         main axis
         <label htmlFor="clusterUseLog">log</label>
-        <input type="radio" name="clusterUseLog" id="" checked={useLogScale} onChange={() => handleSetMainScale('log')} />
+        <input type="radio" name="clusterUseLog" id="" checked={useLogScale} onChange={() => dispatch(clusterViewSlice.setMainScale('log'))} />
         <label htmlFor="clusterUseLinear">linear</label>
-        <input type="radio" name="clusterUseLinear" id="" checked={!useLogScale} onChange={() => handleSetMainScale('linear')} />
+        <input type="radio" name="clusterUseLinear" id="" checked={!useLogScale} onChange={() => dispatch(clusterViewSlice.setMainScale('linear'))} />
     </div>
     );
 }

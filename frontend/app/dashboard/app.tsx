@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo, useContext } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData } from "./utilities/DataObject";
 import CalendarView3 from "./components/CalendarView3/CalendarView3";
 import TableView from "./components/TableView/TableView";
@@ -17,6 +17,7 @@ import ExpandableContainer from "./components/Containers/ExpandableContainer";
 import { assert } from "console";
 import { useAppDispatch } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
+import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice"
 
 
 export default function App() {
@@ -26,10 +27,8 @@ export default function App() {
     // cluster view's initial y axis's scale
     const [clusterViewValueGetter, setClusterViewValueGetter] = useState(temporalValueGetter);
 
-    // config
-    const config = useContext(ConfigContext)
-    const appDispatch = useAppDispatch()
-    const dispatch = useContext(ConfigDispatchContext)
+    // set the state store
+    const dispatch = useAppDispatch()
 
     // calculate and cache the public colour scale
     const colourScale: null | PublicScale['colourScale'] = useMemo(() => {
@@ -54,23 +53,21 @@ export default function App() {
 
     // expanding handler
     /**
-     * 
+     * tell the components which are wrapped inside the expandablecontainer it is expanded or folded
      * @param chartToExpand chart to expand
      */
     function handleSetExpand(nextIsExpand: boolean, chartToExpand: DashBoardAction['chartToExpand']) {
         if (chartToExpand === 'calendar view') {
             if (nextIsExpand) {
-                appDispatch(calendarViewSlice.expand())
+                dispatch(calendarViewSlice.expand())
             } else {
-                appDispatch(calendarViewSlice.fold())
+                dispatch(calendarViewSlice.fold())
             }
         } else {
-            const action: DashBoardAction = { targetChart: 'dashboard', type: nextIsExpand ? 'expand' : 'fold', chartToExpand: 'cluster view' }
-            if (dispatch !== null) {
-                console.log('dispachting')
-                dispatch(action);
+            if (nextIsExpand) {
+                dispatch(clusterViewSlice.expand())
             } else {
-                throw new Error("dispatch is null, which is unexpected");
+                dispatch(clusterViewSlice.fold())
             }
         }
     }
