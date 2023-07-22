@@ -15,7 +15,8 @@ import { PublicScale } from "./utilities/types";
 import { parseTime, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
 import ExpandableContainer from "./components/Containers/ExpandableContainer";
 import { assert } from "console";
-
+import { useAppDispatch } from "../hooks";
+import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
 
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
 
     // config
     const config = useContext(ConfigContext)
+    const appDispatch = useAppDispatch()
     const dispatch = useContext(ConfigDispatchContext)
 
     // calculate and cache the public colour scale
@@ -56,13 +58,20 @@ export default function App() {
      * @param chartToExpand chart to expand
      */
     function handleSetExpand(nextIsExpand: boolean, chartToExpand: DashBoardAction['chartToExpand']) {
-        const action: DashBoardAction = { targetChart: 'dashboard', type: nextIsExpand ? 'expand' : 'fold', chartToExpand: chartToExpand }
-        if (dispatch !== null) {
-            console.log('dispachting')
-            dispatch(action);
+        if (chartToExpand === 'calendar view') {
+            if (nextIsExpand) {
+                appDispatch(calendarViewSlice.expand())
+            } else {
+                appDispatch(calendarViewSlice.fold())
+            }
         } else {
-            throw new Error("dispatch is null, which is unexpected");
-
+            const action: DashBoardAction = { targetChart: 'dashboard', type: nextIsExpand ? 'expand' : 'fold', chartToExpand: 'cluster view' }
+            if (dispatch !== null) {
+                console.log('dispachting')
+                dispatch(action);
+            } else {
+                throw new Error("dispatch is null, which is unexpected");
+            }
         }
     }
     if (transactionDataArr === null) {

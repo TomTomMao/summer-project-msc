@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
 
@@ -6,6 +6,7 @@ import { Config, ConfigContext } from "../../ConfigProvider";
 import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useAppSelector } from "@/app/hooks";
 import { selectHeightAxis, selectIsDesc, selectIsSharedBandWidth, selectSortingKey } from "./barDayViewSlice";
+import * as calendarViewSlice from '../calendarViewSlice'
 
 export type BarGlyphScalesLinearHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
@@ -43,6 +44,7 @@ export type BarDayViewProps = {
     data: Data;
     scales: BarCalendarViewSharedScales;
     valueGetter: BarCalendarViewValueGetter;
+    containerSize: { containerWidth: number, containerHeight: number }
 };
 /**
  * use public scale for transaction amount and public colours scale for Category
@@ -51,7 +53,7 @@ export type BarDayViewProps = {
  * @param month the number of the month in the year between 1 to 12
  */
 export function BarDayView(props: BarDayViewProps) {
-    const { day, month, currentYear, data, scales, valueGetter } = props;
+    const { day, month, currentYear, data, scales, valueGetter, containerSize } = props;
     const maxTransactionCountOfDay: number = 28; // todo, take it from the calendarview component
 
     // configs
@@ -60,12 +62,9 @@ export function BarDayView(props: BarDayViewProps) {
     const isDesc = useAppSelector(selectIsDesc);
     const heightAxis = useAppSelector(selectHeightAxis);
 
+    // configs, from the props
+    const { containerWidth, containerHeight } = containerSize
 
-    // configs // todo: move these data to calendarView component, and pass it down as props
-    const config = useContext(ConfigContext);
-    const containerHeight: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerHeight : config.calendarViewConfig.containerHeight
-    const containerWidth: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerWidth : config.calendarViewConfig.containerWidth
-    
     const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc]);
 
     // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
@@ -88,7 +87,7 @@ export function BarDayView(props: BarDayViewProps) {
                 for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`); }
             }
 
-            const xScale = d3.scaleBand().domain(xDomain).range([0, containerWidth]);
+            const xScale = d3.scaleBand().domain(xDomain).range([0, containerHeight]);
             const bars: JSX.Element[] = dayData.map(d => {
                 const bandWidth = xScale.bandwidth();
                 const rectHeight = heightScale(valueGetter.height(d));
@@ -107,7 +106,7 @@ export function BarDayView(props: BarDayViewProps) {
             barsOfEachYear.push({ year: year, bars: bars });
         }
         return barsOfEachYear;
-    }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc, containerHeight, containerWidth]);
+    }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc, containerWidth, containerHeight]);
 
     return (<svg width={containerWidth} height={containerHeight}>
         {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year}>{d.bars}</g>; })}

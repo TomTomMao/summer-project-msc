@@ -1,6 +1,6 @@
 // reference the document of redux: https://react-redux.js.org/tutorials/typescript-quick-start
 import { TransactionDataAttrs } from "@/app/dashboard/utilities/DataObject";
-import { RootState, store } from "@/app/store";
+import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface BarDayViewState {

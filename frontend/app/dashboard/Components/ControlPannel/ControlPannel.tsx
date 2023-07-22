@@ -1,37 +1,33 @@
-import { useContext } from "react"
-import { Action, ConfigContext, ConfigDispatchContext } from "../ConfigProvider"
-import { assert } from "console"
-import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObject"
-import next from "next/types"
+import { TransactionData, } from "../../utilities/DataObject"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { selectBarDayView } from "../CalendarView3/DayViews/barDayViewSlice"
-import {
-    setSharedBandwidth,
-    setPrivateBandWidth,
-    setSortingKey,
-    setDescendingOrder,
-    setAscendingOrder,
-    setHeightAxis,
-} from "../CalendarView3/DayViews/barDayViewSlice"
+import * as barDayViewSlice from "../CalendarView3/DayViews/barDayViewSlice"
+import * as calendarViewSlice from "../CalendarView3/calendarViewSlice"
 /**
  * require ConfigureContext and ConfigDispatchContext
  * render the configuration based on the ConfigContext
  * provide buttons for controlling the ConfigContext by using ConfigDispatchContext
  */
 export default function ControlPannel() {
-    const barDayViewConfig = useAppSelector(selectBarDayView);
+
+    // config for the bar view
+    const barDayViewIsSharedBandWidth = useAppSelector(barDayViewSlice.selectIsSharedBandWidth)
+    const barDayViewSortingKey = useAppSelector(barDayViewSlice.selectSortingKey)
+    const barDayViewIsDesc = useAppSelector(barDayViewSlice.selectIsDesc)
+    const barDayViewHeightAxis = useAppSelector(barDayViewSlice.selectHeightAxis)
+
+    // config for the selected glyph type
+    const calendarViewGlyphType = useAppSelector(calendarViewSlice.selectGlyphType)
+
     const dispatch = useAppDispatch()
-    const config = useContext(ConfigContext)
-    const dispatchOld = useContext(ConfigDispatchContext)
-    if (dispatchOld===null) {return <></>}
+
     const handleSetBarGlyphShareBandWidth = (nextIsSharedBandWidth: boolean) => {
-        dispatch(nextIsSharedBandWidth ? setSharedBandwidth() : setPrivateBandWidth())
+        dispatch(nextIsSharedBandWidth ? barDayViewSlice.setSharedBandwidth() : barDayViewSlice.setPrivateBandWidth())
     }
 
     const handleSetBarGlyphSortingKey = (nextSortingKey: string) => {
         for (let validSortingKey of TransactionData.getColumnNames()) {
             if (nextSortingKey === validSortingKey) {
-                dispatch(setSortingKey(nextSortingKey));
+                dispatch(barDayViewSlice.setSortingKey(nextSortingKey));
                 return;
             }
         }
@@ -41,18 +37,18 @@ export default function ControlPannel() {
 
     const handleSetBarGlyphSortingOrder = (nextOrder: string) => {
         if (nextOrder === 'descending') {
-            dispatch(setDescendingOrder())
+            dispatch(barDayViewSlice.setDescendingOrder())
         } else if (nextOrder === 'ascending') {
-            dispatch(setAscendingOrder())
+            dispatch(barDayViewSlice.setAscendingOrder())
         }
     }
     const handleSetBarGlyphHeightAxis = (nextAxis: string) => {
         switch (nextAxis) {
             case 'log':
-                dispatch(setHeightAxis('log'));
+                dispatch(barDayViewSlice.setHeightAxis('log'));
                 break;
             case 'linear':
-                dispatch(setHeightAxis('linear'))
+                dispatch(barDayViewSlice.setHeightAxis('linear'))
                 break;
             default:
                 throw new Error("invalid nextAxis: " + nextAxis);
@@ -60,10 +56,10 @@ export default function ControlPannel() {
         }
     }
     const handleUseBarGlyph = () => {
-        dispatchOld({ targetChart: 'calendar view', type: 'change glyph type', glyphType: 'bar' })
+        dispatch(calendarViewSlice.setGlyphType('bar'))
     }
     const handleUsePieGlyph = () => {
-        dispatchOld({ targetChart: 'calendar view', type: 'change glyph type', glyphType: 'pie' })
+        dispatch(calendarViewSlice.setGlyphType('pie'))
     }
 
     return (<>
@@ -72,9 +68,9 @@ export default function ControlPannel() {
         </div>
         <table>
             <tr>
-                <td><input type="radio" name="barGlyph" checked={config.calendarViewConfig.glyphType === 'bar'} id="barGlyph"
+                <td><input type="radio" name="barGlyph" checked={calendarViewGlyphType === 'bar'} id="barGlyph"
                     onClick={handleUseBarGlyph} /><label htmlFor="barGlyph">bar glyph</label></td>
-                <td><input type="radio" name="pieGlyph" checked={config.calendarViewConfig.glyphType === 'pie'} id="pieGlyph"
+                <td><input type="radio" name="pieGlyph" checked={calendarViewGlyphType === 'pie'} id="pieGlyph"
                     onClick={handleUsePieGlyph} /><label htmlFor="pieGlyph">pie glyph</label></td>
             </tr>
             <tr><td><hr /></td><td><hr /></td></tr>
@@ -83,7 +79,7 @@ export default function ControlPannel() {
                     barGlyph share bandwidth?
                 </td>
                 <td>
-                    <select name="" id="" value={String(barDayViewConfig.isSharedBandWidth)}
+                    <select name="" id="" value={String(barDayViewIsSharedBandWidth)}
                         onChange={(e) => handleSetBarGlyphShareBandWidth(e.target.value === 'true' ? true : false)}>
                         <option value='true'>true</option>
                         <option value='false'>false</option>
@@ -95,7 +91,7 @@ export default function ControlPannel() {
                     barGlyph sorting key:
                 </td>
                 <td>
-                    <select name="" id="" value={barDayViewConfig.sortingKey} onChange={(e) => handleSetBarGlyphSortingKey(e.target.value)}>
+                    <select name="" id="" value={barDayViewSortingKey} onChange={(e) => handleSetBarGlyphSortingKey(e.target.value)}>
                         {TransactionData.getColumnNames().map(columnName => <option key={columnName} value={columnName}>{columnName}</option>)}
                     </select>
                 </td>
@@ -105,7 +101,7 @@ export default function ControlPannel() {
                     barGlyph sorting order:
                 </td>
                 <td>
-                    <select name="" id="" value={barDayViewConfig.isDesc ? 'descending' : 'ascending'} onChange={(e) => handleSetBarGlyphSortingOrder(e.target.value)}>
+                    <select name="" id="" value={barDayViewIsDesc ? 'descending' : 'ascending'} onChange={(e) => handleSetBarGlyphSortingOrder(e.target.value)}>
                         <option value="descending">descending</option>
                         <option value="ascending">ascending</option>
                     </select>
@@ -116,7 +112,7 @@ export default function ControlPannel() {
                     barGlyph heigth axis:
                 </td>
                 <td>
-                    <select name="" id="" value={barDayViewConfig.heightAxis} onChange={(e) => handleSetBarGlyphHeightAxis(e.target.value)}>
+                    <select name="" id="" value={barDayViewHeightAxis} onChange={(e) => handleSetBarGlyphHeightAxis(e.target.value)}>
                         <option value="log">log</option>
                         <option value="linear">linear</option>
                     </select>

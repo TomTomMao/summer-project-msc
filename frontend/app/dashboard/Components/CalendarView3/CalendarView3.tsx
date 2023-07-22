@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { TransactionData } from "../../utilities/DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import * as d3 from 'd3'
@@ -10,6 +10,9 @@ import FolderableContainer from "../Containers/FolderableContainer";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView } from "./DayViews/PieDayView";
 import { barGlyphValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
 import { PublicScale, PublicValueGetter } from "../../utilities/types";
+import { useAppSelector } from "@/app/hooks";
+
+import * as calendarViewSlice from './calendarViewSlice'
 
 
 
@@ -41,9 +44,8 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     const [detailDay, setDetailDay] = useState<null | Day>(null)
 
     // config
-    const config = useContext(ConfigContext)
-    let containerHeight: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerHeight : config.calendarViewConfig.containerHeight
-    console.log(containerHeight)
+    const currentContainerHeight = useAppSelector(calendarViewSlice.selectCurrentContainerHeight)
+    const currentContainerWidth = useAppSelector(calendarViewSlice.selectCurrentContainerWidth)
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
         setDetailDay({ day: day, month: month, year: year })
@@ -60,8 +62,8 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     // create public height scale for the bar glyph
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height); // height for bar glyph
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
-    const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, containerHeight]);
-    const heightScaleLog: BarCalendarViewSharedScales['heightScaleLog'] = d3.scaleLog(heightDomain, [0, containerHeight]);
+    const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, currentContainerHeight]);
+    const heightScaleLog: BarCalendarViewSharedScales['heightScaleLog'] = d3.scaleLog(heightDomain, [0, currentContainerHeight]);
     const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScaleLinear, heightScaleLog, colourScale } // colourScale shared with other views
     // create shared number of bars, the number will be used for control the xDomain's Size
     const maxTransactionCountOfDay = useMemo(() => {
@@ -84,7 +86,10 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                 <tbody>
                     {MONTHS.map((_, i) => <MonthView month={i + 1} currentYear={currentYear}
                         key={i + 1} data={data} scales={barCalendarViewSharedScales} valueGetter={barGlyphValueGetter} onShowDayDetail={handleShowDayDetail}
-                        detailDay={detailDay} />)}
+                        detailDay={detailDay} dayViewContainerSize={{
+                            containerWidth: currentContainerWidth,
+                            containerHeight: currentContainerHeight
+                        }} />)}
                 </tbody>
             </table>
             <div>
@@ -112,16 +117,14 @@ type BarMonthViewProps = {
     scales: BarCalendarViewSharedScales,
     valueGetter: BarCalendarViewValueGetter,
     onShowDayDetail: (day: number, month: number, year: number) => void,
-    detailDay: Day | null
+    detailDay: Day | null,
+    dayViewContainerSize: { containerWidth: number, containerHeight: number }
 }
 
 function MonthView(props: BarMonthViewProps) {
     const { month, currentYear, detailDay, onShowDayDetail } = props
-    const config = useContext(ConfigContext);
-    if (config === null) {
-        throw new Error("config is loading, but the month view is already amounted");
-    }
-    const glyphType = config.calendarViewConfig.glyphType;
+    const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
+
     function handleShowDayDetail(day: number) {
         onShowDayDetail(day, month, currentYear);
     }
@@ -130,12 +133,14 @@ function MonthView(props: BarMonthViewProps) {
         <td style={{ color: detailDay && detailDay.month === month && detailDay.year === currentYear ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
         {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i => {
             const isDetailDay = detailDay !== null && detailDay.day === i + 1 && detailDay.month === month && detailDay.year === currentYear;
-            const barDayViewProps: BarDayViewProps = { day: i + 1, ...props }
+            const barDayViewProps: BarDayViewProps = {
+                day: i + 1, ...props,
+                containerSize: props.dayViewContainerSize
+            }
             const pieDayViewProps: PieDayViewProps = {
                 day: i + 1, month: props.month, currentYear: props.currentYear, data: props.data,
                 scales: { colourScale: props.scales.colourScale }, valueGetter: pieCalendarViewValueGetter,
-                onShowDayDetail: props.onShowDayDetail,
-                detailDay: props.detailDay
+                containerSize: props.dayViewContainerSize
             }
             return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
                 {glyphType === 'pie' ? <PieDayView {...pieDayViewProps} key={`${month}-${i + 1}`} /> : <BarDayView {...barDayViewProps} key={`${month}-${i + 1}`} />}

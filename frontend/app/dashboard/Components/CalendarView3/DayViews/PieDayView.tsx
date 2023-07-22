@@ -1,9 +1,8 @@
 import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
-import { Data, Day, getDataFromTransactionDataMapYMD } from "../CalendarView3";
-import { useContext, useMemo, useRef } from "react";
+import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
+import { useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
-import { Config, ConfigContext } from "../../ConfigProvider";
 
 type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'];
@@ -22,8 +21,7 @@ export type PieDayViewProps = {
     data: Data;
     scales: PieCalendarViewSharedScales;
     valueGetter: PieCalendarViewValueGetter;
-    onShowDayDetail: (day: number, month: number, year: number) => void;
-    detailDay: null | Day;
+    containerSize: { containerWidth: number, containerHeight: number }
 };
 export const pieCalendarViewValueGetter: PieCalendarViewValueGetter = {
     colour: (d: TransactionData) => d.category,
@@ -32,7 +30,7 @@ export const pieCalendarViewValueGetter: PieCalendarViewValueGetter = {
 };
 export function PieDayView(props: PieDayViewProps) {
     //reference: Holtz, Y. (n.d.). Pie chart with React. Retrieved 17 July 2023, from https://www.react-graph-gallery.com/pie-plot
-    const { day, month, currentYear, data, scales, valueGetter, onShowDayDetail, detailDay } = props;
+    const { day, month, currentYear, data, scales, valueGetter, containerSize } = props;
     const dayData = useMemo(() => {
         return getDataFromTransactionDataMapYMD(data.transactionDataMapYMD, day, month, currentYear);
     }, [day, month, currentYear])
@@ -40,9 +38,8 @@ export function PieDayView(props: PieDayViewProps) {
     const { colourScale } = scales;
 
     // configs
-    const config = useContext(ConfigContext)
-    const containerHeight: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerHeight : config.calendarViewConfig.containerHeight
-    const containerWidth: Config['calendarViewConfig']['containerHeight'] = config.calendarViewConfig.isExpanded ? config.calendarViewConfig.expandedContainerWidth : config.calendarViewConfig.containerWidth
+    const { containerWidth, containerHeight } = containerSize
+
     const ref = useRef(null)
     const arcs = useMemo(() => {
         console.time('getArcs')
