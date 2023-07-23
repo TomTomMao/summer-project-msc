@@ -4,6 +4,8 @@ import { Data, getDataFromTransactionAmountSumByDayYMD, getDataFromTransactionDa
 import { useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
 import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
+import { useAppSelector } from "@/app/hooks";
+import * as pieDayViewSlice from "./pieDayViewSlice"
 
 export type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'],
@@ -47,7 +49,7 @@ export function PieDayView(props: PieDayViewProps) {
         return getDataFromTransactionAmountSumByDayYMD(transactionAmountSumMapByDayYMD, day, month, currentYear)
     }, [day, month, currentYear, transactionAmountSumMapByDayYMD])
 
-    let radiusScaleType: 'linear' | 'log' | 'constant' = 'log'
+    const radiusScaleType: 'linear' | 'log' | 'constant' = useAppSelector(pieDayViewSlice.selectRadiusAxis)
     const { colourScale, linearRadiusScale, logRadiusScale } = scales;
     const radius = useMemo(() => {
         switch (radiusScaleType) {

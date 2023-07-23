@@ -2,6 +2,8 @@ import { TransactionData, } from "../../utilities/DataObject"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import * as barDayViewSlice from "../CalendarView3/DayViews/barDayViewSlice"
 import * as calendarViewSlice from "../CalendarView3/calendarViewSlice"
+import * as pieDayViewSlice from "../CalendarView3/DayViews/pieDayViewSlice"
+import FolderableContainer from "../Containers/FolderableContainer"
 /**
  * require ConfigureContext and ConfigDispatchContext
  * render the configuration based on the ConfigContext
@@ -14,6 +16,9 @@ export default function ControlPannel() {
     const barDayViewSortingKey = useAppSelector(barDayViewSlice.selectSortingKey)
     const barDayViewIsDesc = useAppSelector(barDayViewSlice.selectIsDesc)
     const barDayViewHeightAxis = useAppSelector(barDayViewSlice.selectHeightAxis)
+
+    // config for the pie view
+    const radiusScaleType: 'linear' | 'log' | 'constant' = useAppSelector(pieDayViewSlice.selectRadiusAxis)
 
     // config for the selected glyph type
     const calendarViewGlyphType = useAppSelector(calendarViewSlice.selectGlyphType)
@@ -62,6 +67,22 @@ export default function ControlPannel() {
         dispatch(calendarViewSlice.setGlyphType('pie'))
     }
 
+    function handleSetPieGlyphRadiusAxis(nextAxis: string): void {
+        switch (nextAxis) {
+            case 'log':
+                dispatch(pieDayViewSlice.setRadiusAxis('log'));
+                break;
+            case 'linear':
+                dispatch(pieDayViewSlice.setRadiusAxis('linear'));
+                break;
+            case 'constant':
+                dispatch(pieDayViewSlice.setRadiusAxis('constant'));
+                break;
+            default:
+                throw new Error("invalid nextAxis: " + nextAxis)
+        }
+    }
+
     return (<>
         <div className="controlPannelSubtitle">
             calendar view setting
@@ -74,50 +95,67 @@ export default function ControlPannel() {
                     onClick={handleUsePieGlyph} /><label htmlFor="pieGlyph">pie glyph</label></td>
             </tr>
             <tr><td><hr /></td><td><hr /></td></tr>
-            <tr>
-                <td>
-                    barGlyph share bandwidth?
-                </td>
-                <td>
-                    <select name="" id="" value={String(barDayViewIsSharedBandWidth)}
-                        onChange={(e) => handleSetBarGlyphShareBandWidth(e.target.value === 'true' ? true : false)}>
-                        <option value='true'>true</option>
-                        <option value='false'>false</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    barGlyph sorting key:
-                </td>
-                <td>
-                    <select name="" id="" value={barDayViewSortingKey} onChange={(e) => handleSetBarGlyphSortingKey(e.target.value)}>
-                        {TransactionData.getColumnNames().map(columnName => <option key={columnName} value={columnName}>{columnName}</option>)}
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    barGlyph sorting order:
-                </td>
-                <td>
-                    <select name="" id="" value={barDayViewIsDesc ? 'descending' : 'ascending'} onChange={(e) => handleSetBarGlyphSortingOrder(e.target.value)}>
-                        <option value="descending">descending</option>
-                        <option value="ascending">ascending</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    barGlyph heigth axis:
-                </td>
-                <td>
-                    <select name="" id="" value={barDayViewHeightAxis} onChange={(e) => handleSetBarGlyphHeightAxis(e.target.value)}>
-                        <option value="log">log</option>
-                        <option value="linear">linear</option>
-                    </select>
-                </td>
-            </tr>
+            <FolderableContainer label={"bar glyph config"} initIsFolded={false}>
+                <tr>
+                    <td>
+                        barGlyph share bandwidth?
+                    </td>
+                    <td>
+                        <select name="" id="" value={String(barDayViewIsSharedBandWidth)}
+                            onChange={(e) => handleSetBarGlyphShareBandWidth(e.target.value === 'true' ? true : false)}>
+                            <option value='true'>true</option>
+                            <option value='false'>false</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        barGlyph sorting key:
+                    </td>
+                    <td>
+                        <select name="" id="" value={barDayViewSortingKey} onChange={(e) => handleSetBarGlyphSortingKey(e.target.value)}>
+                            {TransactionData.getColumnNames().map(columnName => <option key={columnName} value={columnName}>{columnName}</option>)}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        barGlyph sorting order:
+                    </td>
+                    <td>
+                        <select name="" id="" value={barDayViewIsDesc ? 'descending' : 'ascending'} onChange={(e) => handleSetBarGlyphSortingOrder(e.target.value)}>
+                            <option value="descending">descending</option>
+                            <option value="ascending">ascending</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        barGlyph heigth axis:
+                    </td>
+                    <td>
+                        <select name="" id="" value={barDayViewHeightAxis} onChange={(e) => handleSetBarGlyphHeightAxis(e.target.value)}>
+                            <option value="log">log</option>
+                            <option value="linear">linear</option>
+                        </select>
+                    </td>
+                </tr>
+            </FolderableContainer>
+            <tr><td><hr /></td><td><hr /></td></tr>
+            <FolderableContainer label={"pie glyph config"} initIsFolded={false}>
+                <tr>
+                    <td>
+                        pieGlyph radius
+                    </td>
+                    <td>
+                        <select name="" id="" value={radiusScaleType} onChange={(e) => handleSetPieGlyphRadiusAxis(e.target.value)}>
+                            <option value="log">log</option>
+                            <option value="linear">linear</option>
+                            <option value="constant">constant</option>
+                        </select>
+                    </td>
+                </tr>
+            </FolderableContainer>
 
         </table>
     </>)
