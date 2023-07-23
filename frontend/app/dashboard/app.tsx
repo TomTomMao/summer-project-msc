@@ -77,6 +77,11 @@ export default function App() {
     else {
         return (
             <div>
+                <div className="floatDiv" style={{right: '3px', backgroundColor: '#EEEEEE'}}>
+                    <FolderableContainer label="colour legends" initIsFolded={false}>
+                        <ColourLegendList colourScale={colourScale}></ColourLegendList>
+                    </FolderableContainer>
+                </div>
                 <div className="grid grid-cols-12">
                     <div className="col-span-5">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
@@ -90,7 +95,7 @@ export default function App() {
                             />
                         </ExpandableContainer>
                     </div>
-                    <div className="col-span-7">
+                    <div className="col-span-6">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'calendar view') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
@@ -111,12 +116,12 @@ export default function App() {
                         </ExpandableContainer>
                     </div>
                 </div>
-                <FolderableContainer label="detail of brushed points" initIsFolded={true}>
+                <FolderableContainer label="brushed data" initIsFolded={true}>
                     <TableView transactionDataArr={transactionDataArr}
                         handleClearSelect={() => setBrushedTransactionNumberSet(new Set())}
                         transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
-                        colourValueGetter={PUBLIC_VALUEGETTER.colour}></TableView></FolderableContainer>
-                <ColourLegendList colourMappings={[]}></ColourLegendList>
+                        colourValueGetter={PUBLIC_VALUEGETTER.colour}></TableView>
+                </FolderableContainer>
             </div>
         )
     }

@@ -1,24 +1,25 @@
-type ColourMapping = { name: string, colour: string };
+import { PublicScale } from "../../utilities/types";
+
 const DEFAULT_COLOUR_LEGEND_WIDTH = 5;
 const DEFAULT_COLOUR_LEGEND_HEIGHT = 5;
 
-export default function ColourLegendList({ colourMappings }: { colourMappings: ColourMapping[] }) {
 
-    return (<div >
-        {colourMappings.map(colourMapping => <ColourLegend colourMapping={colourMapping}></ColourLegend>)}
+
+export default function ColourLegendList({ colourScale }: { colourScale: PublicScale['colourScale'] }) {
+    const colourMappingArr = colourScale.domain().map(domain => {
+        return {
+            domain: domain,
+            value: colourScale(domain)
+        }
+    })
+    return (<div className="grid grid-col-1 grid-flow-row gap-0">
+        {colourMappingArr.map(colourMapping => {
+            return (
+                <div key={colourMapping.domain} style={{ border: '1px solid black', width: 'fit-content',fontSize:'10px'}}>
+                    <div style={{ backgroundColor: colourMapping.value, width:'1em', height:'1em', display:'inline-block'}}></div>
+                    {colourMapping.domain}
+                </div>)
+        })}
     </div>)
-}
-
-
-function ColourLegend({ colourMapping }: { colourMapping: ColourMapping }) {
-    return (<>
-        <div>
-            <Rectangle colour={colourMapping.colour} width={DEFAULT_COLOUR_LEGEND_WIDTH} height={DEFAULT_COLOUR_LEGEND_HEIGHT}></Rectangle>{colourMapping.name}
-        </div>
-    </>)
-}
-
-function Rectangle({ colour, width, height }: { colour: string, width: number, height: number }) {
-    return <div style={{ width: width, height: height, backgroundColor: colour }}></div>
 }
 
