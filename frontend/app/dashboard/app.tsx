@@ -29,6 +29,9 @@ export default function App() {
     // set the state store
     const dispatch = useAppDispatch()
 
+    // highlighted colour channel
+    const highLightedColourSet = useAppSelector(colourLegendSlice.selectHighLightedColourDomainValueSet)
+
     // initialise the colour domain
     useEffect(() => {
         if (transactionDataArr !== null) {
@@ -121,7 +124,8 @@ export default function App() {
                             <div className="calendarView">
                                 <CalendarView3 transactionDataArr={transactionDataArr}
                                     initCurrentYear={2016}
-                                    highLightedTransactionNumberSet={brushedTransactionNumberSet}
+                                    highLightedTransactionNumberSetByBrusher={brushedTransactionNumberSet}
+                                    highLightedColourDomainValueSetByLegend={highLightedColourSet}
                                     colourScale={colourScale}
                                     colourValueGetter={PUBLIC_VALUEGETTER.colour}
                                 ></CalendarView3>

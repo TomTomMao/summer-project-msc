@@ -6,7 +6,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
  * 'true' value for isFiltered means show the data, false means not show.
  * 'true' value for isHighLighted means highLight the data, false means not highLight
  */
-interface ColourDomainInfo {
+export interface ColourDomainInfo {
   domainValue: string;
   isFiltered: boolean;
   isHighLighted: boolean;

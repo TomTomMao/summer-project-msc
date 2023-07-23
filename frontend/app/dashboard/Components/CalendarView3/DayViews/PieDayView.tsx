@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
+import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 
 type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'];
@@ -34,7 +35,7 @@ export function PieDayView(props: PieDayViewProps) {
     const dayData = useMemo(() => {
         return getDataFromTransactionDataMapYMD(data.transactionDataMapYMD, day, month, currentYear);
     }, [day, month, currentYear])
-    const highLightedTransactionNumberSet = data.highLightedTransactionNumberSet
+    const { highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend } = data
     const { colourScale } = scales;
 
     // configs
@@ -55,14 +56,30 @@ export function PieDayView(props: PieDayViewProps) {
         console.timeEnd('getArcs')
         return arcs
     }, [valueGetter, dayData, containerWidth])
-    const highlightMode = data.highLightedTransactionNumberSet.size > 0;
+    const brushingMode = highLightedTransactionNumberSetByBrusher.size > 0;
     const paths = useMemo(() => {
         return arcs.map((arc, i) => {
-            return <path id={dayData[i].transactionNumber + 'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(dayData[i]))}
-                opacity={highlightMode && !data.highLightedTransactionNumberSet.has(dayData[i].transactionNumber) ? 0.1 : 1}
+            let opacity: number;
+            let stroke: string = ''
+            const transactionData = dayData[i]
+            if (!brushingMode) {
+                opacity = highLightedColourDomainValueSetByLegend.has(PUBLIC_VALUEGETTER.colour(transactionData)) ? 1 : 0.3
+                if (opacity === 1 && highLightedColourDomainValueSetByLegend.size < colourScale.domain().length) {
+                    stroke = 'black'
+                }
+            } else {
+                opacity = highLightedTransactionNumberSetByBrusher.has(transactionData.transactionNumber) &&
+                    highLightedColourDomainValueSetByLegend.has(PUBLIC_VALUEGETTER.colour(transactionData)) ? 1 : 0.3
+                if (opacity === 1 && highLightedColourDomainValueSetByLegend.size < colourScale.domain().length) {
+                    stroke = 'black'
+                }
+            }
+
+            return <path id={transactionData.transactionNumber + 'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(transactionData))}
+                opacity={opacity} stroke={stroke}
             />;
         })
-    }, [arcs, colourScale, valueGetter, dayData, highLightedTransactionNumberSet])
+    }, [arcs, colourScale, valueGetter, dayData, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend])
 
     return (
         <svg width={containerWidth} height={containerHeight}>

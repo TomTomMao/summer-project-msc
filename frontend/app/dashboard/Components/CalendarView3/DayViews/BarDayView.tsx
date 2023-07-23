@@ -65,9 +65,9 @@ export function BarDayView(props: BarDayViewProps) {
 
     const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc]);
 
-    // highLightedTransactionNumberSet used for checking if the transaction is selected when rendering or creating rectangles
-    const { transactionDataMapYMD, highLightedTransactionNumberSet } = data;
-    const highlightMode = highLightedTransactionNumberSet.size > 0; // for deciding the style of rect
+    // highLightedTransactionNumberSetByBrusher used for checking if the transaction is selected when rendering or creating rectangles
+    const { transactionDataMapYMD, highLightedTransactionNumberSetByBrusher } = data;
+    const highlightMode = highLightedTransactionNumberSetByBrusher.size > 0; // for deciding the style of rect
     const { heightScaleLog, heightScaleLinear, colourScale } = scales; // heightScale for bar glyph, colourScale for category
     const heightScale = heightAxis === 'log' ? heightScaleLog : heightScaleLinear;
 
@@ -89,7 +89,7 @@ export function BarDayView(props: BarDayViewProps) {
             const bars: JSX.Element[] = dayData.map(d => {
                 const bandWidth = xScale.bandwidth();
                 const rectHeight = heightScale(valueGetter.height(d));
-                const isThisDataHighLighted = highLightedTransactionNumberSet.has(d.transactionNumber);
+                const isThisDataHighLighted = highLightedTransactionNumberSetByBrusher.has(d.transactionNumber);
                 return (
                     <rect
                         key={d.transactionNumber}

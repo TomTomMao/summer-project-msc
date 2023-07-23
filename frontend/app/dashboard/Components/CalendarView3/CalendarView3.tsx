@@ -12,19 +12,23 @@ import { PublicScale, PublicValueGetter } from "../../utilities/types";
 import { useAppSelector } from "@/app/hooks";
 
 import * as calendarViewSlice from './calendarViewSlice'
+import { ColourDomainInfo } from "../ColourLegend/colourLegendSlice";
 
 
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
+type HighLightedColourDomainValueSetByLegend = Set<ColourDomainInfo['domainValue']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
 export type Data = {
     transactionDataMapYMD: TransactionDataMapYMD;
-    highLightedTransactionNumberSet: HighLightedTransactionNumberSet;
+    highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
+    highLightedColourDomainValueSetByLegend: HighLightedColourDomainValueSetByLegend
 }
 
 type CalendarViewProps = {
     transactionDataArr: TransactionData[];
-    highLightedTransactionNumberSet: HighLightedTransactionNumberSet;
+    highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
+    highLightedColourDomainValueSetByLegend: HighLightedColourDomainValueSetByLegend;
     initCurrentYear: number;
     // heightScaleType: 'log' | 'linear',
     colourScale: PublicScale['colourScale']
@@ -37,7 +41,7 @@ export type Day = {
     year: number;
 };
 
-export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSet, initCurrentYear, colourScale, colourValueGetter }:
+export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, initCurrentYear, colourScale, colourValueGetter }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
     const [detailDay, setDetailDay] = useState<null | Day>(null)
@@ -56,7 +60,14 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     if (transactionDataArr.length === 0) {
         return <div>loading</div>
     }
-    const data: Data = useMemo(() => { return { transactionDataMapYMD: transactionDataMapYMD, highLightedTransactionNumberSet: highLightedTransactionNumberSet } }, [transactionDataMapYMD, highLightedTransactionNumberSet])
+    const data: Data = useMemo(() => {
+        return {
+            transactionDataMapYMD: transactionDataMapYMD,
+            highLightedTransactionNumberSetByBrusher: highLightedTransactionNumberSetByBrusher,
+            highLightedColourDomainValueSetByLegend: highLightedColourDomainValueSetByLegend
+        }
+    },
+        [transactionDataMapYMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend])
 
     // create public height scale for the bar glyph
     const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height); // height for bar glyph
