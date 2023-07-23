@@ -17,10 +17,12 @@ import { ColourDomainInfo } from "../ColourLegend/colourLegendSlice";
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type HighLightedColourDomainValueSetByLegend = Set<ColourDomainInfo['domainValue']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
+type TransactionAmountSumMapByDayYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, number>>>
 export type Data = {
     transactionDataMapYMD: TransactionDataMapYMD;
     highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
-    highLightedColourDomainValueSetByLegend: HighLightedColourDomainValueSetByLegend
+    highLightedColourDomainValueSetByLegend: HighLightedColourDomainValueSetByLegend;
+    transactionAmountSumMapByDayYMD: TransactionAmountSumMapByDayYMD
 }
 
 type CalendarViewProps = {
@@ -56,10 +58,13 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     const transactionDataMapYMD = useMemo(() => {
         return d3.group(transactionDataArr, d => d.date.getFullYear(), d => d.date.getMonth() + 1, d => d.date.getDate())
     }, [transactionDataArr])
+    const transactionAmountSumMapByDayYMD = useMemo(() => {
+        return getGroupedTransactionAmountMapByDay(transactionDataArr)
+    }, [transactionDataArr])
 
     // used for pie glyph's radius
     const { linearRadiusScale, logRadiusScale } = useMemo(() => {
-        const groupedData = groupTransactionAmountByDay(transactionDataArr); // [year, month, day, sumTransactionAmountOfDay]
+        const groupedData = getFlatGroupedTransactionAmountByDay(transactionDataArr); // [year, month, day, sumTransactionAmountOfDay]
         const [radiusMinDomain, radiusMaxDomain] = d3.extent(groupedData, d => d[3])
         if (radiusMinDomain === undefined || radiusMaxDomain === undefined) {
             return { linearRadiusScale: null, logRadiusScale: null }
@@ -77,10 +82,11 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
         return {
             transactionDataMapYMD: transactionDataMapYMD,
             highLightedTransactionNumberSetByBrusher: highLightedTransactionNumberSetByBrusher,
-            highLightedColourDomainValueSetByLegend: highLightedColourDomainValueSetByLegend
+            highLightedColourDomainValueSetByLegend: highLightedColourDomainValueSetByLegend,
+            transactionAmountSumMapByDayYMD: transactionAmountSumMapByDayYMD
         }
     },
-        [transactionDataMapYMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend])
+        [transactionDataMapYMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, transactionAmountSumMapByDayYMD])
 
     // create public height scale for the bar glyph, and pie glyph
     const heightDomain = d3.extent(transactionDataArr, barCalendarViewValueGetter.height); // height for bar glyph
@@ -176,7 +182,7 @@ function MonthView(props: MonthViewProps) {
                 containerSize: props.dayViewContainerSize,
             }
             const pieDayViewProps: PieDayViewProps = {
-                day: i + 1, month: props.month, currentYear: props.currentYear, data: props.data,
+                day: i + 1, ...props,
                 scales: props.pieDayViewScales,
                 valueGetter: props.pieDayViewValueGetter,
                 containerSize: props.dayViewContainerSize,
@@ -230,14 +236,37 @@ export function getDataFromTransactionDataMapYMD(transactionDataMapYMD: Transact
     const currDayData = currMonthData.get(day);
     // console.log('currDayData:', currDayData)
     return currDayData === undefined ? [] : currDayData;
-
 }
 
 /**
- * group data by day, return a flat map from Year to month to day, adding transactionAmount
- * @param transactionDataArr 
+ * get the data in O(1)
+ * @param transactionAmountSumMapByDayYMD 
+ * @param year number of year
+ * @param month 1to12
+ * @param day 1to31
+ * @returns an the data, 0 if not found
  */
-function groupTransactionAmountByDay(transactionDataArr: TransactionData[]) {
+export function getDataFromTransactionAmountSumByDayYMD(transactionAmountSumMapByDayYMD: TransactionAmountSumMapByDayYMD, day: number, month: number, year: number,): number {
+    if (month < 1 || month > 12) { throw new Error(`invalid month: ${month}, should be 1<=month<=12`,); }
+    if (day < 1 || day > 31) { throw new Error(`invalid day: ${day}, should be 1<=day<=31`,); }
+
+    const currYearData = transactionAmountSumMapByDayYMD.get(year)
+    // console.log('currYearData:', currYearData)
+    if (currYearData === undefined) { return 0 }
+    const currMonthData = currYearData.get(month);
+    // console.log('currMonthData:', currMonthData)
+    if (currMonthData === undefined) { return 0 }
+    const currDayData = currMonthData.get(day);
+    // console.log('currDayData:', currDayData)
+    return currDayData === undefined ? 0 : currDayData;
+}
+
+/**
+ * rollup the data by transactionAmount's sum of each day, return a flat array for each day
+ * @param transactionDataArr 
+ * @return [year, month, day, sum]
+ */
+function getFlatGroupedTransactionAmountByDay(transactionDataArr: TransactionData[]) {
     const transactionDataSumAmountYMD = d3.flatRollup(transactionDataArr,
         (transactionDataArr) => {
             return d3.sum(transactionDataArr, (transactionData) => transactionData.transactionAmount)
@@ -247,3 +276,20 @@ function groupTransactionAmountByDay(transactionDataArr: TransactionData[]) {
         d => d.date.getDate())
     return transactionDataSumAmountYMD;
 }
+/**
+ * rollup the data by transactionAmount's sum of each day, return a flat array for each day
+ * @param transactionDataArr 
+ * @return year->month->day->sum
+ */
+function getGroupedTransactionAmountMapByDay(transactionDataArr: TransactionData[]) {
+    const transactionDataSumAmountYMD = d3.rollup(transactionDataArr,
+        (transactionDataArr) => {
+            return d3.sum(transactionDataArr, (transactionData) => transactionData.transactionAmount)
+        },
+        d => d.date.getFullYear(),
+        d => d.date.getMonth() + 1,
+        d => d.date.getDate())
+    return transactionDataSumAmountYMD;
+}
+
+
