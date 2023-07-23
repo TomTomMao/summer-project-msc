@@ -90,7 +90,7 @@ export default function App() {
     else {
         return (
             <div>
-                <div className="floatDiv" style={{ right: '3px', backgroundColor: '#EEEEEE' }}>
+                <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE' }}>
                     <FolderableContainer label="colour legends" initIsFolded={false}>
                         <ColourLegendList colourScale={colourScale}></ColourLegendList>
                     </FolderableContainer>

@@ -12,7 +12,7 @@ export const metadata = {
   }) {
     //ref: https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts#nesting-layouts
     return (
-      <section className="bg-slate-200 m-1 p-1">{children}</section>
+      <section>{children}</section>
     )
   }
   
