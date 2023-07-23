@@ -39,6 +39,9 @@ export default function App() {
     }, [transactionDataArr])
     const colourDomain = useAppSelector(colourLegendSlice.selectDomain)
     // calculate and cache the public colour scale
+    /**
+     * colourScale: based on the domain from the colourLegendSlice store
+     */
     const colourScale: null | PublicScale['colourScale'] = useMemo(() => {
         if (colourDomain.length === 0) {
             return null;

@@ -90,19 +90,27 @@ export const {
 
 // export the selectors
 /**
- * return a set of domain value that is highlighted
+ * return a set of domain value that is highlighted, the value should be unique
  */
-export const selectHighLightedColourDomainValue = (state: RootState) => {
-  return state.colourLegend.domainInfoArr.filter(
-    (domainInfo) => domainInfo.isHighLighted
+export const selectHighLightedColourDomainValueSet = (
+  state: RootState
+): Set<string> => {
+  return new Set(
+    state.colourLegend.domainInfoArr
+      .filter((domainInfo) => domainInfo.isHighLighted)
+      .map((domainInfo) => domainInfo.domainValue)
   );
 };
 /**
  * return a set of domain value that is filtered
  */
-export const selectFilteredColourDomainValue = (state: RootState) => {
-  return state.colourLegend.domainInfoArr.filter(
-    (domainInfo) => domainInfo.isFiltered
+export const selectFilteredColourDomainValueSet = (
+  state: RootState
+): Set<string> => {
+  return new Set(
+    state.colourLegend.domainInfoArr
+      .filter((domainInfo) => domainInfo.isFiltered)
+      .map((domainInfo) => domainInfo.domainValue)
   );
 };
 
