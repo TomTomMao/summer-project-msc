@@ -6,7 +6,7 @@ import { PublicScale } from "../../../utilities/types";
 import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 import { useAppSelector } from "@/app/hooks";
 import * as pieDayViewSlice from "./pieDayViewSlice"
-
+let sumArc = 0;
 export type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'],
     linearRadiusScale: d3.ScaleLinear<number, number, never>,
@@ -64,7 +64,6 @@ export function PieDayView(props: PieDayViewProps) {
 
     const ref = useRef(null)
     const arcs = useMemo(() => {
-        console.time('getArcs')
         const pieGenerator = d3.pie<TransactionData>().value(valueGetter.value); // value is for angle
         const arcGenerator = d3.arc();
         const pie = pieGenerator(dayData);
@@ -74,12 +73,11 @@ export function PieDayView(props: PieDayViewProps) {
             startAngle: p.startAngle,
             endAngle: p.endAngle
         }));
-        console.timeEnd('getArcs')
         return arcs
     }, [valueGetter, dayData, containerWidth, radius])
     const brushingMode = highLightedTransactionNumberSetByBrusher.size > 0;
     const paths = useMemo(() => {
-        return arcs.map((arc, i) => {
+        const paths = arcs.map((arc, i) => {
             let opacity: number;
             let stroke: string = ''
             const transactionData = dayData[i]
@@ -100,6 +98,7 @@ export function PieDayView(props: PieDayViewProps) {
                 opacity={opacity} stroke={stroke}
             />;
         })
+        return paths
     }, [arcs, colourScale, valueGetter, dayData, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend])
 
     return (
