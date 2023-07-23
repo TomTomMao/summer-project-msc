@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useAppSelector } from "@/app/hooks";
 import { selectHeightAxis, selectIsDesc, selectIsSharedBandWidth, selectSortingKey } from "./barDayViewSlice";
+import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 
 export type BarGlyphScalesLinearHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
@@ -66,10 +67,11 @@ export function BarDayView(props: BarDayViewProps) {
     const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc]);
 
     // highLightedTransactionNumberSetByBrusher used for checking if the transaction is selected when rendering or creating rectangles
-    const { transactionDataMapYMD, highLightedTransactionNumberSetByBrusher } = data;
-    const highlightMode = highLightedTransactionNumberSetByBrusher.size > 0; // for deciding the style of rect
+    const { transactionDataMapYMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend } = data;
+    const brushingMode = highLightedTransactionNumberSetByBrusher.size > 0; // for deciding the style of rect
     const { heightScaleLog, heightScaleLinear, colourScale } = scales; // heightScale for bar glyph, colourScale for category
     const heightScale = heightAxis === 'log' ? heightScaleLog : heightScaleLinear;
+    const colourHighLightingMode = highLightedColourDomainValueSetByLegend.size < colourScale.domain().length
 
     // cache the bars of all the years.
     const barsOfEachYear: { year: number; bars: JSX.Element[]; }[] = useMemo(() => {
@@ -87,9 +89,19 @@ export function BarDayView(props: BarDayViewProps) {
 
             const xScale = d3.scaleBand().domain(xDomain).range([0, containerHeight]);
             const bars: JSX.Element[] = dayData.map(d => {
+                let opacity: number;
+                let stroke: '' | 'black' = '';
                 const bandWidth = xScale.bandwidth();
                 const rectHeight = heightScale(valueGetter.height(d));
-                const isThisDataHighLighted = highLightedTransactionNumberSetByBrusher.has(d.transactionNumber);
+                const isThisDataHighLightedByBrusher = highLightedTransactionNumberSetByBrusher.has(d.transactionNumber);
+                const isThisDataHighLightedByColourLegend = highLightedColourDomainValueSetByLegend.has(PUBLIC_VALUEGETTER.colour(d))
+                if (!brushingMode) {
+                    opacity = isThisDataHighLightedByColourLegend ? 1 : 0.3;
+                    stroke = colourHighLightingMode && opacity === 1 ? 'black' : ''
+                } else {
+                    opacity = isThisDataHighLightedByBrusher && isThisDataHighLightedByColourLegend ? 1 : 0.3;
+                    stroke = colourHighLightingMode && opacity === 1 ? 'black' : ''
+                }
                 return (
                     <rect
                         key={d.transactionNumber}
@@ -98,7 +110,9 @@ export function BarDayView(props: BarDayViewProps) {
                         width={bandWidth}
                         height={containerHeight}
                         fill={colourScale(valueGetter.colour(d))}
-                        opacity={highlightMode && !isThisDataHighLighted ? 0.1 : 1} />
+                        opacity={opacity} 
+                        stroke={stroke}
+                        />
                 );
             });
             barsOfEachYear.push({ year: year, bars: bars });
