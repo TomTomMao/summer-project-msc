@@ -192,7 +192,8 @@ export function ClusterView(props: ClusterViewProps) {
     return (<div className="clusterView">
         <svg width={currentContainerWidth} height={currentContainerHeight}>
             <g transform={`translate(${margin.left},${margin.top})`}>
-                <g>{isSwap ? swapCircles : circles}</g>
+                <g style={{ opacity: isSwap ? 0 : 1 }}>{circles}</g>
+                <g style={{ opacity: isSwap ? 1 : 0 }}>{swapCircles}</g>
                 <g ref={brushGRef}></g>
                 <g><AxisLeft yScale={isSwap ? scales.yScaleSwap : scales.yScale} pixelsPerTick={60}></AxisLeft></g>
                 <g transform={`translate(0, ${height})`}><AxisBottom xScale={isSwap ? scales.xScaleSwap : scales.xScale} pixelsPerTick={60}></AxisBottom></g>
