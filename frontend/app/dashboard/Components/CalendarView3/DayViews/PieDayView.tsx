@@ -5,10 +5,12 @@ import { useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
 import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 
-type PieCalendarViewSharedScales = {
-    colourScale: PublicScale['colourScale'];
+export type PieCalendarViewSharedScales = {
+    colourScale: PublicScale['colourScale'],
+    linearRadiusScale: d3.ScaleLinear<number, number, never>,
+    logRadiusScale: d3.ScaleLogarithmic<number, number, never>
 };
-type PieCalendarViewValueGetter = {
+export type PieCalendarViewValueGetter = {
     colour: (d: TransactionData) => string;
     value: (d: TransactionData) => number;
     name: (d: TransactionData) => string;

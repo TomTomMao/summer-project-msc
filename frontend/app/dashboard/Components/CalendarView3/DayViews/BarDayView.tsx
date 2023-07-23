@@ -29,7 +29,7 @@ export type BarCalendarViewSharedScales = {
     heightScaleLinear: BarGlyphScalesLinearHeight['heightScale'];
     colourScale: BarGlyphScales['colourScale'];
 };
-export const barGlyphValueGetter: BarCalendarViewValueGetter = {
+export const barCalendarViewValueGetter: BarCalendarViewValueGetter = {
     x: (d: TransactionData) => d.transactionNumber,
     height: (d: TransactionData) => d.transactionAmount,
     colour: (d: TransactionData) => d.category

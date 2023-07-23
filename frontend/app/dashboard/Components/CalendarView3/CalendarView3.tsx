@@ -6,15 +6,13 @@ import * as d3 from 'd3'
 import assert from "assert";
 import TableView from "../TableView/TableView";
 import FolderableContainer from "../Containers/FolderableContainer";
-import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView } from "./DayViews/PieDayView";
-import { barGlyphValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
+import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView, PieCalendarViewSharedScales, PieCalendarViewValueGetter } from "./DayViews/PieDayView";
+import { barCalendarViewValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
 import { PublicScale, PublicValueGetter } from "../../utilities/types";
 import { useAppSelector } from "@/app/hooks";
 
 import * as calendarViewSlice from './calendarViewSlice'
 import { ColourDomainInfo } from "../ColourLegend/colourLegendSlice";
-
-
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type HighLightedColourDomainValueSetByLegend = Set<ColourDomainInfo['domainValue']>
@@ -49,15 +47,30 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     // config
     const currentContainerHeight = useAppSelector(calendarViewSlice.selectCurrentContainerHeight)
     const currentContainerWidth = useAppSelector(calendarViewSlice.selectCurrentContainerWidth)
+
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
         setDetailDay({ day: day, month: month, year: year })
     }
 
     const transactionDataMapYMD = useMemo(() => {
-        return d3.group(transactionDataArr, d => d.date?.getFullYear(), d => d.date?.getMonth() + 1, d => d.date?.getDate())
+        return d3.group(transactionDataArr, d => d.date.getFullYear(), d => d.date.getMonth() + 1, d => d.date.getDate())
     }, [transactionDataArr])
-    if (transactionDataArr.length === 0) {
+
+    // used for pie glyph's radius
+    const { linearRadiusScale, logRadiusScale } = useMemo(() => {
+        const groupedData = groupTransactionAmountByDay(transactionDataArr); // [year, month, day, sumTransactionAmountOfDay]
+        const [radiusMinDomain, radiusMaxDomain] = d3.extent(groupedData, d => d[3])
+        if (radiusMinDomain === undefined || radiusMaxDomain === undefined) {
+            return { linearRadiusScale: null, logRadiusScale: null }
+        } else {
+            const linearRadiusScale = d3.scaleLinear().domain([radiusMinDomain, radiusMaxDomain]).range([0, currentContainerWidth > currentContainerHeight ? currentContainerHeight : currentContainerWidth])
+            const logRadiusScale = d3.scaleLog().domain([radiusMinDomain, radiusMaxDomain]).range([0, currentContainerWidth])
+            return { linearRadiusScale, logRadiusScale }
+        }
+    }, [transactionDataArr, currentContainerWidth, currentContainerHeight])
+
+    if (transactionDataArr.length === 0 || linearRadiusScale === null || logRadiusScale === null) {
         return <div>loading</div>
     }
     const data: Data = useMemo(() => {
@@ -69,8 +82,8 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     },
         [transactionDataMapYMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend])
 
-    // create public height scale for the bar glyph
-    const heightDomain = d3.extent(transactionDataArr, barGlyphValueGetter.height); // height for bar glyph
+    // create public height scale for the bar glyph, and pie glyph
+    const heightDomain = d3.extent(transactionDataArr, barCalendarViewValueGetter.height); // height for bar glyph
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
     const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, currentContainerHeight]);
     const heightScaleLog: BarCalendarViewSharedScales['heightScaleLog'] = d3.scaleLog(heightDomain, [0, currentContainerHeight]);
@@ -82,6 +95,9 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
         return d3.max(countTransactionArr, d => d[1])
     }, [transactionDataArr])
     // console.log('maxTransactionCountOfDay', maxTransactionCountOfDay)
+
+    // public scales for pie :
+    const pieCalendarViewSharedScales: PieCalendarViewSharedScales = { colourScale, linearRadiusScale, logRadiusScale }
 
 
     return (
@@ -95,8 +111,14 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                 </thead>
                 <tbody>
                     {MONTHS.map((_, i) => <MonthView month={i + 1} currentYear={currentYear}
-                        key={i + 1} data={data} scales={barCalendarViewSharedScales} valueGetter={barGlyphValueGetter} onShowDayDetail={handleShowDayDetail}
-                        detailDay={detailDay} dayViewContainerSize={{
+                        key={i + 1} data={data}
+                        barDayViewScales={barCalendarViewSharedScales}
+                        barDayViewValueGetter={barCalendarViewValueGetter}
+                        pieDayViewScales={pieCalendarViewSharedScales}
+                        pieDayViewValueGetter={pieCalendarViewValueGetter}
+                        onShowDayDetail={handleShowDayDetail}
+                        detailDay={detailDay}
+                        dayViewContainerSize={{
                             containerWidth: currentContainerWidth,
                             containerHeight: currentContainerHeight
                         }} />)}
@@ -117,21 +139,25 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
 }
 
 
-type BarMonthViewProps = {
+type MonthViewProps = {
     month: number,
     currentYear: number,
     /**
      * data of all the transactions and a map store the transaction number of the highlighted transaction
      */
     data: Data,
-    scales: BarCalendarViewSharedScales,
-    valueGetter: BarCalendarViewValueGetter,
+    barDayViewScales: BarCalendarViewSharedScales,
+    barDayViewValueGetter: BarCalendarViewValueGetter,
+    pieDayViewScales: PieCalendarViewSharedScales,
+    pieDayViewValueGetter: PieCalendarViewValueGetter,
     onShowDayDetail: (day: number, month: number, year: number) => void,
     detailDay: Day | null,
     dayViewContainerSize: { containerWidth: number, containerHeight: number }
+} & {
+
 }
 
-function MonthView(props: BarMonthViewProps) {
+function MonthView(props: MonthViewProps) {
     const { month, currentYear, detailDay, onShowDayDetail } = props
     const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
 
@@ -145,12 +171,15 @@ function MonthView(props: BarMonthViewProps) {
             const isDetailDay = detailDay !== null && detailDay.day === i + 1 && detailDay.month === month && detailDay.year === currentYear;
             const barDayViewProps: BarDayViewProps = {
                 day: i + 1, ...props,
-                containerSize: props.dayViewContainerSize
+                scales: props.barDayViewScales,
+                valueGetter: props.barDayViewValueGetter,
+                containerSize: props.dayViewContainerSize,
             }
             const pieDayViewProps: PieDayViewProps = {
                 day: i + 1, month: props.month, currentYear: props.currentYear, data: props.data,
-                scales: { colourScale: props.scales.colourScale }, valueGetter: pieCalendarViewValueGetter,
-                containerSize: props.dayViewContainerSize
+                scales: props.pieDayViewScales,
+                valueGetter: props.pieDayViewValueGetter,
+                containerSize: props.dayViewContainerSize,
             }
             return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
                 {glyphType === 'pie' ? <PieDayView {...pieDayViewProps} key={`${month}-${i + 1}`} /> : <BarDayView {...barDayViewProps} key={`${month}-${i + 1}`} />}
@@ -158,33 +187,6 @@ function MonthView(props: BarMonthViewProps) {
         })}
     </tr>)
 
-}
-
-/**
- * 
- * @param dayOfWeek day in week, 1 to 7, 1: monday, 2: tuesday, 3: wed, ...
- * @return hex colour string, e.g., #000000
- */
-function getDayColour(dayOfWeek: number): string {
-    switch (dayOfWeek) {
-        case 1:
-            return '#c4c5ff'
-        case 2:
-            return '#9b9dfa'
-        case 3:
-            return '#7a7dff'
-        case 4:
-            return '#5256fa'
-        case 5:
-            return '#262bff'
-        case 6:
-            return '#000000'
-        case 7:
-            return '#000000'
-        default:
-            throw new Error(`invalid day number, it must be 1 to 7, the value is: ${String(dayOfWeek)}`);
-            ;
-    }
 }
 
 type DetailViewProps = {
@@ -229,4 +231,19 @@ export function getDataFromTransactionDataMapYMD(transactionDataMapYMD: Transact
     // console.log('currDayData:', currDayData)
     return currDayData === undefined ? [] : currDayData;
 
+}
+
+/**
+ * group data by day, return a flat map from Year to month to day, adding transactionAmount
+ * @param transactionDataArr 
+ */
+function groupTransactionAmountByDay(transactionDataArr: TransactionData[]) {
+    const transactionDataSumAmountYMD = d3.flatRollup(transactionDataArr,
+        (transactionDataArr) => {
+            return d3.sum(transactionDataArr, (transactionData) => transactionData.transactionAmount)
+        },
+        d => d.date.getFullYear(),
+        d => d.date.getMonth() + 1,
+        d => d.date.getDate())
+    return transactionDataSumAmountYMD;
 }
