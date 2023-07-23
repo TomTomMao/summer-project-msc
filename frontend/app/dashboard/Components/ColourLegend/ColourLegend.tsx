@@ -1,3 +1,4 @@
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { PublicScale } from "../../utilities/types";
 
 const DEFAULT_COLOUR_LEGEND_WIDTH = 5;
@@ -6,6 +7,8 @@ const DEFAULT_COLOUR_LEGEND_HEIGHT = 5;
 
 
 export default function ColourLegendList({ colourScale }: { colourScale: PublicScale['colourScale'] }) {
+    // const highLightedColourDomainValueSet = useAppSelector()
+
     const colourMappingArr = colourScale.domain().map(domain => {
         return {
             domain: domain,

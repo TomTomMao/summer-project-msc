@@ -13,9 +13,10 @@ import FolderableContainer from "./components/Containers/FolderableContainer";
 import { PublicScale } from "./utilities/types";
 import { parseTime, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
 import ExpandableContainer from "./components/Containers/ExpandableContainer";
-import { useAppDispatch } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice"
+import * as colourLegendSlice from "./components/ColourLegend/colourLegendSlice"
 
 
 export default function App() {
@@ -28,16 +29,25 @@ export default function App() {
     // set the state store
     const dispatch = useAppDispatch()
 
+    // initialise the colour domain
+    useEffect(() => {
+        if (transactionDataArr !== null) {
+            const colourDomain: string[] = Array.from(new Set(transactionDataArr.map(PUBLIC_VALUEGETTER.colour)))
+            console.log('colourdomain1:', colourDomain)
+            dispatch(colourLegendSlice.initColourDomainInfo(colourDomain))
+        }
+    }, [transactionDataArr])
+    const colourDomain = useAppSelector(colourLegendSlice.selectDomain)
     // calculate and cache the public colour scale
     const colourScale: null | PublicScale['colourScale'] = useMemo(() => {
-        if (transactionDataArr === null) {
-            return null
+        if (colourDomain.length === 0) {
+            return null;
         }
-        const colourDomain = Array.from(new Set(transactionDataArr.map(PUBLIC_VALUEGETTER.colour)))
         const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse(); // ref: https://observablehq.com/@d3/pie-chart/2?intent=fork
         const colourScale: PublicScale['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
+        console.log('colourdomain:', colourDomain)
         return colourScale
-    }, [transactionDataArr])
+    }, [colourDomain])
 
     useEffect(() => {
         // fetch the data and update the data state
@@ -77,7 +87,7 @@ export default function App() {
     else {
         return (
             <div>
-                <div className="floatDiv" style={{right: '3px', backgroundColor: '#EEEEEE'}}>
+                <div className="floatDiv" style={{ right: '3px', backgroundColor: '#EEEEEE' }}>
                     <FolderableContainer label="colour legends" initIsFolded={false}>
                         <ColourLegendList colourScale={colourScale}></ColourLegendList>
                     </FolderableContainer>
