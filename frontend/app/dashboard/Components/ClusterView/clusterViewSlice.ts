@@ -10,8 +10,8 @@ interface ClusterViewState {
   mainAxis: "log" | "linear";
 }
 const initialState: ClusterViewState = {
-  containerWidth: 650,
-  containerHeight: 500,
+  containerWidth: 500,
+  containerHeight: 400,
   expandedContainerWidth: 1500,
   expandedContainerHeight: 700,
   isExpanded: false,

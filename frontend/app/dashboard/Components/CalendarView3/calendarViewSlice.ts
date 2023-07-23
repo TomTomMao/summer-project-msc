@@ -13,8 +13,8 @@ interface CalendarViewState {
 const initialState: CalendarViewState = {
   glyphType: "pie",
   // container width and height refer to the cell size of each day
-  containerWidth: 20,
-  containerHeight: 20,
+  containerWidth: 25,
+  containerHeight: 25,
   expandedContainerWidth: 40,
   expandedContainerHeight: 40,
   isExpanded: false,

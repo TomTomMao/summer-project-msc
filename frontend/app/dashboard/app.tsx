@@ -93,13 +93,13 @@ export default function App() {
     else {
         return (
             <div>
-                <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE' }}>
+                <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE',zIndex:999 }}>
                     <FolderableContainer label="colour legends" initIsFolded={false}>
                         <ColourLegendList colourScale={colourScale}></ColourLegendList>
                     </FolderableContainer>
                 </div>
                 <div className="grid grid-cols-12">
-                    <div className="col-span-5">
+                    <div className="col-span-4">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
@@ -194,7 +194,8 @@ function getExpandableContainerStyle(styleType: 'initStyle' | 'expandedStyle'): 
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',
-            zIndex: 999,
+            zIndex: 998,
+            border: '1px black solid'
         }
     }
 }
