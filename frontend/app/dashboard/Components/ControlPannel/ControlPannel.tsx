@@ -90,9 +90,9 @@ export default function ControlPannel() {
         <table>
             <tr>
                 <td><input type="radio" name="barGlyph" checked={calendarViewGlyphType === 'bar'} id="barGlyph"
-                    onClick={handleUseBarGlyph} /><label htmlFor="barGlyph">bar glyph</label></td>
+                    onChange={handleUseBarGlyph} /><label htmlFor="barGlyph">bar glyph</label></td>
                 <td><input type="radio" name="pieGlyph" checked={calendarViewGlyphType === 'pie'} id="pieGlyph"
-                    onClick={handleUsePieGlyph} /><label htmlFor="pieGlyph">pie glyph</label></td>
+                    onChange={handleUsePieGlyph} /><label htmlFor="pieGlyph">pie glyph</label></td>
             </tr>
             <tr><td><hr /></td><td><hr /></td></tr>
             <FolderableContainer label={"bar glyph config"} initIsFolded={false}>
