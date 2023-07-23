@@ -6,6 +6,8 @@ import { AxisBottom, AxisLeft } from "../Axis";
 import { PublicScale } from "../../utilities/types";
 import * as clusterViewSlice from './clusterViewSlice'
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import * as colourLegendSlice from '../ColourLegend/colourLegendSlice'
+import { PUBLIC_VALUEGETTER } from "../../utilities/consts";
 
 const BRUSH_MODE = 'brush end'
 /**
@@ -122,6 +124,7 @@ export function ClusterView(props: ClusterViewProps) {
 
 
     // cache the circles 
+    // todo: simplify the calculation
     const { circles, swapCircles } = useMemo(() => {
         console.time('re-calculating circleDataMap and circleDattaSwappedMap')
         const circleDataMap = getCircleDataMap(transactionDataArr, valueGetterWithSwap, scales, false);
@@ -138,25 +141,41 @@ export function ClusterView(props: ClusterViewProps) {
         return { circles, swapCircles }
     }, [transactionDataArr, valueGetterWithSwap, scales])
 
+    // for highlighting
+    const highLightedColourSet = useAppSelector(colourLegendSlice.selectHighLightedColourDomainValueSet)
     useEffect(() => {
         console.time('updating opacity')
         // set all points to highlighted if no point get brushed
-        if (brushedTransactionNumberSet.size === 0) {
-            transactionDataArr.forEach(({ transactionNumber }) => {
-                const circleElement: HTMLElement | null = document.getElementById(transactionNumber)
-                if (circleElement !== null) { circleElement.style.opacity = '1' };
-            })
-        } else {
-            const highLightInfo = transactionDataArr.map(transactionData => {
-                return { id: transactionData.transactionNumber, isHighLighted: brushedTransactionNumberSet.has(transactionData.transactionNumber) }
-            })
-            highLightInfo.forEach(({ id, isHighLighted }) => {
-                const circleElement: HTMLElement | null = document.getElementById(id)
-                if (circleElement !== null) { circleElement.style.opacity = isHighLighted ? '1' : '0.1' };
-            })
-        }
+        const brushingMode = brushedTransactionNumberSet.size > 0;
+        const highLightingMode = highLightedColourSet.size < colourScale.domain().length
+        const highLightInfo = transactionDataArr.map(transactionData => {
+            if (!brushingMode) {
+                return {
+                    id: transactionData.transactionNumber,
+                    isHighLighted: highLightedColourSet.has(PUBLIC_VALUEGETTER.colour(transactionData))
+                }
+            } else {
+                return {
+                    id: transactionData.transactionNumber,
+                    isHighLighted: brushedTransactionNumberSet.has(transactionData.transactionNumber) && highLightedColourSet.has(PUBLIC_VALUEGETTER.colour(transactionData))
+                }
+            }
+        })
+
+        highLightInfo.forEach(({ id, isHighLighted }) => {
+            const circleElement: HTMLElement | null = document.getElementById(id)
+            if (circleElement !== null) {
+                circleElement.style.opacity = isHighLighted ? '1' : '0.1';
+                if (highLightingMode && isHighLighted) {
+                    circleElement.style.stroke = 'black'
+                } else {
+                    circleElement.style.stroke = ''
+                }
+            };
+        })
+
         console.timeEnd('updating opacity')
-    }, [brushedTransactionNumberSet])
+    }, [brushedTransactionNumberSet, highLightedColourSet])
 
 
 
