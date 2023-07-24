@@ -178,7 +178,6 @@ export function ClusterView(props: ClusterViewProps) {
     }, [brushedTransactionNumberSet, highLightedColourSet])
 
 
-
     useEffect(() => {
         //https://github.com/d3/d3-brush
         if (brushGRef.current !== null) {
@@ -192,11 +191,10 @@ export function ClusterView(props: ClusterViewProps) {
     return (<div className="clusterView">
         <svg width={currentContainerWidth} height={currentContainerHeight}>
             <g transform={`translate(${margin.left},${margin.top})`}>
-                <g style={{ opacity: isSwap ? 0 : 1 }}>{circles}</g>
-                <g style={{ opacity: isSwap ? 1 : 0 }}>{swapCircles}</g>
+                <g>{isSwap ? swapCircles : circles}</g>
                 <g ref={brushGRef}></g>
-                <g><AxisLeft yScale={isSwap ? scales.yScaleSwap : scales.yScale} pixelsPerTick={60}></AxisLeft></g>
-                <g transform={`translate(0, ${height})`}><AxisBottom xScale={isSwap ? scales.xScaleSwap : scales.xScale} pixelsPerTick={60}></AxisBottom></g>
+                <g><AxisLeft yScale={isSwap ? scales.yScaleSwap : scales.yScale} numberOfTicksTarget={6}></AxisLeft></g>
+                <g transform={`translate(0, ${height})`}><AxisBottom xScale={isSwap ? scales.xScaleSwap : scales.xScale} numberOfTicksTarget={6}></AxisBottom></g>
             </g>
         </svg>
         <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
@@ -273,19 +271,19 @@ function getScales(transactionDataArr: TransactionData[],
             xScale = d3.scaleLinear().domain([xLim[0], xLim[1]]).range([0, width]);
         }
         if (xLimSwap[0] === undefined && xLimSwap[1] === undefined) {
-            xScaleSwap = scaleFuncForYandXSwap().domain([0, 366]).range([0, width]);
+            xScaleSwap = scaleFuncForYandXSwap().domain([0, 366]).range([width * 0.01, width * 0.99]);
         } else {
-            xScaleSwap = scaleFuncForYandXSwap().domain([xLimSwap[0], xLimSwap[1]]).range([0, width]);
+            xScaleSwap = scaleFuncForYandXSwap().domain([xLimSwap[0], xLimSwap[1]]).range([width * 0.01, width * 0.99]);
         }
         if (yLim[0] === undefined && yLim[1] === undefined) {
-            yScale = scaleFuncForYandXSwap().domain([0, 1]).range([height, 0]);
+            yScale = scaleFuncForYandXSwap().domain([0, 1]).range([height * 0.99, height * 0.01]);
         } else {
-            yScale = scaleFuncForYandXSwap().domain([yLim[0], yLim[1]]).range([height, 0]);
+            yScale = scaleFuncForYandXSwap().domain([yLim[0], yLim[1]]).range([height * 0.99, height * 0.01]);
         }
         if (yLimSwap[0] === undefined && yLimSwap[1] === undefined) {
             yScaleSwap = d3.scaleLinear().domain([0, 1]).range([height, 0]);
         } else {
-            yScaleSwap = d3.scaleLinear().domain([yLimSwap[0], yLimSwap[1]]).range([height, 0]);
+            yScaleSwap = d3.scaleLinear().domain([yLimSwap[0], yLimSwap[1]]).range([height * 0.99, 0]);
         }
         return { xScale, yScale, xScaleSwap, yScaleSwap };
     };

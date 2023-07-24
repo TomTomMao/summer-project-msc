@@ -4,18 +4,15 @@ import * as d3 from 'd3';
 // reference: Holtz, Y. (n.d.). How to build a scatter plot with React and D3. Retrieved 13 July 2023, from https://www.react-graph-gallery.com/scatter-plot
 type AxisBottomProps = {
     xScale: d3.ScaleLinear<number, number>;
-    pixelsPerTick: number;
+    numberOfTicksTarget: number;
 };
 // tick length
 const TICK_LENGTH = 6;
 
-export const AxisBottom = ({ xScale, pixelsPerTick }: AxisBottomProps) => {
+export const AxisBottom = ({ xScale, numberOfTicksTarget }: AxisBottomProps) => {
     const range = xScale.range();
 
     const ticks = useMemo(() => {
-        const width = range[1] - range[0];
-        const numberOfTicksTarget = Math.floor(width / pixelsPerTick);
-
         return xScale.ticks(numberOfTicksTarget).map((value) => ({
             value,
             xOffset: xScale(value),
@@ -51,15 +48,13 @@ export const AxisBottom = ({ xScale, pixelsPerTick }: AxisBottomProps) => {
 };
 type AxisLeftProps = {
     yScale: d3.ScaleLinear<number, number>;
-    pixelsPerTick: number;
+    numberOfTicksTarget: number;
 };
 
-export const AxisLeft = ({ yScale, pixelsPerTick }: AxisLeftProps) => {
+export const AxisLeft = ({ yScale, numberOfTicksTarget }: AxisLeftProps) => {
     const range = yScale.range();
 
     const ticks = useMemo(() => {
-        const height = range[0] - range[1];
-        const numberOfTicksTarget = Math.floor(height / pixelsPerTick);
 
         return yScale.ticks(numberOfTicksTarget).map((value) => ({
             value,
