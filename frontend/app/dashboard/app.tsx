@@ -36,24 +36,24 @@ export default function App() {
     useEffect(() => {
         if (transactionDataArr !== null) {
             const colourDomain: string[] = Array.from(new Set(transactionDataArr.map(PUBLIC_VALUEGETTER.colour)))
-            console.log('colourdomain1:', colourDomain)
             dispatch(colourLegendSlice.initColourDomainInfo(colourDomain))
         }
     }, [transactionDataArr])
     const colourDomain = useAppSelector(colourLegendSlice.selectDomain)
+    useEffect(() => { console.log('colourDomain at app.tsx changed', colourDomain) }, [colourDomain])
     // calculate and cache the public colour scale
     /**
      * colourScale: based on the domain from the colourLegendSlice store
-     */
+    */
     const colourScale: null | PublicScale['colourScale'] = useMemo(() => {
         if (colourDomain.length === 0) {
             return null;
         }
         const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse(); // ref: https://observablehq.com/@d3/pie-chart/2?intent=fork
         const colourScale: PublicScale['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
-        console.log('colourdomain:', colourDomain)
         return colourScale
     }, [colourDomain])
+    useEffect(() => { console.log('colourScale at app.tsx changed') }, [colourScale])
 
     useEffect(() => {
         // fetch the data and update the data state
@@ -93,7 +93,7 @@ export default function App() {
     else {
         return (
             <div>
-                <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE',zIndex:999 }}>
+                <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE', zIndex: 999 }}>
                     <FolderableContainer label="colour legends" initIsFolded={false}>
                         <ColourLegendList colourScale={colourScale}></ColourLegendList>
                     </FolderableContainer>

@@ -89,20 +89,32 @@ export const {
 } = colourDomainSlice.actions;
 
 // export the selectors
+
+const curryCreateSelectHighLightedColourDomainValueSet = () => {
+  let lastDomainArr: ColourDomainInfo[];
+  let lastResult: Set<string>;
+  return (state: RootState) => {
+    if (state.colourLegend.domainInfoArr === lastDomainArr) {
+      return lastResult;
+    } else {
+      lastDomainArr = state.colourLegend.domainInfoArr;
+      lastResult = new Set(
+        state.colourLegend.domainInfoArr
+          .filter((domainInfo) => domainInfo.isHighLighted)
+          .map((domainInfo) => domainInfo.domainValue)
+      );
+      return lastResult;
+    }
+  };
+};
 /**
  * return a set of domain value that is highlighted, the value should be unique
  */
-export const selectHighLightedColourDomainValueSet = (
-  state: RootState
-): Set<string> => {
-  return new Set(
-    state.colourLegend.domainInfoArr
-      .filter((domainInfo) => domainInfo.isHighLighted)
-      .map((domainInfo) => domainInfo.domainValue)
-  );
-};
+export const selectHighLightedColourDomainValueSet =
+  curryCreateSelectHighLightedColourDomainValueSet();
 /**
  * return a set of domain value that is filtered
+ * todo: potentially enexpected update doto creation of a new array
  */
 export const selectFilteredColourDomainValueSet = (
   state: RootState
@@ -115,10 +127,25 @@ export const selectFilteredColourDomainValueSet = (
 };
 
 /**
+ * make sure only when the domainInfo updated, the selector create a new mapped array
+ * @returns a selector function which compare the lastDomainInfoArr
+ */
+const curryCreateSelectDomain = () => {
+  let lastDomainInfoArr: ColourDomainInfo[];
+  let lastResult: string[];
+  return (state: RootState) => {
+    if (state.colourLegend.domainInfoArr === lastDomainInfoArr) {
+      return lastResult;
+    } else {
+      lastDomainInfoArr = state.colourLegend.domainInfoArr;
+      lastResult = state.colourLegend.domainInfoArr.map((d) => d.domainValue);
+      return lastResult;
+    }
+  };
+};
+/**
  * return an array of value for colour domain which keeps the order of id
  */
-export const selectDomain = (state: RootState) => {
-  return state.colourLegend.domainInfoArr.map((d) => d.domainValue);
-};
+export const selectDomain = curryCreateSelectDomain();
 
 export default colourDomainSlice.reducer;

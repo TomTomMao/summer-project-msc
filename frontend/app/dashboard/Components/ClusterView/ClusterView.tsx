@@ -58,88 +58,20 @@ const DEFAULT_STROKE_WIDTH = 1;
 export function ClusterView(props: ClusterViewProps) {
     const { transactionDataArr, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, colourScale } = props;
     const [isSwap, setIsSwap] = useState(false);
-
+    useEffect(()=>{console.log('colourScaleChanged')},[colourScale])
     // configs
-    const currentContainerWidth = useAppSelector(clusterViewSlice.selectCurrentContainerWidth);
-    const currentContainerHeight = useAppSelector(clusterViewSlice.selectCurrentContainerHeight);
-    const mainAxis = useAppSelector(clusterViewSlice.selectMainAxis);
-
-    const useLogScale = mainAxis === 'log' ? true : false;
-    // config dispatcher
-    const dispatch = useAppDispatch();
-
+    const { currentContainerWidth, currentContainerHeight, dispatch, margin, useLogScale, width, height } = useClusterViewConfig()
 
     const brushGRef = useRef<SVGGElement | null>(null)
     const valueGetterWithSwap = useMemo(() => {
         return { ...valueGetter, getXSwap: valueGetter.y, getYSwap: valueGetter.x };
     }, [])
 
-    function handleBrush(event: d3.D3BrushEvent<SVGGElement>): void {
-        console.time('handleBrush')
-        if (event.selection === null) {
-            setBrushedTransactionNumberSet(new Set());
-            return;
-        }
-        let x0: number, y0: number, x1: number, y1: number;
-        const selection = event.selection
-        if (Array.isArray(selection) && Array.isArray(selection[0]) && Array.isArray(selection[1])) {
-            [[x0, y0], [x1, y1]] = selection; // ref this line: https://observablehq.com/@d3/brushable-scatterplot
-        } else {
-            throw new Error("selection type is not valid");
-
-        }
-        if (isSwap === false) {
-            const [[domainXMin, domainXMax], [domainYMin, domainYMax]] = [[scales.xScale.invert(x0), scales.xScale.invert(x1)], [scales.yScale.invert(y1), scales.yScale.invert(y0)]];
-            const nextBrushedTransactionNumberSet = new Set(transactionDataArr.filter(transactionData => {
-                const dataXValue = valueGetterWithSwap.x(transactionData);
-                const dataYValue = valueGetterWithSwap.y(transactionData);
-                // console.log("dataXValue:", dataXValue, "dataXValue:", dataYValue)
-                return dataXValue >= domainXMin && dataXValue <= domainXMax &&
-                    dataYValue >= domainYMin && dataYValue <= domainYMax
-            }).map(d => d.transactionNumber))
-            setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
-        } else {
-            const [[domainXMin, domainXMax], [domainYMin, domainYMax]] = [[scales.xScaleSwap.invert(x0), scales.xScaleSwap.invert(x1)], [scales.yScaleSwap.invert(y1), scales.yScaleSwap.invert(y0)]];
-            const nextBrushedTransactionNumberSet = new Set(transactionDataArr.filter(transactionData => {
-                const dataXValue = valueGetterWithSwap.getXSwap(transactionData);
-                const dataYValue = valueGetterWithSwap.getYSwap(transactionData);
-                return dataXValue >= domainXMin && dataXValue <= domainXMax &&
-                    dataYValue >= domainYMin && dataYValue <= domainYMax
-            }).map(d => d.transactionNumber))
-            setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
-        }
-        console.timeEnd('handleBrush')
-    }
-
-
-    const margin = DEFAULT_MARGIN;
-    const width = currentContainerWidth - margin.left - margin.right
-    const height = currentContainerHeight - margin.top - margin.bottom;
-    // cache the scales
-    const scales = useMemo(() => {
-        console.log('recalculating scales')
-        const { xScale, yScale, xScaleSwap, yScaleSwap } = getScales(transactionDataArr, valueGetterWithSwap, width, height)(useLogScale)
-        return { xScale, yScale, xScaleSwap, yScaleSwap, colourScale }
-    }, [transactionDataArr, valueGetter, useLogScale, currentContainerHeight, currentContainerWidth])
-
+    // cache the private scales (x,y, and swapped), with both linear and log; avoid recalculating
+    const { linearPrivateScales, logPrivateScales } = useClusterPrivateViewScales(transactionDataArr, valueGetterWithSwap, width, height)
 
     // cache the circles 
-    // todo: simplify the calculation
-    const { circles, swapCircles } = useMemo(() => {
-        console.time('re-calculating circleDataMap and circleDattaSwappedMap')
-        const circleDataMap = getCircleDataMap(transactionDataArr, valueGetterWithSwap, scales, false);
-        const circleDataSwappedMap = getCircleDataMap(transactionDataArr, valueGetterWithSwap, scales, true);
-        console.timeEnd('re-calculating circleDataMap and circleDattaSwappedMap')
-        const circleDataArr: CircleData[] = [];
-        const circleDataSwappedArr: CircleData[] = [];
-        circleDataMap.forEach((circleData, key) => { circleDataArr.push(circleData) })
-        circleDataSwappedMap.forEach((circleDataSwapped, key) => { circleDataSwappedArr.push(circleDataSwapped) })
-        console.time('updating <circle> element')
-        const circles = circleDataArr.map(d => <Circle id={d.key} key={d.key} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />)
-        const swapCircles = circleDataSwappedArr.map(d => <Circle id={d.key} key={d.key} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />)
-        console.timeEnd('updating <circle> element')
-        return { circles, swapCircles }
-    }, [transactionDataArr, valueGetterWithSwap, scales])
+    const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useClusterViewCachedCircles(transactionDataArr, valueGetterWithSwap, colourScale, linearPrivateScales, logPrivateScales)
 
     // for highlighting
     const highLightedColourSet = useAppSelector(colourLegendSlice.selectHighLightedColourDomainValueSet)
@@ -186,15 +118,62 @@ export function ClusterView(props: ClusterViewProps) {
             brush(brushG)
             return () => { brushG.on('.brush', null) }
         }
-    }, [currentContainerWidth, currentContainerHeight, isSwap, useLogScale])
+    }, [width, height, isSwap, useLogScale])
+    let circlesToDisplay;
+    let scaleForXAxis: d3.ScaleLinear<number, number, never> | d3.ScaleLogarithmic<number, number, never>;
+    let scaleForYAxis: d3.ScaleLinear<number, number, never> | d3.ScaleLogarithmic<number, number, never>;
+    if (isSwap) {
+        if (useLogScale) {
+            circlesToDisplay = swapCirclesLog
+            scaleForXAxis = logPrivateScales.xScaleSwap
+            scaleForYAxis = logPrivateScales.yScaleSwap
+        } else {
+            circlesToDisplay = swapCirclesLinear
+            scaleForXAxis = linearPrivateScales.xScaleSwap
+            scaleForYAxis = linearPrivateScales.yScaleSwap
+        }
+    } else {
+        if (useLogScale) {
+            circlesToDisplay = circlesLog
+            scaleForXAxis = logPrivateScales.xScale
+            scaleForYAxis = logPrivateScales.yScale
+        } else {
+            circlesToDisplay = circlesLinear
+            scaleForXAxis = linearPrivateScales.xScale
+            scaleForYAxis = linearPrivateScales.yScale
+        }
+    }
+    function handleBrush(event: d3.D3BrushEvent<SVGGElement>): void {
+        console.time('handleBrush')
+        if (event.selection === null) {
+            setBrushedTransactionNumberSet(new Set());
+            return;
+        }
+        let x0: number, y0: number, x1: number, y1: number;
+        const selection = event.selection
+        if (Array.isArray(selection) && Array.isArray(selection[0]) && Array.isArray(selection[1])) {
+            [[x0, y0], [x1, y1]] = selection; // ref this line: https://observablehq.com/@d3/brushable-scatterplot
+        } else {
+            throw new Error("selection type is not valid");
 
+        }
+        const [[domainXMin, domainXMax], [domainYMin, domainYMax]] = [[scaleForXAxis.invert(x0), scaleForXAxis.invert(x1)], [scaleForYAxis.invert(y1), scaleForYAxis.invert(y0)]];
+        const nextBrushedTransactionNumberSet = new Set(transactionDataArr.filter(transactionData => {
+            const dataXValue = valueGetterWithSwap.x(transactionData);
+            const dataYValue = valueGetterWithSwap.y(transactionData);
+            return dataXValue >= domainXMin && dataXValue <= domainXMax &&
+                dataYValue >= domainYMin && dataYValue <= domainYMax
+        }).map(d => d.transactionNumber))
+        setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
+        console.timeEnd('handleBrush')
+    }
     return (<div className="clusterView">
         <svg width={currentContainerWidth} height={currentContainerHeight}>
             <g transform={`translate(${margin.left},${margin.top})`}>
-                <g>{isSwap ? swapCircles : circles}</g>
+                <g>{circlesToDisplay}</g>
                 <g ref={brushGRef}></g>
-                <g><AxisLeft yScale={isSwap ? scales.yScaleSwap : scales.yScale} numberOfTicksTarget={6}></AxisLeft></g>
-                <g transform={`translate(0, ${height})`}><AxisBottom xScale={isSwap ? scales.xScaleSwap : scales.xScale} numberOfTicksTarget={6}></AxisBottom></g>
+                <g><AxisLeft yScale={scaleForYAxis} numberOfTicksTarget={6}></AxisLeft></g>
+                <g transform={`translate(0, ${height})`}><AxisBottom xScale={scaleForXAxis} numberOfTicksTarget={6}></AxisBottom></g>
             </g>
         </svg>
         <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
@@ -216,20 +195,16 @@ type CircleData = {
 }
 
 /**
- * A map object where the key are the transaction number and the value are the circle data
- */
-type CircleDataMap = Map<TransactionData['transactionNumber'], CircleData>
-/**
  * get the an array of data for circles, index represent the transactionNumber. this function is used for separating the calculation of visual mapping.
  */
-function getCircleDataMap(transactionDataArr: TransactionData[],
+function getCircleDataArray(transactionDataArr: TransactionData[],
     valueGetterWithSwap: ClusterViewValueGetterWithSwap,
     scales: ClusterViewScale,
-    isSwap: boolean): CircleDataMap {
-    const circleDataMap: CircleDataMap = new Map()
+    isSwap: boolean): CircleData[] {
+    const circleDataArr: CircleData[] = new Array()
     if (!isSwap) {
         transactionDataArr.forEach(transactionData => {
-            circleDataMap.set(transactionData.transactionNumber, {
+            circleDataArr.push({
                 key: transactionData.transactionNumber,
                 cx: scales.xScale(valueGetterWithSwap.x(transactionData)),
                 cy: scales.yScale(valueGetterWithSwap.y(transactionData)),
@@ -239,7 +214,7 @@ function getCircleDataMap(transactionDataArr: TransactionData[],
         })
     } else {
         transactionDataArr.forEach(transactionData => {
-            circleDataMap.set(transactionData.transactionNumber, {
+            circleDataArr.push({
                 key: transactionData.transactionNumber,
                 cx: scales.xScaleSwap(valueGetterWithSwap.getXSwap(transactionData)),
                 cy: scales.yScaleSwap(valueGetterWithSwap.getYSwap(transactionData)),
@@ -249,11 +224,18 @@ function getCircleDataMap(transactionDataArr: TransactionData[],
         })
 
     }
-    return circleDataMap
+    return circleDataArr
 }
 
-
-function getScales(transactionDataArr: TransactionData[],
+/**
+ * return a function that produce d3.scale functions for the clusterView
+ * @param transactionDataArr 
+ * @param valueGetterWithSwap 
+ * @param width 
+ * @param height 
+ * @returns
+ */
+function curryGetScales(transactionDataArr: TransactionData[],
     valueGetterWithSwap: ClusterViewValueGetterWithSwap,
     width: number, height: number):
     (useLogScale: boolean) => ClusterViewPrivateScale {
@@ -298,4 +280,72 @@ type CircleProps = {
 }
 function Circle(props: CircleProps) {
     return <circle id={props.id} cx={props.cx} cy={props.cy} r={props.r} fill={props.fill} />
+}
+
+/**
+ * get the clusterView config information and the dispatcher from the redux store; calculate the derived value includes width, height for the actual drawing area, useLogScale information for the main axis of the clusterview 
+ * @returns an object with  currentContainerWidth, currentContainerHeight, useLogScale, margin, dispatch, width, height
+ */
+function useClusterViewConfig() {
+    console.log('cluster view config information changed')
+    const currentContainerWidth = useAppSelector(clusterViewSlice.selectCurrentContainerWidth);
+    const currentContainerHeight = useAppSelector(clusterViewSlice.selectCurrentContainerHeight);
+    const mainAxis = useAppSelector(clusterViewSlice.selectMainAxis);
+
+    // const margin = useAppSelector(clusterViewSlice.selectCurrentMagin) // todo: add margin in to store
+    const margin = DEFAULT_MARGIN
+
+    const useLogScale = mainAxis === 'log' ? true : false;
+    // config dispatcher
+    const dispatch = useAppDispatch();
+
+    const width = currentContainerWidth - margin.left - margin.right
+    const height = currentContainerHeight - margin.top - margin.bottom;
+    return { currentContainerWidth, currentContainerHeight, useLogScale, margin, dispatch, width, height }
+}
+
+/**
+ * get the scale function for x and y axis, and for the swapped x and y axis; the value are updated only when at least one of the parameters updated
+ * @param transactionDataArr collection of the data to display
+ * @param valueGetterWithSwap valuegetter for the cluster view
+ * @param width width of the actual drawing area
+ * @param height height of the actural drawing area
+ * @returns the Y scale and xScaleSwapped is log scale in the logScales value, in the linearScales, all scales are linearScale
+ */
+function useClusterPrivateViewScales(transactionDataArr: TransactionData[], valueGetterWithSwap: ClusterViewValueGetterWithSwap, width: number, height: number) {
+    const { linearPrivateScales, logPrivateScales } = useMemo(() => {
+        const scaleGetter = curryGetScales(transactionDataArr, valueGetterWithSwap, width, height);
+        const linearPrivateScales = scaleGetter(false)
+        const logPrivateScales = scaleGetter(true)
+        return { linearPrivateScales, logPrivateScales }
+    }, [transactionDataArr, valueGetterWithSwap, width, height])
+    return { linearPrivateScales, logPrivateScales }
+}
+
+/**
+ * 
+ * @param transactionDataArr 
+ * @param valueGetterWithSwap 
+ * @param colourScale 
+ * @param linearPrivateScales 
+ * @param logPrivateScales 
+ * @returns circles for the chart with linear and log main axis, and the circles for the chart with swapped axis
+ */
+function useClusterViewCachedCircles(transactionDataArr: TransactionData[], valueGetterWithSwap: ClusterViewValueGetterWithSwap, colourScale: PublicScale['colourScale'], linearPrivateScales: ClusterViewPrivateScale, logPrivateScales: ClusterViewPrivateScale) {
+    const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useMemo(() => {
+        console.time('re-calculating circleData')
+        const circleDataArrLinear = getCircleDataArray(transactionDataArr, valueGetterWithSwap, { colourScale, ...linearPrivateScales }, false);
+        const circleDataSwappedArrLinear = getCircleDataArray(transactionDataArr, valueGetterWithSwap, { colourScale, ...linearPrivateScales }, true);
+        const circleDataArrLog = getCircleDataArray(transactionDataArr, valueGetterWithSwap, { colourScale, ...logPrivateScales }, false);
+        const circleDataSwappedArrLog = getCircleDataArray(transactionDataArr, valueGetterWithSwap, { colourScale, ...logPrivateScales }, true);
+        console.timeEnd('re-calculating circleData')
+        console.time('updating <circle> element')
+        const circlesLinear = circleDataArrLinear.map((d: CircleData) => <Circle id={d.key} key={d.key} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />)
+        const swapCirclesLinear = circleDataSwappedArrLinear.map((d: CircleData) => <Circle id={d.key} key={d.key} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />)
+        const circlesLog = circleDataArrLog.map((d: CircleData) => <Circle id={d.key} key={d.key} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />)
+        const swapCirclesLog = circleDataSwappedArrLog.map((d: CircleData) => <Circle id={d.key} key={d.key} cx={d.cx} cy={d.cy} r={d.r} fill={d.fill} />)
+        console.timeEnd('updating <circle> element')
+        return { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog }
+    }, [transactionDataArr, valueGetterWithSwap, colourScale, linearPrivateScales, logPrivateScales])
+    return { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog }
 }
