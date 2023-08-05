@@ -17,6 +17,12 @@ import { useAppDispatch, useAppSelector } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice"
 import * as colourLegendSlice from "./components/ColourLegend/colourLegendSlice"
+// import ClusterView2 from "./components/ClusterView/ClusterView2";
+import dynamic from 'next/dynamic'//no ssr 
+const ClusterView2 = dynamic(
+    () => import("./components/ClusterView/ClusterView2"),
+    {ssr: false}
+)
 
 
 export default function App() {
@@ -28,7 +34,17 @@ export default function App() {
 
     // set the state store
     const dispatch = useAppDispatch()
+    const handleSelectIndex = (indexes: number[]) => {
+        if (transactionDataArr === null) {
+            throw new Error("transactionDataArr is null");
 
+        }
+        const nextBrushedTransactionNumberSet = new Set<TransactionData['transactionNumber']>;
+        indexes.forEach(
+            index => nextBrushedTransactionNumberSet.add(transactionDataArr[index].transactionNumber)
+        )
+        setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
+    }
     // highlighted colour channel
     const highLightedColourSet = useAppSelector(colourLegendSlice.selectHighLightedColourDomainValueSet)
 
@@ -65,6 +81,9 @@ export default function App() {
         );
     }, []);
 
+    // set data for cluster
+
+
     // expanding handler
     /**
      * tell the components which are wrapped inside the expandablecontainer it is expanded or folded
@@ -91,6 +110,19 @@ export default function App() {
         return <>initialising colour scale</>
     }
     else {
+        const clusterView2Data = [
+            {
+                type: 'scattergl' as const,
+                mode: 'markers' as const,
+                x: transactionDataArr.map(clusterViewValueGetter.x),
+                y: transactionDataArr.map(clusterViewValueGetter.y),
+                marker: {
+                    size: 5,
+                    color: transactionDataArr.map(transactionData => colourScale(clusterViewValueGetter.colour(transactionData))),
+                }
+            },
+        ]
+        console.log('clusterView2Data', clusterView2Data)
         return (
             <div>
                 <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE', zIndex: 999 }}>
@@ -139,6 +171,10 @@ export default function App() {
                         transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
                         colourValueGetter={PUBLIC_VALUEGETTER.colour}></TableView>
                 </FolderableContainer>
+                <ClusterView2 data={clusterView2Data}
+                    layout={{ width: 500, height: 600, title: 'A Fancy Plot', yaxis: { type: 'log', autorange: true } }}
+                    handleSelectIndex={handleSelectIndex}
+                ></ClusterView2>
             </div>
         )
     }
