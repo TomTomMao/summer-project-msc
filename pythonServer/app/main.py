@@ -13,6 +13,7 @@ app = FastAPI()
 # reference: https://fastapi.tiangolo.com/tutorial/cors/
 origins = [
     "http://localhost",
+    "http://64.176.191.205"
 ]
 app.add_middleware(
     CORSMiddleware,
