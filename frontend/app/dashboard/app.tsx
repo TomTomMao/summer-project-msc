@@ -19,6 +19,8 @@ import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice"
 import * as colourLegendSlice from "./components/ColourLegend/colourLegendSlice"
 // import ClusterView2 from "./components/ClusterView/ClusterView2";
 import dynamic from 'next/dynamic'//no ssr 
+import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel";
+import useClusterData from "./hooks/useClusterData";
 const ClusterView2 = dynamic(
     () => import("./components/ClusterView/ClusterView2"),
     { ssr: false }
@@ -104,6 +106,8 @@ export default function App() {
             }
         }
     }
+    const clusterData = useClusterData()
+    // console.log('clusterData:', clusterData)
     if (transactionDataArr === null) {
         return <>loading...</>
     } else if (colourScale === null) {
@@ -175,6 +179,7 @@ export default function App() {
                     layout={{ width: 500, height: 600, title: 'A Fancy Plot', yaxis: { type: 'log', autorange: true } }}
                     handleSelectIndex={handleSelectIndex}
                 ></ClusterView2>
+                <ClusterViewControlPannel></ClusterViewControlPannel>
             </div>
         )
     }
