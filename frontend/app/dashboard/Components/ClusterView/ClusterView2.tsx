@@ -5,7 +5,7 @@ import { PlotSelectionEvent } from 'plotly.js';
 import React, { useEffect, useState } from 'react'
 import Plot, { Figure } from 'react-plotly.js';
 
-interface ClusterView2Props {
+export interface ClusterView2Props {
     data: Plotly.Data[];
     layout: Partial<Plotly.Layout>;
     handleSelectIndex: (selectedDataIndex: number[]) => void

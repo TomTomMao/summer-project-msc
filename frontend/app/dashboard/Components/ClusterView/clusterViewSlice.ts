@@ -3,6 +3,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { apiUrl } from "../../utilities/consts";
 import { ClusterData } from "../../utilities/clusterDataObject";
 
+export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance";
+export type ValidClusterMetrics =
+  | "transactionAmount"
+  | "category"
+  | "frequency";
+export type ValidColours = "category" | "cluster";
+
 interface ClusterViewState {
   // for usePrepareClusterViewLayout
   containerWidth: number;
@@ -19,14 +26,15 @@ interface ClusterViewState {
 
   // for useClusterData
   numberOfCluster: number;
-  metric1: "transactionAmount" | "category" | "frequency";
-  metric2: "transactionAmount" | "category" | "frequency";
+  metric1: ValidClusterMetrics;
+  metric2: ValidClusterMetrics;
 
   // for usePrepareClusterViewData
   clusterData: Array<ClusterData>;
-  colour: "category" | "cluster";
-  x: "transactionAmount" | "dayOfYear";
-  y: "transactionAmount" | "dayOfYear";
+  /**colour for choose the domain of the colour channel */
+  colour: ValidColours;
+  x: ValidAxisLabels;
+  y: ValidAxisLabels;
 }
 const initialState: ClusterViewState = {
   containerWidth: 500,
@@ -82,12 +90,46 @@ export const clusterViewSlice = createSlice({
     setClusterData: (state, action: PayloadAction<ClusterData[]>) => {
       state.clusterData = action.payload;
     },
+    setXLable: (state, action: PayloadAction<ClusterViewState["x"]>) => {
+      state.x = action.payload;
+    },
+    setYLable: (state, action: PayloadAction<ClusterViewState["y"]>) => {
+      state.y = action.payload;
+    },
+    setColour: (state, action: PayloadAction<ValidColours>) => {
+      state.colour = action.payload;
+    },
+    setXScale: (state, action: PayloadAction<boolean>) => {
+      state.xLog = action.payload;
+    },
+    setYScale: (state, action: PayloadAction<boolean>) => {
+      state.yLog = action.payload;
+    },
+    swap: (state) => {
+      const oldx = state.x;
+      state.x = state.y;
+      state.y = oldx;
+      const oldXLog = state.xLog;
+      state.xLog = state.yLog;
+      state.yLog = oldXLog;
+    },
   },
 });
 
 // export the action creators
-export const { setMainScale, expand, fold, setClusterArguments } =
-  clusterViewSlice.actions;
+export const {
+  setMainScale,
+  expand,
+  fold,
+  setClusterArguments,
+  setClusterData,
+  setXLable,
+  setYLable,
+  setColour,
+  setXScale,
+  setYScale,
+  swap,
+} = clusterViewSlice.actions;
 
 // export the selectors
 export const selectMainAxis = (state: RootState) => state.clusterView.mainAxis;

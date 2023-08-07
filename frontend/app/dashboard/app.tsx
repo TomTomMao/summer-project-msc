@@ -118,26 +118,6 @@ export default function App() {
         return <>initialising colour scale</>
     }
     else {
-        const clusterView2Data = [
-            {
-                type: 'scattergl' as const,
-                mode: 'markers' as const,
-                x: clusterViewDataPrepared.xData,
-                y: clusterViewDataPrepared.yData,
-                marker: {
-                    size: 5,
-                    color: clusterViewDataPrepared.colourData
-                }
-            },
-        ]
-        console.log('clusterView2Data', clusterView2Data);
-        const clusterView2Layout = {
-            width: clusterViewLayoutPrepared.width,
-            height: clusterViewLayoutPrepared.height,
-            title: clusterViewLayoutPrepared.title,
-            xaxis: { type: clusterViewLayoutPrepared.xType, autorange: true },
-            yaxis: { type: clusterViewLayoutPrepared.yType, autorange: true }
-        }
         return (
             <div>
                 <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE', zIndex: 999 }}>
@@ -186,8 +166,8 @@ export default function App() {
                         transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
                         colourValueGetter={PUBLIC_VALUEGETTER.colour}></TableView>
                 </FolderableContainer>
-                <ClusterView2 data={clusterView2Data}
-                    layout={clusterView2Layout}
+                <ClusterView2 data={clusterViewDataPrepared}
+                    layout={clusterViewLayoutPrepared}
                     handleSelectIndex={handleSelectIndex}
                 ></ClusterView2>
                 <ClusterViewControlPannel></ClusterViewControlPannel>

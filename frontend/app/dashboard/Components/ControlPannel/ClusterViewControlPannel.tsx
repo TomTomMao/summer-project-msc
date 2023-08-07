@@ -3,6 +3,101 @@ import { useState } from "react";
 import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
 
 export default function ClusterViewControlPannel() {
+    return (
+        <div>
+            <div><ClusterViewMappingControlPannel></ClusterViewMappingControlPannel></div>
+            <div><ClusterAlgorithmControlPannel></ClusterAlgorithmControlPannel></div>
+        </div>
+    )
+}
+
+function ClusterViewMappingControlPannel() {
+    const xLable = useAppSelector(state => state.clusterView.x)
+    const yLable = useAppSelector(state => state.clusterView.y)
+    const colour = useAppSelector(state => state.clusterView.colour)
+    const xScale = useAppSelector(state => state.clusterView.xLog ? 'log' : 'linear')
+    const yScale = useAppSelector(state => state.clusterView.yLog ? 'log' : 'linear')
+
+    const dispatch = useAppDispatch()
+
+    const handleChangeXLable = (newLable: string) => {
+        dispatch(clusterViewSlice.setXLable(newLable as clusterViewSlice.ValidAxisLabels))
+    }
+    const handleChangeYLable = (newLable: string) => {
+        dispatch(clusterViewSlice.setYLable(newLable as clusterViewSlice.ValidAxisLabels))
+    }
+    const handleChangeColour = (newColour: string) => {
+        dispatch(clusterViewSlice.setColour(newColour as clusterViewSlice.ValidColours))
+    }
+    const handleChangeXScale = (newXScale: string) => {
+        dispatch(clusterViewSlice.setXScale(newXScale === 'log'))
+    }
+    const handleChangeYScale = (newXScale: string) => {
+        dispatch(clusterViewSlice.setYScale(newXScale === 'log'))
+    }
+    const handleSwap = () => {
+        dispatch(clusterViewSlice.swap())
+    }
+    return (
+        <>
+            <table>
+                <thead></thead>
+                <tbody>
+                    <tr>
+                        <td>xLabel</td>
+                        <td>
+                            <select name="" id="" value={xLable} onChange={e => handleChangeXLable(e.target.value)}>
+                                <option value="transactionAmount">transaction amount</option>
+                                <option value="frequency">frequency(not supportted)</option>
+                                <option value="dayOfYear">dayOfYear</option>
+                                <option value="balance">balance</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>yLabel</td>
+                        <td>
+                            <select name="" id="" value={yLable} onChange={e => handleChangeYLable(e.target.value)}>
+                                <option value="transactionAmount">transaction amount</option>
+                                <option value="frequency">frequency(not supportted)</option>
+                                <option value="dayOfYear">dayOfYear</option>
+                                <option value="balance">balance</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>colour</td>
+                        <td>
+                            <select name="" id="" value={colour} onChange={e => handleChangeColour(e.target.value)}>
+                                <option value="cluster">cluster</option>
+                                <option value="category">category</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>xScale</td>
+                        <select name="" id="" value={xScale} onChange={e => handleChangeXScale(e.target.value)}>
+                            <option value="log">log</option>
+                            <option value="linear">linear</option>
+                        </select>
+                    </tr>
+                    <tr>
+                        <td>yScale</td>
+                        <select name="" id="" value={yScale} onChange={e => handleChangeYScale(e.target.value)}>
+                            <option value="log">log</option>
+                            <option value="linear">linear</option>
+                        </select>
+                    </tr>
+                    <tr>
+                        <td><button onClick={handleSwap}>swap</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </>
+    )
+}
+
+function ClusterAlgorithmControlPannel() {
     const dispatch = useAppDispatch()
     const initNumberOfCluster = useAppSelector(clusterViewSlice.selectNumberOfCluster);
     const initMetric1 = useAppSelector(clusterViewSlice.selectMetric1);
