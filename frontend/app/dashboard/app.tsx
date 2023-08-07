@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo } from "react"
-import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData } from "./utilities/DataObject";
+import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData, cleanFetchedITransactionDataFromPythonAPI } from "./utilities/DataObject";
 import CalendarView3 from "./components/CalendarView3/CalendarView3";
 import TableView from "./components/TableView/TableView";
 import { temporalValueGetter } from "./utilities/consts/valueGetter";
@@ -21,7 +21,7 @@ import * as colourLegendSlice from "./components/ColourLegend/colourLegendSlice"
 import dynamic from 'next/dynamic'//no ssr 
 const ClusterView2 = dynamic(
     () => import("./components/ClusterView/ClusterView2"),
-    {ssr: false}
+    { ssr: false }
 )
 
 
@@ -198,18 +198,11 @@ async function fetchData(parseTime: (dateString: string) => Date | null) {
             console.log(fetchedTransactionData)
             throw new Error("wrong data type, fetched data should be an array");
         }
-        const transactionDataArr: TransactionData[] = fetchedTransactionData.map(curryCleanFetchedTransactionData('TransactionData', parseTime));
+        console.log(fetchedTransactionData)
+        // const transactionDataArr: TransactionData[] = fetchedTransactionData.map(curryCleanFetchedTransactionData('TransactionData', parseTime));
+        const transactionDataArr = fetchedTransactionData.map(cleanFetchedITransactionDataFromPythonAPI)
 
-        // fetch the rfm data
-        const fetchedRFMDataResponse = await fetch(`${apiUrl}/transactionData/rfm`);
-        const fetchedRFMData = await fetchedRFMDataResponse.json();
-        if (Array.isArray(fetchedTransactionData) === false) {
-            console.log(fetchedTransactionData)
-            throw new Error("wrong data type, fetched data should be an array");
-        }
-        const RFMDataArr: RFMData[] = fetchedRFMData.map(curryCleanFetchedRFMData('RFMData'));
-
-        return { transactionDataArr, RFMDataArr }
+        return { transactionDataArr }
     } catch (error) {
         console.log(error);
         console.log(apiUrl)

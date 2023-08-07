@@ -30,6 +30,25 @@ export interface ITransactionDataFromAPI {
     'Location Country': string
 }
 
+export interface ITransactionDataFromPythonAPI {
+    balance: number,
+    category: string,
+    creditAmount: null | number,
+    dayOfWeek: number,
+    dayOfYear: number,
+    debitAmount: null | number,
+    isCredit: boolean,
+    locationCity: string,
+    locationCountry: string,
+    transactionAmount: number,
+    transactionDate: number,
+    transactionDescription: string,
+    transactionNumber: number,
+    transactionType: string,
+    'unnamed:0': number,
+    weekOfYear: number
+
+}
 
 export type TransactionDataAttrs = "transactionAmount" | "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry";
 /**
@@ -345,7 +364,7 @@ export function curryCleanFetchedTransactionData(returnType: string, parseTime: 
                 const transanctionNumber: string = d['Transaction Number'];
                 const date: Date | null = parseTime(d['Transaction Date']);
                 if (date === null) {
-                    throw new Error(`date can't not be parese as Date; transaction numbe: ${d["Transaction Number"]}`, );
+                    throw new Error(`date can't not be parese as Date; transaction numbe: ${d["Transaction Number"]}`,);
                 }
                 const transactionType: string = d['Transaction Type'];
                 const transactionDescription: string = d['Transaction Description'];
@@ -367,12 +386,35 @@ export function curryCleanFetchedTransactionData(returnType: string, parseTime: 
                     locationCountry);
                 return transaction;
             }
-
         default:
             throw new Error(`returnType is wrong, should be CTransaction or TransactionData, but given ${returnType}`);
 
     }
 
+}
+
+export function cleanFetchedITransactionDataFromPythonAPI(d: ITransactionDataFromPythonAPI): TransactionData {
+    const transactionNumber: string = String(d.transactionNumber);
+    const date: Date = new Date(d.transactionDate);
+    const transactionType: string = d.transactionType;
+    const transactionDescription: string = d.transactionDescription;
+    const debitAmount: number = d.debitAmount === null ? 0 : d.debitAmount
+    const creditAmount: number = d.creditAmount === null ? 0 : d.creditAmount
+    const balance: number = d.balance
+    const category: string = d.category
+    const locationCity: string = d.locationCity
+    const locationCountry: string = d.locationCountry
+    const transaction: TransactionData = new TransactionData(transactionNumber,
+        date,
+        transactionType,
+        transactionDescription,
+        debitAmount,
+        creditAmount,
+        balance,
+        category,
+        locationCity,
+        locationCountry);
+    return transaction;
 }
 
 /**
