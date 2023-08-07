@@ -21,6 +21,10 @@ import * as colourLegendSlice from "./components/ColourLegend/colourLegendSlice"
 import dynamic from 'next/dynamic'//no ssr 
 import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel";
 import useClusterData from "./hooks/useClusterData";
+import { usePrepareClusterViewData } from "./hooks/userPrepareClusterViewData";
+import { usePrepareClusterViewLayout } from "./hooks/usePrepareClusterViewLayout";
+
+// used for fixing the plotly scatter plot 'self not found' error
 const ClusterView2 = dynamic(
     () => import("./components/ClusterView/ClusterView2"),
     { ssr: false }
@@ -85,7 +89,6 @@ export default function App() {
 
     // set data for cluster
 
-
     // expanding handler
     /**
      * tell the components which are wrapped inside the expandablecontainer it is expanded or folded
@@ -106,9 +109,10 @@ export default function App() {
             }
         }
     }
-    const clusterData = useClusterData()
-    // console.log('clusterData:', clusterData)
-    if (transactionDataArr === null) {
+    const clusterDataArr = useClusterData()
+    const clusterViewDataPrepared = usePrepareClusterViewData(transactionDataArr, clusterDataArr, colourScale)
+    const clusterViewLayoutPrepared = usePrepareClusterViewLayout();
+    if (transactionDataArr === null || clusterViewDataPrepared === null) {
         return <>loading...</>
     } else if (colourScale === null) {
         return <>initialising colour scale</>
@@ -118,15 +122,22 @@ export default function App() {
             {
                 type: 'scattergl' as const,
                 mode: 'markers' as const,
-                x: transactionDataArr.map(clusterViewValueGetter.x),
-                y: transactionDataArr.map(clusterViewValueGetter.y),
+                x: clusterViewDataPrepared.xData,
+                y: clusterViewDataPrepared.yData,
                 marker: {
                     size: 5,
-                    color: transactionDataArr.map(transactionData => colourScale(clusterViewValueGetter.colour(transactionData))),
+                    color: clusterViewDataPrepared.colourData
                 }
             },
         ]
-        console.log('clusterView2Data', clusterView2Data)
+        console.log('clusterView2Data', clusterView2Data);
+        const clusterView2Layout = {
+            width: clusterViewLayoutPrepared.width,
+            height: clusterViewLayoutPrepared.height,
+            title: clusterViewLayoutPrepared.title,
+            xaxis: { type: clusterViewLayoutPrepared.xType, autorange: true },
+            yaxis: { type: clusterViewLayoutPrepared.yType, autorange: true }
+        }
         return (
             <div>
                 <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE', zIndex: 999 }}>
@@ -176,7 +187,7 @@ export default function App() {
                         colourValueGetter={PUBLIC_VALUEGETTER.colour}></TableView>
                 </FolderableContainer>
                 <ClusterView2 data={clusterView2Data}
-                    layout={{ width: 500, height: 600, title: 'A Fancy Plot', yaxis: { type: 'log', autorange: true } }}
+                    layout={clusterView2Layout}
                     handleSelectIndex={handleSelectIndex}
                 ></ClusterView2>
                 <ClusterViewControlPannel></ClusterViewControlPannel>

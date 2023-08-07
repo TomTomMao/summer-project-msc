@@ -2,7 +2,7 @@
 'use client'
 
 import { PlotSelectionEvent } from 'plotly.js';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Plot, { Figure } from 'react-plotly.js';
 
 interface ClusterView2Props {
@@ -28,7 +28,7 @@ export default function ClusterView2({ data, layout, handleSelectIndex }: Cluste
         handleSelectIndex(pointIndexes)
     }
 
-
+    useEffect(() => { setFigure({ data, layout, frames: figure.frames }) }, [data, layout])
 
     return (
         <Plot

@@ -50,7 +50,7 @@ export interface ITransactionDataFromPythonAPI {
 
 }
 
-export type TransactionDataAttrs = "transactionAmount" | "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry";
+export type TransactionDataAttrs = "dayOfYear" | "transactionAmount" | "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry";
 /**
  * a class represent a record of transaction
  */
@@ -101,6 +101,7 @@ export class TransactionData {
             "locationCountry",
             "transactionAmount"]
     }
+
     /**
      * get a comparator function that compare the given key, if key is transactionNumber, compare them by regarding them as numbers
      * @param key data for compare
@@ -140,6 +141,11 @@ export class TransactionData {
                 }
             }
         }
+    }
+
+    // * reference: user2501097. (2016, December 5). Answer to ‘JavaScript calculate the day of the year (1—366)’. Stack Overflow. https://stackoverflow.com/a/40975730
+    public get dayOfYear() {
+        return (Date.UTC(this.date.getFullYear(), this.date.getMonth(), this.date.getDate()) - Date.UTC(this.date.getFullYear(), 0, 0)) / 24 / 60 / 60 / 1000;
     }
     public get transactionAmount() {
         return this.isCredit() ? this.creditAmount : this.debitAmount

@@ -4,16 +4,29 @@ import { apiUrl } from "../../utilities/consts";
 import { ClusterData } from "../../utilities/clusterDataObject";
 
 interface ClusterViewState {
+  // for usePrepareClusterViewLayout
   containerWidth: number;
   containerHeight: number;
   expandedContainerWidth: number;
   expandedContainerHeight: number;
+  xLog: boolean;
+  yLog: boolean;
   isExpanded: boolean;
+  title: string;
+
+  // for clusterview1, wait to be discarded
   mainAxis: "log" | "linear";
+
+  // for useClusterData
   numberOfCluster: number;
   metric1: "transactionAmount" | "category" | "frequency";
   metric2: "transactionAmount" | "category" | "frequency";
+
+  // for usePrepareClusterViewData
   clusterData: Array<ClusterData>;
+  colour: "category" | "cluster";
+  x: "transactionAmount" | "dayOfYear";
+  y: "transactionAmount" | "dayOfYear";
 }
 const initialState: ClusterViewState = {
   containerWidth: 500,
@@ -21,11 +34,20 @@ const initialState: ClusterViewState = {
   expandedContainerWidth: 1500,
   expandedContainerHeight: 700,
   isExpanded: false,
+  xLog: false,
+  yLog: false,
+  title: "cluster view",
+
   mainAxis: "log",
+
   numberOfCluster: 5,
   metric1: "transactionAmount",
   metric2: "category",
+
   clusterData: [],
+  colour: "cluster",
+  x: "dayOfYear",
+  y: "transactionAmount",
 };
 
 export const clusterViewSlice = createSlice({
