@@ -1,14 +1,60 @@
 import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
+from typing import Union
+from enum import Enum
+
+
+class FrequencyUniqueKey(Enum):
+    CATEGORY = 'category'
+    TRANSACTION_DESCRIPTION = 'transactionDescription'
+    CLUSTERED_TRANSACTION_DESCRIPTION = 'clusteredTransactionDescription'
+    
+class FrequencyOption:
+    '''
+        a class wrap the information for the frequency option
+    '''
+
+    def __init__(self, uniqueKey: FrequencyUniqueKey, distanceMeasure: str = '', linkageMethod: str = '', numberOfCluster: int = 0):
+        '''
+            initialise the frequencyOption object
+            uniqueKey: category or transactionDescription or clusteredTransactionDescription
+            distanceMeasure: levenshtein or damerauLevenshtein or hamming or jaroSimilarity or JaroWinklerSimilarity or MatchRatingApproach
+            linkageMethod: single or complete or average or weighted or centroid or median or ward
+            numberOfCluster: greater than 1
+        '''
+        if (uniqueKey == FrequencyUniqueKey.CATEGORY):
+            self.uniqueKey = uniqueKey
+        elif (uniqueKey == FrequencyUniqueKey.TRANSACTION_DESCRIPTION):
+            self.uniqueKey = uniqueKey
+        elif (uniqueKey == FrequencyUniqueKey.CLUSTERED_TRANSACTION_DESCRIPTION):
+            self.uniqueKey = uniqueKey
+            if distanceMeasure not in ['levenshtein', 'damerauLevenshtein', 'hamming', 'jaroSimilarity', 'JaroWinklerSimilarity', 'MatchRatingApproach']:
+                raise ValueError('invalid distanceMeasure')
+            elif linkageMethod not in ['single', 'complete', 'average', 'weighted', 'centroid', 'median', 'ward']:
+                raise ValueError('invalid linkageMethod')
+            elif numberOfCluster < 1:
+                raise ValueError('invalid numberOfCluster')
+            else:
+                self.distanceMeasure = distanceMeasure
+                self.linkageMethod = linkageMethod
+                self.numberOfCluster = numberOfCluster
+        else:
+            raise ValueError('invalid uniqueKey')
+
+    # getters
+
+    def getUniqueKey(self): return self.uniqueKey
+    def getDistanceMeasure(self): return self.distanceMeasure
+    def getLinkageMethod(self): return self.linkageMethod
+    def getNumberOfCluster(self): return self.numberOfCluster
 
 
 class TransactionDataset:
     '''
         a dataset with the following columns: transactionNumber (str), transactionDate (datetime), 
         transactionType (str), transactionDescription(str), balance (float), category (str), locationCity (str), locationCountry (str), 
-        isCredit (boolean), transactionAmount (float)
-        replace all null value in str columns with '' // todo
+        isCredit (boolean), transactionAmount (float), frequency(float)
     '''
 
     def __init__(self, csvPath: str):
@@ -17,10 +63,16 @@ class TransactionDataset:
         '''
 
         self.dataframe: pd.DataFrame = pd.read_csv(csvPath)
-        self.__convertColumnNameToCammelCase()
+        self.__convertColumnNameToCammelCase()  # convert column name
+        # derive transactionAmount and isCredit column based on creditAmount and debitAmount column
         self.__addTransactionAmountInfo()
+        # add dayOfYear dayOfWeek weekOfYear columns, set transactionData tobe datetime type
         self.__cleanDateInfo()
+        # this line does not actually work,
         self.dataframe.set_index('transactionNumber')
+
+        # self.frequencyOption = FrequencyOption('transactionDescription')
+        # self.__addFrequency()
 
     def getDataframe(self) -> pd.DataFrame:
         '''
@@ -32,6 +84,7 @@ class TransactionDataset:
 
     def __convertColumnNameToCammelCase(self) -> bool:
         '''
+            this method will mutate self.dataframe:
             convert column name of self.dataframe to cammelCase inplace
             return true if successed, false if failed
         '''
@@ -53,7 +106,7 @@ class TransactionDataset:
 
     def __addTransactionAmountInfo(self):
         '''
-            inplace:
+            this method will mutate self.dataframe:
             add the isCredit, if the creditAmount in the dataframe is na, set false, else true
             a transaction can be either be a credit transaction or a debit transaction
             add transaction Amount based on isCredit, if isCredit is true, use Credit Amount, else use Debit Amount
@@ -72,7 +125,7 @@ class TransactionDataset:
 
     def __cleanDateInfo(self):
         '''
-            inplace:
+            this method will mutate self.dataframe:
             set the transactionData column to be datetime object
             add day of year column 1 to 366
             add day of week: 1to7 1: monday, 2: tuesday...
@@ -99,7 +152,7 @@ class TransactionDataset:
             self.dataframe[categoricalColumnName]), [i for i in range(len(set(self.dataframe[categoricalColumnName])))])
         return numericalColumn
 
-    def getColumn(self, columnName, toNumerical=False) -> list:
+    def getColumn(self, columnName, toNumerical=False) -> pd.Series:
         '''
             assume the columnName exist
             if the column is categorical and toNumerical==True, return a list of number represents the category of the columnName
@@ -117,6 +170,7 @@ class TransactionDataset:
             run KMean clustering algorithm based on the two metrics
             if any metric is not int or float, they will be try to convert to float.
             set the clusterId column to be the result of clustering algorithm
+            this method will mutate self.dataframe
         '''
         assert metric1 in self.dataframe.columns, f"{metric1} does not exist"
         assert metric2 in self.dataframe.columns, f"{metric2} does not exist"
@@ -145,8 +199,8 @@ class TransactionDataset:
             return False if not
         '''
         return columnNameToCheck in self.getColumnNames()
-    
-    def getColumnNames(self)->list:
+
+    def getColumnNames(self) -> list:
         '''
             Return a list of valid columnNames
         '''

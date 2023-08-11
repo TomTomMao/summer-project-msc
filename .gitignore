@@ -1,1 +1,5 @@
 serverConfig.json
+pythonServer/app/test
+pythonServer/app/test.ipynb
+pythonServer/app/textClusterEvaluator.ipynb
+pythonServer/app/clusterDataframeAverage100.csv
