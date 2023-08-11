@@ -91,14 +91,14 @@ class StringCluster(Cluster, ABC):
 class LinkageBasedStringCluster(StringCluster):
     '''
     Cluster that can using LinkageBased Clustering Algorithm to cluster a list of string 
-
+    WARNING: targetNumberOfCluster doesn't work, ignore it
     Attributes:
         dataList (list): A list of string
 
         targetNumberOfCluster (int): The desired number of clusters, should between 1 and the number of unique preprocessed string processed by stringPreprocessor from the dataList
 
         distanceMetric (str): distanceMetric for different strings, used for generating distance matrix. 
-            it should be one of 'levenshtein' or 'damerauLevenshtein' or 'hamming' or 'jaroSimilarity' or 'jaroWinklerSimilarity' or 'matchRatingApproachComparison'
+            it should be one of 'levenshtein' or 'damerauLevenshtein' or 'hamming' or 'jaroSimilarity' or 'jaroWinklerSimilarity' or 'MatchRatingApproach'
 
         linkageMethod (str): the linkage algorithm to use. see: https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
             it should be one of 'average' or 'single' or 'complete' or 'weigthed' or 'centroid' or 'median' or 'ward'
@@ -119,7 +119,7 @@ class LinkageBasedStringCluster(StringCluster):
 
     '''
     VALID_DISTANCE_METRIC = ['levenshtein', 'damerauLevenshtein', 'hamming',
-                             'jaroSimilarity', 'jaroWinklerSimilarity', 'matchRatingApproachComparison']
+                             'jaroSimilarity', 'jaroWinklerSimilarity', 'MatchRatingApproach']
     # don't forget update the doc for class
 
     VALID_LINKAGE_METHOD = ['average', 'single',
@@ -133,7 +133,7 @@ class LinkageBasedStringCluster(StringCluster):
         targetNumberOfCluster (int): The desired number of clusters, should between 1 and the number of unique preprocessed string processed by stringPreprocessor from the dataList
 
         distanceMetric (str): distanceMetric for different strings, used for generating distance matrix. 
-            it should be one of 'levenshtein' or 'damerauLevenshtein' or 'hamming' or 'jaroSimilarity' or 'jaroWinklerSimilarity' or 'matchRatingApproachComparison'
+            it should be one of 'levenshtein' or 'damerauLevenshtein' or 'hamming' or 'jaroSimilarity' or 'jaroWinklerSimilarity' or 'MatchRatingApproach'
 
         linkageMethod (str): the linkage algorithm to use. see: https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html
             it should be one of 'average' or 'single' or 'complete' or 'weigthed' or 'centroid' or 'median' or 'ward'
@@ -195,7 +195,7 @@ class LinkageBasedStringCluster(StringCluster):
         if updateChainning:
             self.__updateLinkageMatrix()
 
-    def setLinkageMatrix(self, linkageMethod: str):
+    def setLinkageMethod(self, linkageMethod: str):
         '''
         Validate the linkageMethod, update the linkageMatrix
         '''
@@ -215,13 +215,19 @@ class LinkageBasedStringCluster(StringCluster):
 
     def getClusterIdList(self, targetNumberOfCluster: int) -> list[int]:
         '''
-        Raise ValueError if targetNumberOfCluster is invalid
+        Raise ValueError if targetNumberOfCluster is invalid (not implemented)
         Returns a list of cluster IDs corresponding to the data in dataList, distanceMetrics, linkageMethod and Preprocessor
         '''
         optimalThreshold = self._searchOptimalThreshold(
             self.linkageMatrix, targetNumberOfCluster)
         cluster = fcluster(self.linkageMatrix, optimalThreshold, 'distance')
         return list(cluster)
+
+    def getDataList(self) -> list[str]:
+        '''
+        return a list of string which is aligned to the cluster id list
+        '''
+        return self.dataList
 
     def getClusterInfo(self):
         return {
@@ -429,9 +435,9 @@ class LinkageBasedStringCluster(StringCluster):
                 function = jellyfish.jaro_similarity
             case 'jaroWinklerSimilarity':
                 function = jellyfish.jaro_winkler_similarity
-            case 'matchRatingApproachComparison':
-                def f(str1,str2):
-                    if jellyfish.match_rating_comparison(str1,str2):
+            case 'MatchRatingApproach':
+                def f(str1, str2):
+                    if jellyfish.match_rating_comparison(str1, str2):
                         return 0.9
                     else:
                         return 0.1

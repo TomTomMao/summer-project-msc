@@ -3,58 +3,94 @@ import numpy as np
 from sklearn.cluster import KMeans
 from typing import Union
 from enum import Enum
+from Cluster import LinkageBasedStringCluster
+from stringPreprocessor import preprocess
 
 
 class FrequencyUniqueKey(Enum):
     CATEGORY = 'category'
     TRANSACTION_DESCRIPTION = 'transactionDescription'
     CLUSTERED_TRANSACTION_DESCRIPTION = 'clusteredTransactionDescription'
-    
+
+
+class DistanceMeasure(Enum):
+    LEVENSHTEIN = 'levenshtein'
+    DAMERAU_LEVENSHTEIN = 'damerauLevenshtein'
+    HAMMING = 'hamming'
+    JARO_SIMILARITY = 'jaroSimilarity'
+    JARO_WINKLER_SIMILARITY = 'jaroWinklerSimilarity'
+    MATCH_RATING_APPROACH = 'MatchRatingApproach'
+
+
+class LinkageMethod(Enum):
+    SINGLE = 'single'
+    COMPLETE = 'complete'
+    AVERAGE = 'average'
+    WEIGHTED = 'weighted'
+    CENTROID = 'centroid'
+    MEDIAN = 'median'
+    WARD = 'ward'
+
+
 class FrequencyOption:
     '''
         a class wrap the information for the frequency option
     '''
 
-    def __init__(self, uniqueKey: FrequencyUniqueKey, distanceMeasure: str = '', linkageMethod: str = '', numberOfCluster: int = 0):
+    def __init__(self, uniqueKey: FrequencyUniqueKey, distanceMeasure: Union[DistanceMeasure, None] = None, linkageMethod: Union[LinkageMethod, None] = None, numberOfCluster: Union[int, None] = None):
         '''
             initialise the frequencyOption object
             uniqueKey: category or transactionDescription or clusteredTransactionDescription
-            distanceMeasure: levenshtein or damerauLevenshtein or hamming or jaroSimilarity or JaroWinklerSimilarity or MatchRatingApproach
+
+            if uniqueKey = CLUSTERED_TRANSACTION_DESCRIPTION, the following parameters need to be provided
+            distanceMeasure: levenshtein or damerauLevenshtein or hamming or jaroSimilarity or jaroWinklerSimilarity or MatchRatingApproach
             linkageMethod: single or complete or average or weighted or centroid or median or ward
             numberOfCluster: greater than 1
         '''
-        if (uniqueKey == FrequencyUniqueKey.CATEGORY):
-            self.uniqueKey = uniqueKey
-        elif (uniqueKey == FrequencyUniqueKey.TRANSACTION_DESCRIPTION):
-            self.uniqueKey = uniqueKey
-        elif (uniqueKey == FrequencyUniqueKey.CLUSTERED_TRANSACTION_DESCRIPTION):
-            self.uniqueKey = uniqueKey
-            if distanceMeasure not in ['levenshtein', 'damerauLevenshtein', 'hamming', 'jaroSimilarity', 'JaroWinklerSimilarity', 'MatchRatingApproach']:
-                raise ValueError('invalid distanceMeasure')
-            elif linkageMethod not in ['single', 'complete', 'average', 'weighted', 'centroid', 'median', 'ward']:
-                raise ValueError('invalid linkageMethod')
-            elif numberOfCluster < 1:
-                raise ValueError('invalid numberOfCluster')
-            else:
-                self.distanceMeasure = distanceMeasure
-                self.linkageMethod = linkageMethod
-                self.numberOfCluster = numberOfCluster
-        else:
+        if uniqueKey not in FrequencyUniqueKey.__members__.values():
             raise ValueError('invalid uniqueKey')
+        else:
+            self.uniqueKey = uniqueKey
+        if (uniqueKey == FrequencyUniqueKey.CLUSTERED_TRANSACTION_DESCRIPTION):
+            if distanceMeasure not in DistanceMeasure.__members__.values():
+                raise ValueError('invalid distanceMeasure')
+            elif linkageMethod not in LinkageMethod.__members__.values():
+                raise ValueError('invalid linkageMethod')
+            elif numberOfCluster == None:
+                raise ValueError('invalid numberOfCluster')
+        self.distanceMeasure = distanceMeasure
+        self.linkageMethod = linkageMethod
+        self.numberOfCluster = numberOfCluster
 
     # getters
 
-    def getUniqueKey(self): return self.uniqueKey
-    def getDistanceMeasure(self): return self.distanceMeasure
-    def getLinkageMethod(self): return self.linkageMethod
-    def getNumberOfCluster(self): return self.numberOfCluster
+    def getUniqueKey(self):
+        return self.uniqueKey.value
+
+    def getDistanceMeasure(self):
+        if self.distanceMeasure != None:
+            return self.distanceMeasure.value
+        else:
+            return None
+
+    def getLinkageMethod(self):
+        if self.linkageMethod != None:
+            return self.linkageMethod.value
+        else:
+            return None
+
+    def getNumberOfCluster(self):
+        if self.numberOfCluster != None:
+            return self.numberOfCluster
+        else:
+            return None
 
 
 class TransactionDataset:
     '''
         a dataset with the following columns: transactionNumber (str), transactionDate (datetime), 
         transactionType (str), transactionDescription(str), balance (float), category (str), locationCity (str), locationCountry (str), 
-        isCredit (boolean), transactionAmount (float), frequency(float)
+        isCredit (boolean), transactionAmount (float), frequency(float), frequencyUniqueKey()
     '''
 
     def __init__(self, csvPath: str):
@@ -68,11 +104,17 @@ class TransactionDataset:
         self.__addTransactionAmountInfo()
         # add dayOfYear dayOfWeek weekOfYear columns, set transactionData tobe datetime type
         self.__cleanDateInfo()
-        # this line does not actually work,
-        self.dataframe.set_index('transactionNumber')
+        self.frequencyOption = FrequencyOption(
+            FrequencyUniqueKey.TRANSACTION_DESCRIPTION)
+        self.__updateFrequency()
+        # there should exist frequency and frequencyUniqueKey column
 
-        # self.frequencyOption = FrequencyOption('transactionDescription')
-        # self.__addFrequency()
+        # preload different stringClusterer for each distance metric
+        self.linkageBasedStringClusterers = {}
+        uniqueStringList = list(set(self.getColumn('transactionDescription')))
+        for distanceMeasure in DistanceMeasure.__members__.values():
+            self.linkageBasedStringClusterers[distanceMeasure.value] = LinkageBasedStringCluster(
+                uniqueStringList, 10, distanceMeasure.value, 'average', preprocess)
 
     def getDataframe(self) -> pd.DataFrame:
         '''
@@ -81,6 +123,87 @@ class TransactionDataset:
             isCredit (boolean), transactionAmount (float)
         '''
         return self.dataframe
+    
+    def setFrequencyOption(self, newFrequencyOption):
+        '''
+        Set the frequency option, update the frequency column, frequency Unique key Column. if frequency is based on clustering, algorithm will be run
+        '''
+        self.frequencyOption = newFrequencyOption
+        self.__updateFrequency
+
+    def __updateFrequency(self):
+        '''
+        this method will mutate self.dataframe
+        based on self.frequencyOption, update the frequencyUniqueKey column, and frequency column
+        '''
+        # update the 'frequencyUniqueKey' unique key column for frequency
+        frequencyUniqueKey = self.frequencyOption.getUniqueKey()
+        if (frequencyUniqueKey == FrequencyUniqueKey.TRANSACTION_DESCRIPTION.value):
+            self.dataframe['frequencyUniqueKey'] = self.dataframe[frequencyUniqueKey]
+        elif (frequencyUniqueKey == FrequencyUniqueKey.CATEGORY.value):
+            self.dataframe['frequencyUniqueKey'] = self.dataframe[frequencyUniqueKey]
+        else:
+            # set the 'ferquencyUniqueKey' as the clustered transactionDescription based on the distance metric
+            # key->value = transactinDiscription -> clusterId(for the string clustering)
+            stringClusterMap = self.__getStringClusterMap(self.frequencyOption)
+            self.dataframe['frequencyUniqueKey'] = self.dataframe['transactionDescription'].map(
+                stringClusterMap)
+
+        # add a 'frequency' column group by the frequencyUniqueKey and transactionDate Columns
+        frequency = self.dataframe.groupby(
+            'frequencyUniqueKey').apply(self.__getFrequencyOfGroup)['frequency']
+        print('frequency::::', frequency)
+        self.dataframe['frequency'] = self.dataframe['frequencyUniqueKey'].map(frequency)
+
+    def __getFrequencyOfGroup(self, dataGroup) -> pd.Series:
+        '''
+        Helper function used for calculate frequency
+        '''
+        numberOfTransaction = dataGroup.shape[0]
+        firstTransactionDate = dataGroup['transactionDate'].min()
+        lastTransactionDate = dataGroup['transactionDate'].max()
+        length = (lastTransactionDate - firstTransactionDate).days
+        if (numberOfTransaction == 1):
+            frequency = -1
+        elif (length == 0):
+            frequency = 0
+        else:
+            frequency = numberOfTransaction/length
+            # assert frequency != 0
+        return pd.Series({'frequency': frequency})
+
+    def __getStringClusterMap(self, frequencyOption: FrequencyOption):
+        '''
+        return a dictionary map string to clusterId like this: {'save the charge': 1, 'subway': 2,...}
+        frequencyOption: should provide the information about how the linkage
+        '''
+        distanceMeasure = frequencyOption.getDistanceMeasure()
+        linkageMethod = frequencyOption.getLinkageMethod()
+        numberOfCluster = frequencyOption.getNumberOfCluster()
+        assert (distanceMeasure != None)
+        assert (linkageMethod != None)
+        assert (numberOfCluster != None)
+
+        clusterer = self.linkageBasedStringClusterers[distanceMeasure]
+        # it should been preloaded when initialise the TransactionDataset Class
+        assert isinstance(clusterer, LinkageBasedStringCluster)
+        # get an aligned string list with unique strings an aligned clusterid, based on the linkageMethod and numberOfCluster
+        # assert their length should be the same
+        # assert the value in string list should be unique
+        # assert the value in string list should cover the value in transactionDescription Column (not implemented)
+        if clusterer.getClusterInfo()['linkageMethod'] != linkageMethod:
+            # update linkage method if need
+            clusterer.setLinkageMethod(linkageMethod)
+        clusterStringList = clusterer.getDataList()
+        clustereIdList = clusterer.getClusterIdList(numberOfCluster)
+        assert len(clusterStringList) == len(clustereIdList), 'something wrong'
+        assert len(clusterStringList) == len(
+            set(clusterStringList)), 'something wrong'
+        assert self.getColumn('transactionDescription').isin(
+            set(clusterStringList)).all(), 'something wrong'
+
+        clusterStringMap = dict(zip(clusterStringList, clustereIdList))
+        return clusterStringMap
 
     def __convertColumnNameToCammelCase(self) -> bool:
         '''
