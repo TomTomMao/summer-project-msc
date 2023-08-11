@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import pdist
+from sklearn.metrics import pairwise_distances
 import jellyfish  # string distance functinos
 # reference for jellyfish: https://github.com/jamesturk/jellyfish/blob/main/docs/index.md
 
@@ -260,7 +261,7 @@ class LinkageBasedStringCluster(StringCluster):
             self.distanceMetric, False)
         distanceMatrixParallel = self._pdistParallel(
             list(self.preprocessedStringArray[:, 0]), distanceFunction=distanceFunction, num_workers=4)
-
+    
         if self.testMode:
             vectorisedDistanceFunction = self._getDistanceFunction(
                 self.distanceMetric, True)

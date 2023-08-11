@@ -3,8 +3,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 from typing import Union
 from enum import Enum
-from Cluster import LinkageBasedStringCluster
-from stringPreprocessor import preprocess
+from app.Cluster import LinkageBasedStringCluster
+from app.stringPreprocessor import preprocess
 
 
 class FrequencyUniqueKey(Enum):
@@ -129,7 +129,7 @@ class TransactionDataset:
         Set the frequency option, update the frequency column, frequency Unique key Column. if frequency is based on clustering, algorithm will be run
         '''
         self.frequencyOption = newFrequencyOption
-        self.__updateFrequency
+        self.__updateFrequency()
 
     def __updateFrequency(self):
         '''
