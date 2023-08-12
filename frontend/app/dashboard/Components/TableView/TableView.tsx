@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
-import { TransactionData, RFMData, TransactionDataAttrs } from "../../utilities/DataObject";
+import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObject";
 import { PublicScale, PublicValueGetter } from "../../utilities/types";
 
 export interface DescriptionAndIsCredit {
@@ -42,6 +42,8 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                         <td>{transactionData.transactionDescription}</td>
                         <td>{transactionData.transactionType}</td>
                         <td>{transactionData.date?.toDateString()}</td>
+                        <td>{transactionData.frequency}</td>
+                        <td>{transactionData.frequencyUniqueKey}</td>
                     </tr>)
             })
         )
@@ -76,6 +78,8 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                         <td><button onClick={() => handleClickColumnName('transactionDescription')}>transactionDescription {sortingKey === 'transactionDescription' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                         <td><button onClick={() => handleClickColumnName('transactionType')}>transactionType {sortingKey === 'transactionType' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                         <td><button onClick={() => handleClickColumnName('date')}>date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('frequency')}>frequency {sortingKey === 'frequency' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button onClick={() => handleClickColumnName('frequencyUniqueKey')}>frequencyUniqueKey {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                     </tr>
                 </thead>
                 <tbody>

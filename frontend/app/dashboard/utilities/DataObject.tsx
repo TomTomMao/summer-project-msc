@@ -31,7 +31,7 @@ export class TransactionData {
         category: string,
         locationCity: string,
         locationCountry: string,
-        frequency:number,
+        frequency: number,
         frequencyUniqueKey: string) {
 
         this.transactionNumber = transactionNumber;
@@ -44,8 +44,8 @@ export class TransactionData {
         this.category = category;
         this.locationCity = locationCity;
         this.locationCountry = locationCountry;
-        this.frequency=frequency;
-        this.frequencyUniqueKey=frequencyUniqueKey
+        this.frequency = frequency;
+        this.frequencyUniqueKey = frequencyUniqueKey
     }
     static getColumnNames = function (): TransactionDataAttrs[] {
         Object.getOwnPropertyNames(TransactionData)
@@ -78,7 +78,7 @@ export class TransactionData {
                     return (a[key] as number) - (b[key] as number);
                 }
                 // string can be convert to number
-            } else if (key === 'transactionNumber') {
+            } else if (key === 'transactionNumber' || key === 'frequencyUniqueKey') {
                 return (a: TransactionData, b: TransactionData) => {
                     return parseInt(a[key]) - parseInt(b[key]);
                 }
@@ -93,7 +93,7 @@ export class TransactionData {
                 return (a: TransactionData, b: TransactionData) => {
                     return (b[key] as number) - (a[key] as number);
                 }
-            } else if (key === 'transactionNumber') {
+            } else if (key === 'transactionNumber' || key === 'frequencyUniqueKey') {
                 return (a: TransactionData, b: TransactionData) => {
                     return parseInt(b[key]) - parseInt(a[key]);
                 }

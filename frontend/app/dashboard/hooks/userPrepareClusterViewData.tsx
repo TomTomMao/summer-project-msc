@@ -28,7 +28,6 @@ export function usePrepareClusterViewData(transactionDataArr: TransactionData[] 
             throw Error('invalid colour')
         }
 
-        console.log('clusterview 2 colourData:', colourData)
         return {
             xData: transactionDataArr.map(transactionData => transactionData[xLable]),
             yData: transactionDataArr.map(transactionData => transactionData[yLable]),

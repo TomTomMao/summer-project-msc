@@ -6,3 +6,4 @@ def preprocess(string):
     processed_string = string.strip().lower()
     processed_string = ''.join([c for c in processed_string if c.isalnum() or c.isspace()])
     return processed_string
+

@@ -124,7 +124,7 @@ class LinkageBasedStringCluster(StringCluster):
     # don't forget update the doc for class
 
     VALID_LINKAGE_METHOD = ['average', 'single',
-                            'complete', 'weigthed', 'centroid', 'median', 'ward']
+                            'complete', 'weighted', 'centroid', 'median', 'ward']
 
     def __init__(self, dataList: list[str], targetNumberOfCluster: int, distanceMetric: str, linkageMethod: str, stringPreprocessor: Callable[[str], str], testMode=False):
         '''
@@ -391,7 +391,7 @@ class LinkageBasedStringCluster(StringCluster):
             return True
         else:
             raise ValueError(
-                f"invalid distance metric: {linkageMethod}, must be on of {','.join(LinkageBasedStringCluster.VALID_LINKAGE_METHOD)}"
+                f"invalid linkage metric: {linkageMethod}, must be on of {','.join(LinkageBasedStringCluster.VALID_LINKAGE_METHOD)}"
             )
 
     def _validateStringPreprocessor(self, stringPreprocessor: Callable[[str], str]) -> bool:
