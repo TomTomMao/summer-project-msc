@@ -3,6 +3,7 @@ import * as clusterViewSlice from '@/app/dashboard/components/ClusterView/cluste
 import { useState } from "react";
 import assert from "assert";
 import { FrequencyUniqueKeyConfig } from "../../utilities/dataAgent";
+import { Button } from "../Button";
 
 
 export function FrequencyControlPannel() {
@@ -16,7 +17,11 @@ export function FrequencyControlPannel() {
     const [linkageMethod, setLinkageMethod] = useState(initLinkageMethod === null ? 'average' : initLinkageMethod)
     const initNumberOfClusterForString = useAppSelector(clusterViewSlice.selectNumberOfClusterForString)
     const [numberOfClusterForString, setNumberOfClusterForString] = useState(initNumberOfClusterForString === null ? 100 : initNumberOfClusterForString)
-
+    const isChanged = initFrequencyUniqueKey !== frequencyUniqueKey 
+    || initStringClusterAlgorithm !== stringClusterAlgorithm 
+    || initDistanceMeasure !== distanceMeasure
+    || initLinkageMethod !== linkageMethod
+    || initNumberOfClusterForString !== numberOfClusterForString
     const dispatch = useAppDispatch()
 
     const handleReset = () => {
@@ -42,7 +47,6 @@ export function FrequencyControlPannel() {
         }
         dispatch(clusterViewSlice.setFrequency(frequencyConfig))
     }
-
     return (
         <>
             <hr />
@@ -58,8 +62,8 @@ export function FrequencyControlPannel() {
                     onChangeNumberOfClusterForString={setNumberOfClusterForString}
                 />
                 <hr />
-                <button onClick={handleReset}>reset</button>
-                <button onClick={handleSave}>save</button>
+                <Button onClick={handleReset} available={isChanged} >reset</Button>
+                <Button onClick={handleSave} available={isChanged}>save</Button>
             </div>
             <hr />
         </>

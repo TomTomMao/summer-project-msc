@@ -6,6 +6,7 @@
 .infoTable td {
     border: 1px black solid;
 }
+
 .infoTable {
     font-size: 10px;
 }
@@ -14,19 +15,33 @@
     font-size: 10px;
 }
 
-button {
+.hoverableButton,button
+ {
     border: black 1px solid;
     background-color: rgb(197, 197, 197);
     font-size: 10px;
     border-radius: 2px;
     padding: 0.3em 1em
 }
-button:hover {
+
+.hoverableButton:hover,button:hover
+ {
     background-color: rgb(231, 255, 255);
     transition: 0.2s;
 }
 
-
+.inavailableButton {
+    border: black 1px solid;
+    background-color: rgb(197, 197, 197);
+    color: gray;
+    font-size: 10px;
+    border-radius: 2px;
+    padding: 0.3em 1em;
+    cursor: not-allowed;
+}
+.inavailableButton:hover{
+    background-color: rgb(197, 197, 197);
+}
 /* controllpannel */
 .controlPannelFolderableContainer {
     background-color: rgb(197, 197, 197);
@@ -35,24 +50,29 @@ button:hover {
     padding-bottom: 0.3em;
     margin-left: 3em;
 }
+
 .controlPannelFolderableContainer button {
     background-color: rgb(198, 198, 198);
     color: black;
     border-radius: 0.2em;
-    border:0px;
-    margin:auto
+    border: 0px;
+    margin: auto
 }
+
 .controlPannelFolderableContainer button:hover {
     background-color: rgb(231, 255, 255);
     color: black;
 }
-.controlPannel{
+
+.controlPannel {
     padding-bottom: 0.5em;
 }
+
 .controlPannel table {
     margin: auto;
     font-size: 12px;
 }
+
 .controlPannelSubtitle {
     margin-left: 1em;
     font-size: 16px;

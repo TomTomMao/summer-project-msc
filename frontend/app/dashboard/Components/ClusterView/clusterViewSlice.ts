@@ -8,7 +8,7 @@ export type ValidClusterMetrics =
   | "transactionAmount"
   | "category"
   | "frequency";
-export type ValidColours = "category" | "cluster";
+export type ValidColours = "category" | "cluster" | "frequency" | "frequencyUniqueKey";
 type ClusterMetric = "transactionAmount" | "category" | "frequency";
 type ClustererConfig = {
   metric1: ClusterMetric;

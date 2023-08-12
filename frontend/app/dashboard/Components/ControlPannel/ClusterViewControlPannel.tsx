@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { useState } from "react";
+import { CSSProperties, useState } from "react";
 import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
+import { Button } from "../Button";
 
 export default function ClusterViewControlPannel() {
     return (
@@ -71,6 +72,7 @@ function ClusterViewMappingControlPannel() {
                             <select name="" id="" value={colour} onChange={e => handleChangeColour(e.target.value)}>
                                 <option value="cluster">cluster</option>
                                 <option value="category">category</option>
+                                <option value="frequencyUniqueKey">frequencyUniqueKey</option>
                             </select>
                         </td>
                     </tr>
@@ -110,6 +112,7 @@ function ClusterAlgorithmControlPannel() {
     const [numberOfCluster, setNumberOfCluster] = useState(initNumberOfCluster);
     const [metric1, setMetric1] = useState(initMetric1);
     const [metric2, setMetric2] = useState(initMetric2);
+    const isChanged = initNumberOfCluster !== numberOfCluster || initMetric1 !== metric1 || initMetric2 !== metric2
     const resetTable = () => {
         setNumberOfCluster(initNumberOfCluster);
         setMetric1(initMetric1);
@@ -154,10 +157,10 @@ function ClusterAlgorithmControlPannel() {
                     </tr>
                     <tr>
                         <td>
-                            <button onClick={resetTable}>reset</button>
+                            <Button onClick={resetTable} available={isChanged}>reset</Button>
                         </td>
                         <td>
-                            <button onClick={saveTable}>save</button>
+                            <Button onClick={saveTable} available={isChanged}>save</Button>
                         </td>
                     </tr>
                 </tbody>
@@ -166,4 +169,5 @@ function ClusterAlgorithmControlPannel() {
         </>
     )
 }
+
 
