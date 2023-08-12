@@ -3,8 +3,9 @@ import { useEffect, useState } from "react"
 import { ClusterData } from "../utilities/clusterDataObject"
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as clusterViewSlice from "../components/ClusterView/clusterViewSlice"
+import { TransactionData } from "../utilities/DataObject";
 
-export default function useClusterData() {
+export default function useClusterData(transactionDataArr: TransactionData[]) {
     const [clusterData, setClusterData] = useState<Array<ClusterData>>([]);
     const numberOfCluster = useAppSelector(clusterViewSlice.selectNumberOfCluster);
     const metric1 = useAppSelector(clusterViewSlice.selectMetric1);
@@ -18,6 +19,7 @@ export default function useClusterData() {
             console.log(error)
             setClusterData([]);
         })
-    }, [numberOfCluster, metric1, metric2])
+    }, [numberOfCluster, metric1, metric2, transactionDataArr])
+
     return clusterData
 }

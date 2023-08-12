@@ -4,10 +4,10 @@ import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
 
 export default function ClusterViewControlPannel() {
     return (
-        <div>
+        <>
             <div><ClusterViewMappingControlPannel></ClusterViewMappingControlPannel></div>
             <div><ClusterAlgorithmControlPannel></ClusterAlgorithmControlPannel></div>
-        </div>
+        </>
     )
 }
 
@@ -76,17 +76,22 @@ function ClusterViewMappingControlPannel() {
                     </tr>
                     <tr>
                         <td>xScale</td>
-                        <select name="" id="" value={xScale} onChange={e => handleChangeXScale(e.target.value)}>
-                            <option value="log">log</option>
-                            <option value="linear">linear</option>
-                        </select>
+                        <td>
+                            <select name="" id="" value={xScale} onChange={e => handleChangeXScale(e.target.value)}>
+                                <option value="log">log</option>
+                                <option value="linear">linear</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td>yScale</td>
-                        <select name="" id="" value={yScale} onChange={e => handleChangeYScale(e.target.value)}>
-                            <option value="log">log</option>
-                            <option value="linear">linear</option>
-                        </select>
+                        <td>
+
+                            <select name="" id="" value={yScale} onChange={e => handleChangeYScale(e.target.value)}>
+                                <option value="log">log</option>
+                                <option value="linear">linear</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <td><button onClick={handleSwap}>swap</button></td>
@@ -157,6 +162,8 @@ function ClusterAlgorithmControlPannel() {
                     </tr>
                 </tbody>
             </table>
+
         </>
     )
 }
+

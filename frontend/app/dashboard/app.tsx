@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useMemo } from "react"
-import { TransactionData, curryCleanFetchedTransactionData, curryCleanFetchedRFMData, RFMData, cleanFetchedITransactionDataFromPythonAPI } from "./utilities/DataObject";
+import { TransactionData } from "./utilities/DataObject";
 import CalendarView3 from "./components/CalendarView3/CalendarView3";
 import TableView from "./components/TableView/TableView";
 import { temporalValueGetter } from "./utilities/consts/valueGetter";
@@ -24,17 +24,20 @@ import useClusterData from "./hooks/useClusterData";
 import { usePrepareClusterViewData } from "./hooks/userPrepareClusterViewData";
 import { usePrepareClusterViewLayout } from "./hooks/usePrepareClusterViewLayout";
 
+import * as dataAgent from './utilities/dataAgent'
+import { useTransactionDataArr } from "./hooks/useTransactionData";
+import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyControlPannel";
+
 // used for fixing the plotly scatter plot 'self not found' error
 const ClusterView2 = dynamic(
     () => import("./components/ClusterView/ClusterView2"),
     { ssr: false }
 )
 
-
 export default function App() {
-    const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
+    // const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
     const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set()) // cluster view's points in the brusher
-
+    const transactionDataArr = useTransactionDataArr();
     // cluster view's initial y axis's scale
     const [clusterViewValueGetter, setClusterViewValueGetter] = useState(temporalValueGetter);
 
@@ -77,18 +80,6 @@ export default function App() {
     }, [colourDomain])
     useEffect(() => { console.log('colourScale at app.tsx changed') }, [colourScale])
 
-    useEffect(() => {
-        // fetch the data and update the data state
-        fetchData(parseTime).then(
-            (data) => {
-                const { transactionDataArr } = data;
-                setTransactionDataArr(transactionDataArr);
-            }
-        );
-    }, []);
-
-    // set data for cluster
-
     // expanding handler
     /**
      * tell the components which are wrapped inside the expandablecontainer it is expanded or folded
@@ -109,7 +100,7 @@ export default function App() {
             }
         }
     }
-    const clusterDataArr = useClusterData()
+    const clusterDataArr = useClusterData(transactionDataArr)
     const clusterViewDataPrepared = usePrepareClusterViewData(transactionDataArr, clusterDataArr, colourScale)
     const clusterViewLayoutPrepared = usePrepareClusterViewLayout();
     if (transactionDataArr === null || clusterViewDataPrepared === null) {
@@ -171,41 +162,13 @@ export default function App() {
                     handleSelectIndex={handleSelectIndex}
                 ></ClusterView2>
                 <ClusterViewControlPannel></ClusterViewControlPannel>
+                <FrequencyControlPannel/>
             </div>
         )
     }
 
 }
 
-
-/**
- * fetch transactiondata and rfm data from backend, transfer them into TransactionData[] and RFMData[] 
- * @param setTransactionDataArr used for update the transac
- * @param setRFMDataArr 
- * @param parseTime 
- */
-async function fetchData(parseTime: (dateString: string) => Date | null) {
-    // fetch the transaction data
-
-    try {
-        const fetchedTransactionDataResponse = await fetch(`${apiUrl}/transactionData`);
-        const fetchedTransactionData = await fetchedTransactionDataResponse.json();
-        if (Array.isArray(fetchedTransactionData) === false) {
-            console.log(fetchedTransactionData)
-            throw new Error("wrong data type, fetched data should be an array");
-        }
-        console.log(fetchedTransactionData)
-        // const transactionDataArr: TransactionData[] = fetchedTransactionData.map(curryCleanFetchedTransactionData('TransactionData', parseTime));
-        const transactionDataArr = fetchedTransactionData.map(cleanFetchedITransactionDataFromPythonAPI)
-
-        return { transactionDataArr }
-    } catch (error) {
-        console.log(error);
-        console.log(apiUrl)
-        throw error;
-
-    }
-}
 
 function getExpandableContainerStyle(styleType: 'initStyle' | 'expandedStyle'): React.CSSProperties {
     if (styleType === 'initStyle') {

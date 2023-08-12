@@ -39,7 +39,7 @@ def getTransactionData():
 @app.get("/transactionData/updateFrequencyInfo")
 def updateUniqueKey(frequencyUniqueKey: FrequencyUniqueKey,  metric1: str, metric2: str, numberOfCluster: int, distanceMeasure: Union[DistanceMeasure, None]=None, linkageMethod: Union[LinkageMethod, None]=None, numberOfClusterForString: Union[int, None]=None):
     # update the frequencyUniqueKey, and return the transaction data
-    if (frequencyUniqueKey==FrequencyUniqueKey.CLUSTERED_TRANSACTION_DESCRIPTION) and distanceMeasure==None or linkageMethod == None or numberOfClusterForString == None:
+    if (frequencyUniqueKey==FrequencyUniqueKey.CLUSTERED_TRANSACTION_DESCRIPTION) and (distanceMeasure==None or linkageMethod == None or numberOfClusterForString == None):
         raise HTTPException(status_code=404, detail=f"frequencyUnique key is clusteredTransactionDescription, so distanceMeasure, linkagemethod and numberOfClusterForString must be provided")
     
     newFrequencyOption = FrequencyOption(frequencyUniqueKey, distanceMeasure, linkageMethod, numberOfClusterForString)

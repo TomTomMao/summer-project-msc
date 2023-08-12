@@ -9,6 +9,38 @@ export type ValidClusterMetrics =
   | "category"
   | "frequency";
 export type ValidColours = "category" | "cluster";
+type ClusterMetric = "transactionAmount" | "category" | "frequency";
+type ClustererConfig = {
+  metric1: ClusterMetric;
+  metric2: ClusterMetric;
+  numberOfCluster: number;
+};
+export type StringClusteringAlgorithm = 'linkage'
+export type DistanceMeasure =
+  | "levenshtein"
+  | "damerauLevenshtein"
+  | "hamming"
+  | "jaroSimilarity"
+  | "jaroWinklerSimilarity"
+  | "MatchRatingApproach";
+
+  export type LinkageMethod =
+  | "single"
+  | "complete"
+  | "average"
+  | "weighted"
+  | "centroid"
+  | "median"
+  | "ward";
+export type FrequencyConfig =
+  | { frequencyUniqueKey: "transactionDescription" | "category" }
+  | {
+      frequencyUniqueKey: "clusteredTransactionDescription";
+      stringClusterAlgorithm: StringClusteringAlgorithm;
+      distanceMeasure: DistanceMeasure;
+      linkageMethod: LinkageMethod;
+      numberOfClusterForString: number;
+    };
 
 interface ClusterViewState {
   // for usePrepareClusterViewLayout
@@ -25,9 +57,8 @@ interface ClusterViewState {
   mainAxis: "log" | "linear";
 
   // for useClusterData
-  numberOfCluster: number;
-  metric1: ValidClusterMetrics;
-  metric2: ValidClusterMetrics;
+  clusterConfig: ClustererConfig;
+  frequencyConfig: FrequencyConfig;
 
   // for usePrepareClusterViewData
   clusterData: Array<ClusterData>;
@@ -48,9 +79,15 @@ const initialState: ClusterViewState = {
 
   mainAxis: "log",
 
-  numberOfCluster: 5,
-  metric1: "transactionAmount",
-  metric2: "category",
+  clusterConfig: {
+    numberOfCluster: 5,
+    metric1: "transactionAmount",
+    metric2: "category",
+  },
+
+  frequencyConfig: {
+    frequencyUniqueKey: "transactionDescription",
+  },
 
   clusterData: [],
   colour: "cluster",
@@ -75,17 +112,8 @@ export const clusterViewSlice = createSlice({
     fold: (state) => {
       state.isExpanded = false;
     },
-    setClusterArguments: (
-      state,
-      action: PayloadAction<{
-        numberOfCluster: ClusterViewState["numberOfCluster"];
-        metric1: ClusterViewState["metric1"];
-        metric2: ClusterViewState["metric2"];
-      }>
-    ) => {
-      state.numberOfCluster = action.payload.numberOfCluster;
-      state.metric1 = action.payload.metric1;
-      state.metric2 = action.payload.metric2;
+    setClusterArguments: (state, action: PayloadAction<ClustererConfig>) => {
+      state.clusterConfig = action.payload;
     },
     setClusterData: (state, action: PayloadAction<ClusterData[]>) => {
       state.clusterData = action.payload;
@@ -113,6 +141,9 @@ export const clusterViewSlice = createSlice({
       state.xLog = state.yLog;
       state.yLog = oldXLog;
     },
+    setFrequency(state, action: PayloadAction<FrequencyConfig>) {
+      state.frequencyConfig = action.payload;
+    },
   },
 });
 
@@ -129,6 +160,7 @@ export const {
   setXScale,
   setYScale,
   swap,
+  setFrequency,
 } = clusterViewSlice.actions;
 
 // export the selectors
@@ -161,23 +193,77 @@ export const selectCurrentContainerWidth = function (state: RootState) {
 };
 
 export const selectNumberOfCluster = function (state: RootState) {
-  return state.clusterView.numberOfCluster;
+  return state.clusterView.clusterConfig.numberOfCluster;
 };
 
 export const selectMetric1 = function (state: RootState) {
-  return state.clusterView.metric1;
+  return state.clusterView.clusterConfig.metric1;
 };
 
 export const selectMetric2 = function (state: RootState) {
-  return state.clusterView.metric2;
+  return state.clusterView.clusterConfig.metric2;
+};
+
+export const selectFrequencyUniqueKey = function (state: RootState) {
+  return state.clusterView.frequencyConfig.frequencyUniqueKey;
+};
+
+export const selectStringClusterAlgorithm = function (
+  state: RootState
+): StringClusteringAlgorithm | null {
+  if (
+    state.clusterView.frequencyConfig.frequencyUniqueKey ===
+    "clusteredTransactionDescription"
+  ) {
+    return state.clusterView.frequencyConfig.stringClusterAlgorithm;
+  } else {
+    return null;
+  }
+};
+
+export const selectDistanceMeasure = function (
+  state: RootState
+): DistanceMeasure | null {
+  if (
+    state.clusterView.frequencyConfig.frequencyUniqueKey ===
+    "clusteredTransactionDescription"
+  ) {
+    return state.clusterView.frequencyConfig.distanceMeasure;
+  } else {
+    return null;
+  }
+};
+
+export const selectLinkageMethod = function (state: RootState): LinkageMethod | null {
+  if (
+    state.clusterView.frequencyConfig.frequencyUniqueKey ===
+    "clusteredTransactionDescription"
+  ) {
+    return state.clusterView.frequencyConfig.linkageMethod;
+  } else {
+    return null;
+  }
+};
+
+export const selectNumberOfClusterForString = function (
+  state: RootState
+): number | null {
+  if (
+    state.clusterView.frequencyConfig.frequencyUniqueKey ===
+    "clusteredTransactionDescription"
+  ) {
+    return state.clusterView.frequencyConfig.numberOfClusterForString;
+  } else {
+    return null;
+  }
 };
 
 export default clusterViewSlice.reducer;
 
 export async function getClusterData(
-  numberOfCluster: ClusterViewState["numberOfCluster"],
-  metric1: ClusterViewState["metric1"],
-  metric2: ClusterViewState["metric2"]
+  numberOfCluster: ClusterViewState["clusterConfig"]["numberOfCluster"],
+  metric1: ClusterViewState["clusterConfig"]["metric1"],
+  metric2: ClusterViewState["clusterConfig"]["metric2"]
 ) {
   const url =
     apiUrl +

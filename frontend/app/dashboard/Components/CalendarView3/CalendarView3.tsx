@@ -187,8 +187,8 @@ function MonthView(props: MonthViewProps) {
                 valueGetter: props.pieDayViewValueGetter,
                 containerSize: props.dayViewContainerSize,
             }
-            return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`}>
-                {glyphType === 'pie' ? <PieDayView {...pieDayViewProps} key={`${month}-${i + 1}`} /> : <BarDayView {...barDayViewProps} key={`${month}-${i + 1}`} />}
+            return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`} key={`${month}-${i + 1}`}>
+                {glyphType === 'pie' ? <PieDayView {...pieDayViewProps} /> : <BarDayView {...barDayViewProps}  />}
             </td>
         })}
     </tr>)
