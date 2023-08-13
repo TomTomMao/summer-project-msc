@@ -105,11 +105,13 @@ export default function App() {
     const clusterViewDataPrepared = usePrepareClusterViewData(transactionDataArr, clusterDataArr, colourScale)
     const clusterViewLayoutPrepared = usePrepareClusterViewLayout();
     const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)
+    const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
     const selectedGlyphTransactionNumberSet = useMemo(() => {
         if (detailDay === null) { return new Set<TransactionData['transactionNumber']>() }
         const setOfTheDay = new Set<TransactionData['transactionNumber']>()
         transactionDataArr.forEach(transactionData => {
-            if (transactionData.date.getFullYear() === detailDay.year && transactionData.date.getMonth() + 1 === detailDay.month && transactionData.date.getDate() === detailDay.day) {
+            if ((isSuperPositioned || transactionData.date.getFullYear() === detailDay.year) && transactionData.date.getMonth() + 1 === detailDay.month && transactionData.date.getDate() === detailDay.day) {
+                // if superpositioned, don't check year
                 setOfTheDay.add(transactionData.transactionNumber)
             }
         })

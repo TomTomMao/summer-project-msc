@@ -27,7 +27,7 @@ const initialState: CalendarViewState = {
   isExpanded: false,
   detailDay: null,
   currentYear: 2016,
-  isSuperPositioned: true,
+  isSuperPositioned: false,
 };
 
 export const calendarViewSlice = createSlice({
