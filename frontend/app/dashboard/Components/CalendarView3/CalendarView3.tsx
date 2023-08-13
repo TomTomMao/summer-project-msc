@@ -131,7 +131,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                         }} />)}
                 </tbody>
             </table>
-            <div>
+            {/* <div>
                 {detailDay !== null && <FolderableContainer label={`detail of the transaction happened in ${currentYear}-${detailDay.month}-${detailDay.day}`} initIsFolded={false}><DetailView day={detailDay.day}
                     month={detailDay.month}
                     currentYear={detailDay.year}
@@ -140,7 +140,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                     colourValueGetter={colourValueGetter}
                     onClearDetail={() => dispatch(calendarViewSlice.clearDetailDay())}
                 /></FolderableContainer>}
-            </div>
+            </div> */}
         </ >
     )
 }

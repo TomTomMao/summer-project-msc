@@ -27,6 +27,7 @@ import { usePrepareClusterViewLayout } from "./hooks/usePrepareClusterViewLayout
 import * as dataAgent from './utilities/dataAgent'
 import { useTransactionDataArr } from "./hooks/useTransactionData";
 import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyControlPannel";
+import { TableViewCollection } from "./components/TableView/TableViewCollection";
 
 // used for fixing the plotly scatter plot 'self not found' error
 const ClusterView2 = dynamic(
@@ -103,6 +104,17 @@ export default function App() {
     const clusterDataArr = useClusterData(transactionDataArr)
     const clusterViewDataPrepared = usePrepareClusterViewData(transactionDataArr, clusterDataArr, colourScale)
     const clusterViewLayoutPrepared = usePrepareClusterViewLayout();
+    const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)
+    const selectedGlyphTransactionNumberSet = useMemo(() => {
+        if (detailDay === null) { return new Set<TransactionData['transactionNumber']>() }
+        const setOfTheDay = new Set<TransactionData['transactionNumber']>()
+        transactionDataArr.forEach(transactionData => {
+            if (transactionData.date.getFullYear() === detailDay.year && transactionData.date.getMonth() + 1 === detailDay.month && transactionData.date.getDate() === detailDay.day) {
+                setOfTheDay.add(transactionData.transactionNumber)
+            }
+        })
+        return setOfTheDay
+    }, [detailDay, transactionDataArr])
     if (transactionDataArr === null || clusterViewDataPrepared === null) {
         return <>loading...</>
     } else if (colourScale === null) {
@@ -151,18 +163,26 @@ export default function App() {
                         </ExpandableContainer>
                     </div>
                 </div>
-                <FolderableContainer label="brushed data" initIsFolded={true}>
+                {/* <FolderableContainer label="brushed data" initIsFolded={true}>
                     <TableView transactionDataArr={transactionDataArr}
                         handleClearSelect={() => setBrushedTransactionNumberSet(new Set())}
                         transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
                         colourValueGetter={PUBLIC_VALUEGETTER.colour}></TableView>
-                </FolderableContainer>
+                </FolderableContainer> */}
                 <ClusterView2 data={clusterViewDataPrepared}
                     layout={clusterViewLayoutPrepared}
                     handleSelectIndex={handleSelectIndex}
                 ></ClusterView2>
                 <ClusterViewControlPannel></ClusterViewControlPannel>
-                <FrequencyControlPannel/>
+                <FrequencyControlPannel />
+                <TableViewCollection transactionDataArr={transactionDataArr}
+                    brushedTransactionNumberSet={brushedTransactionNumberSet}
+                    handleClearBrush={() => setBrushedTransactionNumberSet(new Set())}
+                    selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
+                    handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
+                    colourScale={colourScale}
+                    colourValueGetter={PUBLIC_VALUEGETTER.colour}
+                ></TableViewCollection>
             </div>
         )
     }

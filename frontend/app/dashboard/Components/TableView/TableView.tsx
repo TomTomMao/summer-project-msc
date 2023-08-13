@@ -68,18 +68,18 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
             <table className="infoTable">
                 <thead>
                     <tr>
-                        <td><button onClick={() => handleClickColumnName('transactionNumber')}>transactionNumber {sortingKey === 'transactionNumber' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('balance')}>balance {sortingKey === 'balance' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('category')}>category {sortingKey === 'category' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('creditAmount')}>creditAmount {sortingKey === 'creditAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('debitAmount')}>debitAmount {sortingKey === 'debitAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('locationCity')}>locationCity {sortingKey === 'locationCity' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('locationCountry')}>locationCountry {sortingKey === 'locationCountry' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('transactionDescription')}>transactionDescription {sortingKey === 'transactionDescription' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('transactionType')}>transactionType {sortingKey === 'transactionType' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('date')}>date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('frequency')}>frequency {sortingKey === 'frequency' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button onClick={() => handleClickColumnName('frequencyUniqueKey')}>frequencyUniqueKey {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('transactionNumber')}>id {sortingKey === 'transactionNumber' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('balance')}>balance {sortingKey === 'balance' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('category')}>category {sortingKey === 'category' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('creditAmount')}>credit {sortingKey === 'creditAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('debitAmount')}>debit {sortingKey === 'debitAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('locationCity')}>City {sortingKey === 'locationCity' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('locationCountry')}>Country {sortingKey === 'locationCountry' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('transactionDescription')}>Description {sortingKey === 'transactionDescription' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('transactionType')}>Type {sortingKey === 'transactionType' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('date')}>date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('frequency')}>frequency {sortingKey === 'frequency' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('frequencyUniqueKey')}>frequencyUniqueKey {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                     </tr>
                 </thead>
                 <tbody>
