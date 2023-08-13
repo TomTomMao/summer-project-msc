@@ -116,7 +116,7 @@ export default function App() {
             }
         })
         return setOfTheDay
-    }, [detailDay, transactionDataArr])
+    }, [detailDay, transactionDataArr, isSuperPositioned])
     if (transactionDataArr === null || clusterViewDataPrepared === null) {
         return <>loading...</>
     } else if (colourScale === null) {
@@ -153,6 +153,7 @@ export default function App() {
                                     <div className="controlPannel"><CalendarViewControlPannel /></div>
                                 </FolderableContainer>
                             </div>
+                            <CalendarViewYearController></CalendarViewYearController>
                             <div className="calendarView">
                                 <CalendarView3 transactionDataArr={transactionDataArr}
                                     initCurrentYear={2016}
@@ -209,4 +210,38 @@ function getExpandableContainerStyle(styleType: 'initStyle' | 'expandedStyle'): 
             border: '1px black solid'
         }
     }
+}
+
+function CalendarViewYearController() {
+    const currentYear = useAppSelector(calendarViewSlice.selectCurrentYear);
+    const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
+    const dispatch = useAppDispatch()
+    const handleChangeCurrentYear = (nextCurrentYear: number) => {
+        dispatch(calendarViewSlice.changeCurrentYear(nextCurrentYear))
+    }
+    const handleChangeIsSuperpositioned = () => {
+        if (isSuperPositioned) {
+            dispatch(calendarViewSlice.disableSuperPosition())
+        } else {
+            dispatch(calendarViewSlice.enableSuperPosition())
+        }
+    }
+    return (
+        <div style={{
+            position: 'absolute',
+            zIndex: 2,
+            left: '40px',
+            top: '5px',
+        }}>
+            <input type="checkbox" name="" id="" value='isSuperPositioned' checked={isSuperPositioned} onChange={handleChangeIsSuperpositioned} />
+            <label htmlFor="isSuperPositioned" style={{ marginRight: '2px' }}>super Positioned</label>
+            <input style={{ width: '60px', height: '100%', border: isSuperPositioned ? '1px gray solid' : '1px black solid', color: isSuperPositioned ? 'gray' : 'black' }}
+                disabled={isSuperPositioned}
+                type="number"
+                name=""
+                id=""
+                value={currentYear}
+                onChange={e => handleChangeCurrentYear(parseInt(e.target.value))} />
+        </div>
+    )
 }

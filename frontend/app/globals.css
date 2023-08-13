@@ -44,40 +44,16 @@
 }
 /* controllpannel */
 .controlPannelFolderableContainer {
-    background-color: rgb(197, 197, 197);
-    padding: 0.1em 0.4em;
     border-radius: 0.2em;
-    padding-bottom: 0.3em;
-    margin-left: 3em;
-}
-
-.controlPannelFolderableContainer button {
-    background-color: rgb(198, 198, 198);
-    color: black;
-    border-radius: 0.2em;
-    border: 0px;
-    margin: auto
-}
-
-.controlPannelFolderableContainer button:hover {
-    background-color: rgb(231, 255, 255);
-    color: black;
+    margin-left: 16em;
+    margin-top: 3px;
 }
 
 .controlPannel {
-    padding-bottom: 0.5em;
+    
+    background-color: rgb(197, 197, 197);
+    padding: 3px;
 }
-
-.controlPannel table {
-    margin: auto;
-    font-size: 12px;
-}
-
-.controlPannelSubtitle {
-    margin-left: 1em;
-    font-size: 16px;
-}
-
 
 /* float div */
 

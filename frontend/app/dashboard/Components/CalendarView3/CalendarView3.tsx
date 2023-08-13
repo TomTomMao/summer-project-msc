@@ -155,7 +155,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
             <table className="smallLetterTable">
                 <thead>
                     <tr>
-                        <td><input className="w-10" type="number" value={currentYear} onChange={(e) => e.target.value != '2014' && e.target.value != '2023' && handleChangeCurrentYear(parseInt(e.target.value))} /></td>
+                        <td></td>
                         {(Array.from(Array(31).keys())).map(i => <td key={i + 1} style={{ color: detailDay && detailDay.day === i + 1 && detailDay.year === currentYear ? 'red' : 'black' }}>{i + 1}</td>)}
                     </tr>
                 </thead>

@@ -24,7 +24,7 @@ export default function ExpandableContainer(expandableContainerProps: Expandable
     }
     return (
         <div style={isExpand ? expandedStyle : initStyle}>
-            <button style={{position: 'absolute'}} onClick={() => handleSetExpand(!isExpand)}>{isExpand ? '_' : '+'}</button>
+            <button style={{position: 'absolute', top:'5px', left:'5px'}} onClick={() => handleSetExpand(!isExpand)}>{isExpand ? '_' : '+'}</button>
             {children}
         </div>
     )
