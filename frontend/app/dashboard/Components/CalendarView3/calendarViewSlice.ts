@@ -1,6 +1,7 @@
 // reference the document of redux: https://react-redux.js.org/tutorials/typescript-quick-start
 import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Day } from "./CalendarView3";
 interface CalendarViewState {
   glyphType: "bar" | "pie";
   containerWidth: number;
@@ -8,6 +9,7 @@ interface CalendarViewState {
   expandedContainerWidth: number;
   expandedContainerHeight: number;
   isExpanded: boolean;
+  detailDay: Day | null;
 }
 
 const initialState: CalendarViewState = {
@@ -18,6 +20,7 @@ const initialState: CalendarViewState = {
   expandedContainerWidth: 40,
   expandedContainerHeight: 40,
   isExpanded: false,
+  detailDay: null,
 };
 
 export const calendarViewSlice = createSlice({
@@ -36,11 +39,17 @@ export const calendarViewSlice = createSlice({
     fold: (state) => {
       state.isExpanded = false;
     },
+    setDetailDay: (state, action: PayloadAction<Day>) => {
+      state.detailDay = action.payload;
+    },
+    clearDetailDay: (state) => {
+      state.detailDay = null;
+    },
   },
 });
 
 // export the action creators
-export const { setGlyphType, expand, fold } = calendarViewSlice.actions;
+export const { setGlyphType, expand, fold,setDetailDay, clearDetailDay } = calendarViewSlice.actions;
 
 // export the selectors
 export const selectGlyphType = (state: RootState) =>
@@ -55,6 +64,8 @@ export const selectExpandedContainerWidth = (state: RootState) =>
   state.calendarView.expandedContainerWidth;
 export const selectExpandedContainerHeight = (state: RootState) =>
   state.calendarView.expandedContainerHeight;
+export const selectDetailDay = (state: RootState): null | Day =>
+  state.calendarView.detailDay;
 
 // select the current width and height based on isExpand
 export const selectCurrentContainerHeight = function (state: RootState) {

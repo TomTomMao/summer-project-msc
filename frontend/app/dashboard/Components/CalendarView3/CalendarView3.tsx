@@ -9,7 +9,7 @@ import FolderableContainer from "../Containers/FolderableContainer";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView, PieCalendarViewSharedScales, PieCalendarViewValueGetter } from "./DayViews/PieDayView";
 import { barCalendarViewValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
 import { PublicScale, PublicValueGetter } from "../../utilities/types";
-import { useAppSelector } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 
 import * as calendarViewSlice from './calendarViewSlice'
 import { ColourDomainInfo } from "../ColourLegend/colourLegendSlice";
@@ -44,15 +44,16 @@ export type Day = {
 export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, initCurrentYear, colourScale, colourValueGetter }:
     CalendarViewProps) {
     const [currentYear, setCurrentYear] = useState(initCurrentYear);
-    const [detailDay, setDetailDay] = useState<null | Day>(null)
 
     // config
     const currentContainerHeight = useAppSelector(calendarViewSlice.selectCurrentContainerHeight)
     const currentContainerWidth = useAppSelector(calendarViewSlice.selectCurrentContainerWidth)
+    const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)
+    const dispatch = useAppDispatch()
 
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
-        setDetailDay({ day: day, month: month, year: year })
+        dispatch(calendarViewSlice.setDetailDay({ day: day, month: month, year: year }))
     }
 
     const transactionDataMapYMD = useMemo(() => {
@@ -137,7 +138,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
                     transactionDataMapYMD={transactionDataMapYMD}
                     colourScale={colourScale}
                     colourValueGetter={colourValueGetter}
-                    onClearDetail={() => setDetailDay(null)}
+                    onClearDetail={() => dispatch(calendarViewSlice.clearDetailDay())}
                 /></FolderableContainer>}
             </div>
         </ >
