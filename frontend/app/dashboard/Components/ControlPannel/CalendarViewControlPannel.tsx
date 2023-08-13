@@ -9,7 +9,7 @@ import FolderableContainer from "../Containers/FolderableContainer"
  * render the configuration based on the ConfigContext
  * provide buttons for controlling the ConfigContext by using ConfigDispatchContext
  */
-export default function ControlPannel() {
+export default function CalendarViewControlPannel() {
 
     // config for the bar view
     const barDayViewIsSharedBandWidth = useAppSelector(barDayViewSlice.selectIsSharedBandWidth)

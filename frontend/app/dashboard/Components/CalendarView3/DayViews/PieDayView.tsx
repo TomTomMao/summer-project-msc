@@ -1,11 +1,12 @@
 import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
-import { Data, getDataFromTransactionAmountSumByDayYMD, getDataFromTransactionDataMapYMD } from "../CalendarView3";
+import { Data, getDataFromTransactionAmountSumByDayMD, getDataFromTransactionAmountSumByDayYMD, getDataFromTransactionDataMapMD, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
 import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 import { useAppSelector } from "@/app/hooks";
 import * as pieDayViewSlice from "./pieDayViewSlice"
+import * as calendarViewSlice from "../calendarViewSlice"
 let sumArc = 0;
 export type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'],
@@ -36,18 +37,38 @@ export const pieCalendarViewValueGetter: PieCalendarViewValueGetter = {
 export function PieDayView(props: PieDayViewProps) {
     //reference: Holtz, Y. (n.d.). Pie chart with React. Retrieved 17 July 2023, from https://www.react-graph-gallery.com/pie-plot
     const { day, month, currentYear, data, scales, valueGetter, containerSize } = props;
-    const { highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, transactionDataMapYMD, transactionAmountSumMapByDayYMD } = data
+    const { highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, transactionDataMapYMD, transactionAmountSumMapByDayYMD, transactionDataMapMD, transactionAmountSumMapByDayMD } = data
+    const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
+
+    /** 
+     * if isSuperPositioned = true, dayData is an array of all the transactionData whose month and day are the same as props.day and props.month
+     * 
+     * if isSuperPositioned = false, dayData is an array of all the transactionData whose year, month and day are the same as props.day, props.month and props.currentyear
+    */
     const dayData = useMemo(() => {
-        return getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear);
-    }, [day, month, currentYear, transactionDataMapYMD])
+        if (!isSuperPositioned) {
+            return getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear);
+        } else {
+            return getDataFromTransactionDataMapMD(transactionDataMapMD, day, month);
+        }
+    }, [day, month, currentYear, transactionDataMapYMD, transactionDataMapMD, isSuperPositioned])
 
     // configs
     const { containerWidth, containerHeight } = containerSize
 
     // used as the domain for the radius
+    /** 
+     * if isSuperPositioned = true, dayTotalTransactionAmount is the sum of the transactionAmount of all the transactionData whose month and day are the same as props.day and props.month
+     * 
+     * if isSuperPositioned = false, dayTotalTransactionAmount is the sum of the transactionAmount of all the transactionData whose year, month and day are the same as props.day, props.month and props.currentyear
+    */
     const dayTotalTransactionAmount = useMemo(() => {
-        return getDataFromTransactionAmountSumByDayYMD(transactionAmountSumMapByDayYMD, day, month, currentYear)
-    }, [day, month, currentYear, transactionAmountSumMapByDayYMD])
+        if (isSuperPositioned) {
+            return getDataFromTransactionAmountSumByDayMD(transactionAmountSumMapByDayMD, day, month)
+        } else {
+            return getDataFromTransactionAmountSumByDayYMD(transactionAmountSumMapByDayYMD, day, month, currentYear)
+        }
+    }, [day, month, currentYear, transactionAmountSumMapByDayYMD, transactionAmountSumMapByDayMD, isSuperPositioned])
 
     const radiusScaleType: 'linear' | 'log' | 'constant' = useAppSelector(pieDayViewSlice.selectRadiusAxis)
     const { colourScale, linearRadiusScale, logRadiusScale } = scales;

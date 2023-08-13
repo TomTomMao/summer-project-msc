@@ -8,7 +8,7 @@ import { ClusterView } from "./components/ClusterView/ClusterView";
 
 import ColourLegendList from "./components/ColourLegend/ColourLegend";
 import * as d3 from 'd3';
-import ControlPannel from "./components/ControlPannel/ControlPannel";
+import CalendarViewControlPannel from "./components/ControlPannel/CalendarViewControlPannel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
 import { PublicScale } from "./utilities/types";
 import { parseTime, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
@@ -148,7 +148,7 @@ export default function App() {
                         >
                             <div className="controlPannelFolderableContainer floatDiv">
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div className="controlPannel"><ControlPannel /></div>
+                                    <div className="controlPannel"><CalendarViewControlPannel /></div>
                                 </FolderableContainer>
                             </div>
                             <div className="calendarView">

@@ -5,7 +5,6 @@ import * as d3 from 'd3'
 
 import assert from "assert";
 import TableView from "../TableView/TableView";
-import FolderableContainer from "../Containers/FolderableContainer";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView, PieCalendarViewSharedScales, PieCalendarViewValueGetter } from "./DayViews/PieDayView";
 import { barCalendarViewValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
 import { PublicScale, PublicValueGetter } from "../../utilities/types";
@@ -17,12 +16,16 @@ import { ColourDomainInfo } from "../ColourLegend/colourLegendSlice";
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type HighLightedColourDomainValueSetByLegend = Set<ColourDomainInfo['domainValue']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
-type TransactionAmountSumMapByDayYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, number>>>
+type TransactionDataMapMD = d3.InternMap<number, d3.InternMap<number, TransactionData[]>>
+type TransactionAmountSumMapByDayYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, number>>> // used for cacheing, so when need the sum of the day, no need to search through the transactionDataArr
+type TransactionAmountSumMapByDayMD = d3.InternMap<number, d3.InternMap<number, number>> // used for cacheing, so when need the sum of the day, no need to search through the transactionDataArr
 export type Data = {
     transactionDataMapYMD: TransactionDataMapYMD;
+    transactionDataMapMD: TransactionDataMapMD;
     highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
     highLightedColourDomainValueSetByLegend: HighLightedColourDomainValueSetByLegend;
     transactionAmountSumMapByDayYMD: TransactionAmountSumMapByDayYMD
+    transactionAmountSumMapByDayMD: TransactionAmountSumMapByDayMD
 }
 
 type CalendarViewProps = {
@@ -43,30 +46,56 @@ export type Day = {
 
 export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, initCurrentYear, colourScale, colourValueGetter }:
     CalendarViewProps) {
-    const [currentYear, setCurrentYear] = useState(initCurrentYear);
+
+    const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
 
     // config
     const currentContainerHeight = useAppSelector(calendarViewSlice.selectCurrentContainerHeight)
     const currentContainerWidth = useAppSelector(calendarViewSlice.selectCurrentContainerWidth)
     const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)
+    const currentYear = useAppSelector(calendarViewSlice.selectCurrentYear)
     const dispatch = useAppDispatch()
+
+    const handleChangeCurrentYear = (nextCurrentYear: number) => {
+        dispatch(calendarViewSlice.changeCurrentYear(nextCurrentYear))
+    }
 
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
         dispatch(calendarViewSlice.setDetailDay({ day: day, month: month, year: year }))
     }
 
-    const transactionDataMapYMD = useMemo(() => {
+    // used for cache, no need to loop through the entire transactionDataArr in O(n), we can get the data of a day in O(1)
+    const transactionDataMapYMD: TransactionDataMapYMD = useMemo(() => {
         return d3.group(transactionDataArr, d => d.date.getFullYear(), d => d.date.getMonth() + 1, d => d.date.getDate())
     }, [transactionDataArr])
     const transactionAmountSumMapByDayYMD = useMemo(() => {
-        return getGroupedTransactionAmountMapByDay(transactionDataArr)
+        return getGroupedTransactionAmountMapYMD(transactionDataArr)
+    }, [transactionDataArr])
+    const transactionDataMapMD: TransactionDataMapMD = useMemo(() => {
+        return d3.group(transactionDataArr, d => d.date.getMonth() + 1, d => d.date.getDate())
+    }, [transactionDataArr])
+    const transactionAmountSumMapByDayMD = useMemo(() => {
+        return getGroupedTransactionAmountMapMD(transactionDataArr)
     }, [transactionDataArr])
 
     // used for pie glyph's radius
     const { linearRadiusScale, logRadiusScale } = useMemo(() => {
-        const groupedData = getFlatGroupedTransactionAmountByDay(transactionDataArr); // [year, month, day, sumTransactionAmountOfDay]
-        const [radiusMinDomain, radiusMaxDomain] = d3.extent(groupedData, d => d[3])
+        let groupedData: [number, number, number, number][] | [number, number, number][] = [] // // [year, month, day, sumTransactionAmountOfDay] or // [month, day, sumTransactionAmountOfDayForEachYear]
+        let radiusMinDomain: number | undefined // if isSuperpositioned = true, it is the sum of data for all a day of all the year; else for each year 
+        let radiusMaxDomain: number | undefined // if isSuperpositioned = true, it is the sum of data for all a day of all the year; else for each year 
+        if (isSuperPositioned) {
+            groupedData = getFlatGroupedTransactionAmountByDaySuperpositionedYear(transactionDataArr) // [month, day, sumTransactionAmountOfDayForEachYear]
+            const d = d3.extent(groupedData, d => d[2])
+            radiusMinDomain = d[0]
+            radiusMaxDomain = d[1]
+        } else {
+            groupedData = getFlatGroupedTransactionAmountByDay(transactionDataArr); // [year, month, day, sumTransactionAmountOfDay]
+            const d = d3.extent(groupedData, d => d[3])
+            radiusMinDomain = d[0]
+            radiusMaxDomain = d[1]
+        }
+
         if (radiusMinDomain === undefined || radiusMaxDomain === undefined) {
             return { linearRadiusScale: null, logRadiusScale: null }
         } else {
@@ -74,7 +103,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
             const logRadiusScale = d3.scaleLog().domain([radiusMinDomain, radiusMaxDomain]).range([0, currentContainerWidth])
             return { linearRadiusScale, logRadiusScale }
         }
-    }, [transactionDataArr, currentContainerWidth, currentContainerHeight])
+    }, [transactionDataArr, currentContainerWidth, currentContainerHeight, isSuperPositioned])
 
     if (transactionDataArr.length === 0 || linearRadiusScale === null || logRadiusScale === null) {
         return <div>loading</div>
@@ -82,12 +111,14 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     const data: Data = useMemo(() => {
         return {
             transactionDataMapYMD: transactionDataMapYMD,
+            transactionDataMapMD: transactionDataMapMD,
             highLightedTransactionNumberSetByBrusher: highLightedTransactionNumberSetByBrusher,
             highLightedColourDomainValueSetByLegend: highLightedColourDomainValueSetByLegend,
-            transactionAmountSumMapByDayYMD: transactionAmountSumMapByDayYMD
+            transactionAmountSumMapByDayYMD: transactionAmountSumMapByDayYMD,
+            transactionAmountSumMapByDayMD: transactionAmountSumMapByDayMD
         }
     },
-        [transactionDataMapYMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, transactionAmountSumMapByDayYMD])
+        [transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, transactionAmountSumMapByDayYMD, transactionAmountSumMapByDayMD])
 
     // create public height scale for the bar glyph, and pie glyph
     const heightDomain = d3.extent(transactionDataArr, barCalendarViewValueGetter.height); // height for bar glyph
@@ -112,7 +143,7 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
             <table className="smallLetterTable">
                 <thead>
                     <tr>
-                        <td><input className="w-10" type="number" value={currentYear} onChange={(e) => e.target.value != '2014' && e.target.value != '2023' && setCurrentYear(parseInt(e.target.value))} /></td>
+                        <td><input className="w-10" type="number" value={currentYear} onChange={(e) => e.target.value != '2014' && e.target.value != '2023' && handleChangeCurrentYear(parseInt(e.target.value))} /></td>
                         {(Array.from(Array(31).keys())).map(i => <td key={i + 1} style={{ color: detailDay && detailDay.day === i + 1 && detailDay.year === currentYear ? 'red' : 'black' }}>{i + 1}</td>)}
                     </tr>
                 </thead>
@@ -167,31 +198,34 @@ type MonthViewProps = {
 function MonthView(props: MonthViewProps) {
     const { month, currentYear, detailDay, onShowDayDetail } = props
     const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
-
+    const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
     function handleShowDayDetail(day: number) {
         onShowDayDetail(day, month, currentYear);
     }
     // month: 1to12 
     return (<tr>
         <td style={{ color: detailDay && detailDay.month === month && detailDay.year === currentYear ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
-        {(Array.from(Array(getNumberOfDaysInMonth(currentYear, month)).keys())).map(i => {
-            const isDetailDay = detailDay !== null && detailDay.day === i + 1 && detailDay.month === month && detailDay.year === currentYear;
-            const barDayViewProps: BarDayViewProps = {
-                day: i + 1, ...props,
-                scales: props.barDayViewScales,
-                valueGetter: props.barDayViewValueGetter,
-                containerSize: props.dayViewContainerSize,
-            }
-            const pieDayViewProps: PieDayViewProps = {
-                day: i + 1, ...props,
-                scales: props.pieDayViewScales,
-                valueGetter: props.pieDayViewValueGetter,
-                containerSize: props.dayViewContainerSize,
-            }
-            return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`} key={`${month}-${i + 1}`}>
-                {glyphType === 'pie' ? <PieDayView {...pieDayViewProps} /> : <BarDayView {...barDayViewProps}  />}
-            </td>
-        })}
+
+        {
+            // 'isSuperPositioned ? 2016 : currentYear' is for use big year to show all the data
+            (Array.from(Array(getNumberOfDaysInMonth(isSuperPositioned ? 2016 : currentYear, month)).keys())).map(i => {
+                const isDetailDay = detailDay !== null && detailDay.day === i + 1 && detailDay.month === month && detailDay.year === currentYear;
+                const barDayViewProps: BarDayViewProps = {
+                    day: i + 1, ...props,
+                    scales: props.barDayViewScales,
+                    valueGetter: props.barDayViewValueGetter,
+                    containerSize: props.dayViewContainerSize,
+                }
+                const pieDayViewProps: PieDayViewProps = {
+                    day: i + 1, ...props,
+                    scales: props.pieDayViewScales,
+                    valueGetter: props.pieDayViewValueGetter,
+                    containerSize: props.dayViewContainerSize,
+                }
+                return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`} key={`${month}-${i + 1}`}>
+                    {glyphType === 'pie' ? <PieDayView {...pieDayViewProps} /> : <BarDayView {...barDayViewProps} />}
+                </td>
+            })}
     </tr>)
 
 }
@@ -239,6 +273,26 @@ export function getDataFromTransactionDataMapYMD(transactionDataMapYMD: Transact
     return currDayData === undefined ? [] : currDayData;
 }
 
+
+/**
+ * get the data in O(1)
+ * @param transactionDataMapMD 
+ * @param month 1to12
+ * @param day 1to31
+ * @returns an array of TransactionData object
+ */
+export function getDataFromTransactionDataMapMD(transactionDataMapMD: TransactionDataMapMD, day: number, month: number): TransactionData[] {
+    if (month < 1 || month > 12) { throw new Error(`invalid month: ${month}, should be 1<=month<=12`,); }
+    if (day < 1 || day > 31) { throw new Error(`invalid day: ${day}, should be 1<=day<=31`,); }
+
+    const currMonthData = transactionDataMapMD.get(month);
+    // console.log('currMonthData:', currMonthData)
+    if (currMonthData === undefined) { return [] }
+    const currDayData = currMonthData.get(day);
+    // console.log('currDayData:', currDayData)
+    return currDayData === undefined ? [] : currDayData;
+}
+
 /**
  * get the data in O(1)
  * @param transactionAmountSumMapByDayYMD 
@@ -255,6 +309,25 @@ export function getDataFromTransactionAmountSumByDayYMD(transactionAmountSumMapB
     // console.log('currYearData:', currYearData)
     if (currYearData === undefined) { return 0 }
     const currMonthData = currYearData.get(month);
+    // console.log('currMonthData:', currMonthData)
+    if (currMonthData === undefined) { return 0 }
+    const currDayData = currMonthData.get(day);
+    // console.log('currDayData:', currDayData)
+    return currDayData === undefined ? 0 : currDayData;
+}
+
+/**
+ * get the data in O(1)
+ * @param transactionAmountSumMapByDayMD 
+ * @param month 1to12
+ * @param day 1to31
+ * @returns an the data, 0 if not found
+ */
+export function getDataFromTransactionAmountSumByDayMD(transactionAmountSumMapByDayMD: TransactionAmountSumMapByDayMD, day: number, month: number): number {
+    if (month < 1 || month > 12) { throw new Error(`invalid month: ${month}, should be 1<=month<=12`,); }
+    if (day < 1 || day > 31) { throw new Error(`invalid day: ${day}, should be 1<=day<=31`,); }
+
+    const currMonthData = transactionAmountSumMapByDayMD.get(month)
     // console.log('currMonthData:', currMonthData)
     if (currMonthData === undefined) { return 0 }
     const currDayData = currMonthData.get(day);
@@ -282,7 +355,7 @@ function getFlatGroupedTransactionAmountByDay(transactionDataArr: TransactionDat
  * @param transactionDataArr 
  * @return year->month->day->sum
  */
-function getGroupedTransactionAmountMapByDay(transactionDataArr: TransactionData[]) {
+function getGroupedTransactionAmountMapYMD(transactionDataArr: TransactionData[]): TransactionAmountSumMapByDayYMD {
     const transactionDataSumAmountYMD = d3.rollup(transactionDataArr,
         (transactionDataArr) => {
             return d3.sum(transactionDataArr, (transactionData) => transactionData.transactionAmount)
@@ -292,5 +365,33 @@ function getGroupedTransactionAmountMapByDay(transactionDataArr: TransactionData
         d => d.date.getDate())
     return transactionDataSumAmountYMD;
 }
+/**
+ * rollup the data by transactionAmount's sum of each day, return a flat array for each day
+ * @param transactionDataArr 
+ * @return month->day->sum
+ */
+function getGroupedTransactionAmountMapMD(transactionDataArr: TransactionData[]): TransactionAmountSumMapByDayMD {
+    const transactionDataSumAmountMD = d3.rollup(transactionDataArr,
+        (transactionDataArr) => {
+            return d3.sum(transactionDataArr, (transactionData) => transactionData.transactionAmount)
+        },
+        d => d.date.getMonth() + 1,
+        d => d.date.getDate())
+    return transactionDataSumAmountMD;
+}
 
 
+/**
+ * rollup the data by transactionAmount's sum of each day, return a flat array for each day
+ * @param transactionDataArr 
+ * @return [month, day, sum]
+ */
+function getFlatGroupedTransactionAmountByDaySuperpositionedYear(transactionDataArr: TransactionData[]) {
+    const transactionDataSumAmountMD = d3.flatRollup(transactionDataArr,
+        (transactionDataArr) => {
+            return d3.sum(transactionDataArr, (transactionData) => transactionData.transactionAmount)
+        },
+        d => d.date.getMonth() + 1,
+        d => d.date.getDate())
+    return transactionDataSumAmountMD;
+}

@@ -2,6 +2,9 @@
 import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Day } from "./CalendarView3";
+const MAX_YEAR = 2022;
+const MIN_YEAR = 2015;
+
 interface CalendarViewState {
   glyphType: "bar" | "pie";
   containerWidth: number;
@@ -10,6 +13,8 @@ interface CalendarViewState {
   expandedContainerHeight: number;
   isExpanded: boolean;
   detailDay: Day | null;
+  currentYear: number;
+  isSuperPositioned: boolean;
 }
 
 const initialState: CalendarViewState = {
@@ -21,6 +26,8 @@ const initialState: CalendarViewState = {
   expandedContainerHeight: 40,
   isExpanded: false,
   detailDay: null,
+  currentYear: 2016,
+  isSuperPositioned: false,
 };
 
 export const calendarViewSlice = createSlice({
@@ -45,11 +52,49 @@ export const calendarViewSlice = createSlice({
     clearDetailDay: (state) => {
       state.detailDay = null;
     },
+    increaseCurrentYear: (state) => {
+      if (
+        typeof state.currentYear === "number" &&
+        state.currentYear < MAX_YEAR
+      ) {
+        state.currentYear = state.currentYear + 1;
+      }
+    },
+    decreaseCurrentYear: (state) => {
+      if (
+        typeof state.currentYear === "number" &&
+        state.currentYear > MIN_YEAR
+      ) {
+        state.currentYear = state.currentYear + 1;
+      }
+    },
+    changeCurrentYear: (state,action:PayloadAction<number>) => {
+      if (action.payload >= 2015 && action.payload <= 2022) {
+        state.currentYear = action.payload
+      }
+    },
+    enableSuperPosition: (state) => {
+      state.isSuperPositioned = true;
+    },
+    disableSuperPosition: (state) => {
+      state.isSuperPositioned = false;
+    },
   },
 });
 
 // export the action creators
-export const { setGlyphType, expand, fold,setDetailDay, clearDetailDay } = calendarViewSlice.actions;
+export const {
+  setGlyphType,
+  expand,
+  fold,
+  setDetailDay,
+  clearDetailDay,
+  increaseCurrentYear,
+  decreaseCurrentYear,
+  enableSuperPosition,
+  disableSuperPosition,
+  changeCurrentYear
+} = calendarViewSlice.actions;
 
 // export the selectors
 export const selectGlyphType = (state: RootState) =>
@@ -66,6 +111,10 @@ export const selectExpandedContainerHeight = (state: RootState) =>
   state.calendarView.expandedContainerHeight;
 export const selectDetailDay = (state: RootState): null | Day =>
   state.calendarView.detailDay;
+export const selectCurrentYear = (state: RootState): number =>
+  state.calendarView.currentYear;
+export const selectIsSuperPositioned = (state: RootState): boolean =>
+  state.calendarView.isSuperPositioned;
 
 // select the current width and height based on isExpand
 export const selectCurrentContainerHeight = function (state: RootState) {
