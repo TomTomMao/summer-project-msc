@@ -8,6 +8,8 @@ interface BarDayViewState {
   sortingKey: TransactionDataAttrs;
   isDesc: boolean;
   heightAxis: "log" | "linear";
+  maxTransactionCountOfDay: number;
+  maxTransactionCountOfDaySuperpositioned: number;
 }
 
 const initialState: BarDayViewState = {
@@ -15,6 +17,8 @@ const initialState: BarDayViewState = {
   sortingKey: "transactionAmount",
   isDesc: true,
   heightAxis: "log",
+  maxTransactionCountOfDay: 0,
+  maxTransactionCountOfDaySuperpositioned: 0,
 };
 
 export const barDayViewSlice = createSlice({
@@ -46,6 +50,12 @@ export const barDayViewSlice = createSlice({
     ) => {
       state.heightAxis = action.payload;
     },
+    setMaxTransactionCountOfDay: (state, action: PayloadAction<number>) => {
+      state.maxTransactionCountOfDay = action.payload;
+    },
+    setMaxTransactionCountOfDaySuperpositioned: (state, action: PayloadAction<number>) => {
+      state.maxTransactionCountOfDaySuperpositioned = action.payload;
+    },
   },
 });
 
@@ -57,6 +67,8 @@ export const {
   setDescendingOrder,
   setAscendingOrder,
   setHeightAxis,
+  setMaxTransactionCountOfDay,
+  setMaxTransactionCountOfDaySuperpositioned
 } = barDayViewSlice.actions;
 
 // export the selectors
@@ -68,5 +80,9 @@ export const selectSortingKey = (state: RootState) =>
 export const selectIsDesc = (state: RootState) => state.barDayView.isDesc;
 export const selectHeightAxis = (state: RootState) =>
   state.barDayView.heightAxis;
+export const selectMaxTransactionCountOfDay = (state: RootState) =>
+  state.barDayView.maxTransactionCountOfDay;
+export const selectMaxTransactionCountOfDaySuperpositioned = (state: RootState) =>
+  state.barDayView.maxTransactionCountOfDaySuperpositioned;
 
 export default barDayViewSlice.reducer;

@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
 
-import { Data, getDataFromTransactionDataMapYMD } from "../CalendarView3";
+import { Data, getDataFromTransactionDataMapMD, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useAppSelector } from "@/app/hooks";
-import { selectHeightAxis, selectIsDesc, selectIsSharedBandWidth, selectSortingKey } from "./barDayViewSlice";
+import * as barDayViewSlice from "./barDayViewSlice";
+import * as calendarViewSlice from "../calendarViewSlice";
 import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 
 export type BarGlyphScalesLinearHeight = {
@@ -53,13 +54,14 @@ export type BarDayViewProps = {
  */
 export function BarDayView(props: BarDayViewProps) {
     const { day, month, currentYear, data, scales, valueGetter, containerSize } = props;
-    const maxTransactionCountOfDay: number = 28; // todo, take it from the calendarview component
-
+    const maxTransactionCountOfDay: number = useAppSelector(barDayViewSlice.selectMaxTransactionCountOfDay); // todo, take it from the calendarview component
+    const maxTransactionCountOfDaySuperpositioned: number = useAppSelector(barDayViewSlice.selectMaxTransactionCountOfDaySuperpositioned); // todo, take it from the calendarview component
+    const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
     // configs
-    const isSharedBandWidth = useAppSelector(selectIsSharedBandWidth)
-    const sortingKey = useAppSelector(selectSortingKey);
-    const isDesc = useAppSelector(selectIsDesc);
-    const heightAxis = useAppSelector(selectHeightAxis);
+    const isSharedBandWidth = useAppSelector(barDayViewSlice.selectIsSharedBandWidth)
+    const sortingKey = useAppSelector(barDayViewSlice.selectSortingKey);
+    const isDesc = useAppSelector(barDayViewSlice.selectIsDesc);
+    const heightAxis = useAppSelector(barDayViewSlice.selectHeightAxis);
 
     // configs, from the props
     const { containerWidth, containerHeight } = containerSize
@@ -67,7 +69,7 @@ export function BarDayView(props: BarDayViewProps) {
     const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc]);
 
     // highLightedTransactionNumberSetByBrusher used for checking if the transaction is selected when rendering or creating rectangles
-    const { transactionDataMapYMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend } = data;
+    const { transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend } = data;
     const brushingMode = highLightedTransactionNumberSetByBrusher.size > 0; // for deciding the style of rect
     const { heightScaleLog, heightScaleLinear, colourScale } = scales; // heightScale for bar glyph, colourScale for category
     const heightScale = heightAxis === 'log' ? heightScaleLog : heightScaleLinear;
@@ -75,16 +77,18 @@ export function BarDayView(props: BarDayViewProps) {
 
     // cache the bars of all the years.
     const barsOfEachYear: { year: number; bars: JSX.Element[]; }[] = useMemo(() => {
-        const years = Array.from(data.transactionDataMapYMD.keys());
+        const years = Array.from(data.transactionDataMapYMD.keys())
+        years.push(-1)
         const barsOfEachYear: { year: number; bars: JSX.Element[]; }[] = [];
         for (let year of years) {
-            const dayData = getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, year);
+            const dayData: TransactionData[] = year !== -1 ? getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, year) : getDataFromTransactionDataMapMD(transactionDataMapMD, day, month);
             const sortedDayData = d3.sort(dayData, comparator);
             let xDomain = Array.from(new Set(sortedDayData.map(valueGetter.x)));
             if (isSharedBandWidth) {
                 // fill the domain if use shared band width
                 const domainLength = xDomain.length;
-                for (let i = 0; i < maxTransactionCountOfDay - domainLength; i++) { xDomain.push(`fill-${i}`); }
+                const numberOfBars = year !== -1 ? maxTransactionCountOfDay : maxTransactionCountOfDaySuperpositioned // if -1 , then it is calculating the domain for superpositioned bar glyphs.
+                for (let i = 0; i < numberOfBars - domainLength; i++) { xDomain.push(`fill-${i}`); }
             }
 
             const xScale = d3.scaleBand().domain(xDomain).range([0, containerHeight]);
@@ -110,17 +114,24 @@ export function BarDayView(props: BarDayViewProps) {
                         width={bandWidth}
                         height={containerHeight}
                         fill={colourScale(valueGetter.colour(d))}
-                        opacity={opacity} 
+                        opacity={opacity}
                         stroke={stroke}
-                        />
+                    />
                 );
             });
             barsOfEachYear.push({ year: year, bars: bars });
         }
         return barsOfEachYear;
     }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc, containerWidth, containerHeight]);
-
     return (<svg width={containerWidth} height={containerHeight}>
-        {barsOfEachYear.map(d => { return <g style={{ opacity: d.year === currentYear ? 1 : 0 }} key={d.year}>{d.bars}</g>; })}
+        {barsOfEachYear.map(d => {
+            let shouldDisplay = false;
+            if (isSuperPositioned) {
+                shouldDisplay = d.year === -1
+            } else {
+                shouldDisplay = d.year === currentYear
+            }
+            return <g style={{ opacity: shouldDisplay ? 1 : 0 }} key={d.year}>{d.bars}</g>;
+        })}
     </svg>);
 }

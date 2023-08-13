@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { TransactionData } from "../../utilities/DataObject"
 import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import * as d3 from 'd3'
@@ -11,6 +11,7 @@ import { PublicScale, PublicValueGetter } from "../../utilities/types";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 
 import * as calendarViewSlice from './calendarViewSlice'
+import * as barDayViewSlice from './DayViews/barDayViewSlice'
 import { ColourDomainInfo } from "../ColourLegend/colourLegendSlice";
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
@@ -126,13 +127,24 @@ export default function CalendarView3({ transactionDataArr, highLightedTransacti
     const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, currentContainerHeight]);
     const heightScaleLog: BarCalendarViewSharedScales['heightScaleLog'] = d3.scaleLog(heightDomain, [0, currentContainerHeight]);
     const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScaleLinear, heightScaleLog, colourScale } // colourScale shared with other views
-    // create shared number of bars, the number will be used for control the xDomain's Size
-    const maxTransactionCountOfDay = useMemo(() => {
+
+    // calculate maxTransactionCountOfDay and update the stores value
+    const { maxTransactionCountOfDay, maxTransactionCountOfDaySuperpositioned } = useMemo(() => {
         const countTransactionArr = d3.flatRollup(transactionDataArr, d => d.length, d => d.date);
-        // console.log('countTransactionArr', countTransactionArr)
-        return d3.max(countTransactionArr, d => d[1])
-    }, [transactionDataArr])
-    // console.log('maxTransactionCountOfDay', maxTransactionCountOfDay)
+        const maxTransactionCountOfDay = d3.max(countTransactionArr, d => d[1])
+        const countTransactionArrSuperpositioned = d3.flatRollup(transactionDataArr, d => d.length, d => d.date.getMonth() + 1, d => d.date.getDate())
+        const maxTransactionCountOfDaySuperpositioned = d3.max(countTransactionArrSuperpositioned, d => d[2])
+        if (maxTransactionCountOfDay === undefined || maxTransactionCountOfDaySuperpositioned === undefined) {
+            throw new Error('invalid maxTransactionCountOfDay, it must be number, but it is undefined')
+        }
+        return { maxTransactionCountOfDay, maxTransactionCountOfDaySuperpositioned }
+    }, [transactionDataArr, isSuperPositioned])
+    useEffect(() => {
+        dispatch(barDayViewSlice.setMaxTransactionCountOfDay(maxTransactionCountOfDay))
+    }, [maxTransactionCountOfDay])
+    useEffect(() => {
+        dispatch(barDayViewSlice.setMaxTransactionCountOfDaySuperpositioned(maxTransactionCountOfDaySuperpositioned))
+    }, [maxTransactionCountOfDaySuperpositioned])
 
     // public scales for pie :
     const pieCalendarViewSharedScales: PieCalendarViewSharedScales = { colourScale, linearRadiusScale, logRadiusScale }
