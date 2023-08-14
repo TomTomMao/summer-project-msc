@@ -143,7 +143,7 @@ export function ScatterPlot(props: ScatterPlotProps) {
             scaleForYAxis = linearPrivateScales.yScale
         }
     }
-    function handleBrush(event: d3.D3BrushEvent<SVGGElement>): void {
+    const handleBrush = (event: d3.D3BrushEvent<SVGGElement>): void => {
         console.time('handleBrush')
         if (event.selection === null) {
             setBrushedTransactionNumberSet(new Set());
@@ -159,8 +159,8 @@ export function ScatterPlot(props: ScatterPlotProps) {
         }
         const [[domainXMin, domainXMax], [domainYMin, domainYMax]] = [[scaleForXAxis.invert(x0), scaleForXAxis.invert(x1)], [scaleForYAxis.invert(y1), scaleForYAxis.invert(y0)]];
         const nextBrushedTransactionNumberSet = new Set(transactionDataArr.filter(transactionData => {
-            const dataXValue = valueGetterWithSwap.x(transactionData);
-            const dataYValue = valueGetterWithSwap.y(transactionData);
+            const dataXValue = isSwap ? valueGetterWithSwap.getXSwap(transactionData) : valueGetterWithSwap.x(transactionData);
+            const dataYValue = isSwap ? valueGetterWithSwap.getYSwap(transactionData) : valueGetterWithSwap.y(transactionData);
             return dataXValue >= domainXMin && dataXValue <= domainXMax &&
                 dataYValue >= domainYMin && dataYValue <= domainYMax
         }).map(d => d.transactionNumber))
@@ -177,7 +177,7 @@ export function ScatterPlot(props: ScatterPlotProps) {
             </g>
         </svg>
         <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
-        main axis
+        <span> main axis: </span>
         <label htmlFor="scatterPlotUseLog">log</label>
         <input type="radio" name="scatterPlotUseLog" id="" checked={useLogScale} onChange={() => dispatch(scatterPlotSlice.setMainScale('log'))} />
         <label htmlFor="scatterPlotUseLinear">linear</label>
