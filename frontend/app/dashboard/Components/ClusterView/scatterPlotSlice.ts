@@ -1,7 +1,7 @@
 import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface ClusterViewState {
+interface ScatterPlotSlice {
   containerWidth: number;
   containerHeight: number;
   expandedContainerWidth: number;
@@ -9,7 +9,7 @@ interface ClusterViewState {
   isExpanded: boolean;
   mainAxis: "log" | "linear";
 }
-const initialState: ClusterViewState = {
+const initialState: ScatterPlotSlice = {
   containerWidth: 500,
   containerHeight: 400,
   expandedContainerWidth: 1500,
@@ -18,14 +18,14 @@ const initialState: ClusterViewState = {
   mainAxis: "log",
 };
 
-export const clusterViewSlice = createSlice({
-  name: "clusterView",
+export const scatterPlotSlice = createSlice({
+  name: "scatterPlot",
   initialState,
   // redux library uses immer, so this is immutable updating.
   reducers: {
     setMainScale: (
       state,
-      action: PayloadAction<ClusterViewState["mainAxis"]>
+      action: PayloadAction<ScatterPlotSlice["mainAxis"]>
     ) => {
       state.mainAxis = action.payload;
     },
@@ -39,20 +39,20 @@ export const clusterViewSlice = createSlice({
 });
 
 // export the action creators
-export const { setMainScale, expand, fold } = clusterViewSlice.actions;
+export const { setMainScale, expand, fold } = scatterPlotSlice.actions;
 
 // export the selectors
-export const selectMainAxis = (state: RootState) => state.clusterView.mainAxis;
+export const selectMainAxis = (state: RootState) => state.scatterPlot.mainAxis;
 export const selectIsExpand = (state: RootState) =>
-  state.clusterView.isExpanded;
+  state.scatterPlot.isExpanded;
 export const selectContainerWidth = (state: RootState) =>
-  state.clusterView.containerWidth;
+  state.scatterPlot.containerWidth;
 export const selectContainerHeight = (state: RootState) =>
-  state.clusterView.containerHeight;
+  state.scatterPlot.containerHeight;
 export const selectExpandedContainerWidth = (state: RootState) =>
-  state.clusterView.expandedContainerWidth;
+  state.scatterPlot.expandedContainerWidth;
 export const selectExpandedContainerHeight = (state: RootState) =>
-  state.clusterView.expandedContainerHeight;
+  state.scatterPlot.expandedContainerHeight;
 
 // select the current width and height based on isExpand
 export const selectCurrentContainerHeight = function (state: RootState) {
@@ -70,4 +70,4 @@ export const selectCurrentContainerWidth = function (state: RootState) {
   }
 };
 
-export default clusterViewSlice.reducer;
+export default scatterPlotSlice.reducer;

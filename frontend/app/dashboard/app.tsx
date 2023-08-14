@@ -2,9 +2,9 @@
 import { useState, useEffect, useMemo } from "react"
 import { TransactionData } from "./utilities/DataObject";
 import CalendarView3 from "./components/CalendarView3/CalendarView3";
-import TableView from "./components/TableView/TableView";
+
 import { temporalValueGetter } from "./utilities/consts/valueGetter";
-import { ClusterView } from "./components/ClusterView/ClusterView";
+import { ScatterPlot } from "./components/ClusterView/ScatterPlot";
 
 import ColourLegendList from "./components/ColourLegend/ColourLegend";
 import * as d3 from 'd3';
@@ -15,9 +15,10 @@ import { parseTime, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
 import ExpandableContainer from "./components/Containers/ExpandableContainer";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
-import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice"
 import * as colourLegendSlice from "./components/ColourLegend/colourLegendSlice"
-// import ClusterView2 from "./components/ClusterView/ClusterView2";
+import * as scatterPlotSlice from "./components/ClusterView/scatterPlotSlice";
+import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
+
 import dynamic from 'next/dynamic'//no ssr 
 import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel";
 import useClusterData from "./hooks/useClusterData";
@@ -40,7 +41,7 @@ export default function App() {
     const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set()) // cluster view's points in the brusher
     const transactionDataArr = useTransactionDataArr();
     // cluster view's initial y axis's scale
-    const [clusterViewValueGetter, setClusterViewValueGetter] = useState(temporalValueGetter);
+    const [scatterPlotValueGetter, setScatterPlotValueGetter] = useState(temporalValueGetter);
 
     // set the state store
     const dispatch = useAppDispatch()
@@ -86,14 +87,20 @@ export default function App() {
      * tell the components which are wrapped inside the expandablecontainer it is expanded or folded
      * @param chartToExpand chart to expand
      */
-    function handleSetExpand(nextIsExpand: boolean, chartToExpand: 'calendar view' | 'cluster view') {
+    function handleSetExpand(nextIsExpand: boolean, chartToExpand: 'calendar view' | 'cluster view' | 'scatter plot') {
         if (chartToExpand === 'calendar view') {
             if (nextIsExpand) {
                 dispatch(calendarViewSlice.expand())
             } else {
                 dispatch(calendarViewSlice.fold())
             }
-        } else {
+        } else if (chartToExpand === 'scatter plot') {
+            if (nextIsExpand) {
+                dispatch(scatterPlotSlice.expand())
+            } else {
+                dispatch(scatterPlotSlice.fold())
+            }
+        } else if (chartToExpand === 'cluster view') {
             if (nextIsExpand) {
                 dispatch(clusterViewSlice.expand())
             } else {
@@ -132,11 +139,11 @@ export default function App() {
                 </div>
                 <div className="grid grid-cols-12">
                     <div className="col-span-4">
-                        <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
+                        <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'scatter plot') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
-                            <ClusterView transactionDataArr={transactionDataArr} valueGetter={clusterViewValueGetter}
+                            <ScatterPlot transactionDataArr={transactionDataArr} valueGetter={scatterPlotValueGetter}
                                 brushedTransactionNumberSet={brushedTransactionNumberSet}
                                 setBrushedTransactionNumberSet={setBrushedTransactionNumberSet}
                                 colourScale={colourScale}

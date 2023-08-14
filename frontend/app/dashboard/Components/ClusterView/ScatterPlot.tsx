@@ -4,27 +4,27 @@ import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
 import { AxisBottom, AxisLeft } from "../Axis";
 import { PublicScale } from "../../utilities/types";
-import * as clusterViewSlice from './clusterViewSlice'
+import * as scatterPlotSlice from './scatterPlotSlice'
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as colourLegendSlice from '../ColourLegend/colourLegendSlice'
 import { PUBLIC_VALUEGETTER } from "../../utilities/consts";
 
 const BRUSH_MODE = 'brush end'
 /**
- * render a cluster view using scatter plot
+ * render a scatterplot
  *
  */
-interface ClusterViewValueGetter {
+interface ScatterPlotValueGetter {
     x: (transactionData: TransactionData) => number,
     y: (transactionData: TransactionData) => number,
     colour: (transactionData: TransactionData) => string,
 }
 
-interface ClusterViewValueGetterWithSwap extends ClusterViewValueGetter {
+interface ScatterPlotValueGetterWithSwap extends ScatterPlotValueGetter {
     getXSwap(transactionData: TransactionData): number,
     getYSwap(transactionData: TransactionData): number
 }
-type ClusterViewPrivateScale = {
+type ScatterPlotPrivateScale = {
     xScale: d3.ScaleLinear<number, number, never>;
     yScale: d3.ScaleLinear<number, number, never>;
     xScaleSwap: d3.ScaleLinear<number, number, never>;
@@ -36,10 +36,10 @@ type ClusterViewPrivateScale = {
     xScaleSwap: d3.ScaleLogarithmic<number, number, never>;
     yScaleSwap: d3.ScaleLinear<number, number, never>;
 }
-type ClusterViewScale = ClusterViewPrivateScale & { colourScale: PublicScale['colourScale'] }
-type ClusterViewProps = {
+type ScatterPlotScale = ScatterPlotPrivateScale & { colourScale: PublicScale['colourScale'] }
+type ScatterPlotProps = {
     transactionDataArr: TransactionData[];
-    valueGetter: ClusterViewValueGetter;
+    valueGetter: ScatterPlotValueGetter;
     brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>;
     setBrushedTransactionNumberSet: Dispatch<SetStateAction<Set<TransactionData['transactionNumber']>>>;
     colourScale: PublicScale['colourScale']
@@ -55,23 +55,23 @@ const DEFAULT_STROKE_WIDTH = 1;
  * @param props
  * @returns 
  */
-export function ClusterView(props: ClusterViewProps) {
+export function ScatterPlot(props: ScatterPlotProps) {
     const { transactionDataArr, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, colourScale } = props;
     const [isSwap, setIsSwap] = useState(false);
     useEffect(()=>{console.log('colourScaleChanged')},[colourScale])
     // configs
-    const { currentContainerWidth, currentContainerHeight, dispatch, margin, useLogScale, width, height } = useClusterViewConfig()
-
+    const { currentContainerWidth, currentContainerHeight, margin, useLogScale, width, height } = useScatterPlotConfig()
+    const dispatch = useAppDispatch()
     const brushGRef = useRef<SVGGElement | null>(null)
     const valueGetterWithSwap = useMemo(() => {
         return { ...valueGetter, getXSwap: valueGetter.y, getYSwap: valueGetter.x };
     }, [])
 
     // cache the private scales (x,y, and swapped), with both linear and log; avoid recalculating
-    const { linearPrivateScales, logPrivateScales } = useClusterPrivateViewScales(transactionDataArr, valueGetterWithSwap, width, height)
+    const { linearPrivateScales, logPrivateScales } = useScatterPlotScales(transactionDataArr, valueGetterWithSwap, width, height)
 
     // cache the circles 
-    const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useClusterViewCachedCircles(transactionDataArr, valueGetterWithSwap, colourScale, linearPrivateScales, logPrivateScales)
+    const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useScatterPlotCachedCircles(transactionDataArr, valueGetterWithSwap, colourScale, linearPrivateScales, logPrivateScales)
 
     // for highlighting
     const highLightedColourSet = useAppSelector(colourLegendSlice.selectHighLightedColourDomainValueSet)
@@ -178,10 +178,10 @@ export function ClusterView(props: ClusterViewProps) {
         </svg>
         <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
         main axis
-        <label htmlFor="clusterUseLog">log</label>
-        <input type="radio" name="clusterUseLog" id="" checked={useLogScale} onChange={() => dispatch(clusterViewSlice.setMainScale('log'))} />
-        <label htmlFor="clusterUseLinear">linear</label>
-        <input type="radio" name="clusterUseLinear" id="" checked={!useLogScale} onChange={() => dispatch(clusterViewSlice.setMainScale('linear'))} />
+        <label htmlFor="scatterPlotUseLog">log</label>
+        <input type="radio" name="scatterPlotUseLog" id="" checked={useLogScale} onChange={() => dispatch(scatterPlotSlice.setMainScale('log'))} />
+        <label htmlFor="scatterPlotUseLinear">linear</label>
+        <input type="radio" name="scatterPlotUseLinear" id="" checked={!useLogScale} onChange={() => dispatch(scatterPlotSlice.setMainScale('linear'))} />
     </div>
     );
 }
@@ -198,8 +198,8 @@ type CircleData = {
  * get the an array of data for circles, index represent the transactionNumber. this function is used for separating the calculation of visual mapping.
  */
 function getCircleDataArray(transactionDataArr: TransactionData[],
-    valueGetterWithSwap: ClusterViewValueGetterWithSwap,
-    scales: ClusterViewScale,
+    valueGetterWithSwap: ScatterPlotValueGetterWithSwap,
+    scales: ScatterPlotScale,
     isSwap: boolean): CircleData[] {
     const circleDataArr: CircleData[] = new Array()
     if (!isSwap) {
@@ -228,7 +228,7 @@ function getCircleDataArray(transactionDataArr: TransactionData[],
 }
 
 /**
- * return a function that produce d3.scale functions for the clusterView
+ * return a function that produce d3.scale functions for the scatterplot
  * @param transactionDataArr 
  * @param valueGetterWithSwap 
  * @param width 
@@ -236,9 +236,9 @@ function getCircleDataArray(transactionDataArr: TransactionData[],
  * @returns
  */
 function curryGetScales(transactionDataArr: TransactionData[],
-    valueGetterWithSwap: ClusterViewValueGetterWithSwap,
+    valueGetterWithSwap: ScatterPlotValueGetterWithSwap,
     width: number, height: number):
-    (useLogScale: boolean) => ClusterViewPrivateScale {
+    (useLogScale: boolean) => ScatterPlotPrivateScale {
     return (useLogScale) => {
         const scaleFuncForYandXSwap = useLogScale ? d3.scaleLog : d3.scaleLinear;
         let xScale, yScale, xScaleSwap, yScaleSwap;
@@ -283,19 +283,20 @@ function Circle(props: CircleProps) {
 }
 
 /**
- * get the clusterView config information and the dispatcher from the redux store; calculate the derived value includes width, height for the actual drawing area, useLogScale information for the main axis of the clusterview 
+ * get the scatterPlot config information and the dispatcher from the redux store; calculate the derived value includes width, height for the actual drawing area, useLogScale information for the main axis of the scatterPlot 
  * @returns an object with  currentContainerWidth, currentContainerHeight, useLogScale, margin, dispatch, width, height
  */
-function useClusterViewConfig() {
-    console.log('cluster view config information changed')
-    const currentContainerWidth = useAppSelector(clusterViewSlice.selectCurrentContainerWidth);
-    const currentContainerHeight = useAppSelector(clusterViewSlice.selectCurrentContainerHeight);
-    const mainAxis = useAppSelector(clusterViewSlice.selectMainAxis);
+function useScatterPlotConfig() {
+    console.log('scatter plot view config information changed')
+    const currentContainerWidth = useAppSelector(scatterPlotSlice.selectCurrentContainerWidth);
+    const currentContainerHeight = useAppSelector(scatterPlotSlice.selectCurrentContainerHeight);
+    const mainAxis = useAppSelector(scatterPlotSlice.selectMainAxis);
 
-    // const margin = useAppSelector(clusterViewSlice.selectCurrentMagin) // todo: add margin in to store
     const margin = DEFAULT_MARGIN
 
     const useLogScale = mainAxis === 'log' ? true : false;
+    console.log('useLogScale flage', useLogScale)
+    console.log('mainAxis flage', mainAxis)
     // config dispatcher
     const dispatch = useAppDispatch();
 
@@ -307,12 +308,12 @@ function useClusterViewConfig() {
 /**
  * get the scale function for x and y axis, and for the swapped x and y axis; the value are updated only when at least one of the parameters updated
  * @param transactionDataArr collection of the data to display
- * @param valueGetterWithSwap valuegetter for the cluster view
+ * @param valueGetterWithSwap valuegetter for the scatter plot
  * @param width width of the actual drawing area
  * @param height height of the actural drawing area
  * @returns the Y scale and xScaleSwapped is log scale in the logScales value, in the linearScales, all scales are linearScale
  */
-function useClusterPrivateViewScales(transactionDataArr: TransactionData[], valueGetterWithSwap: ClusterViewValueGetterWithSwap, width: number, height: number) {
+function useScatterPlotScales(transactionDataArr: TransactionData[], valueGetterWithSwap: ScatterPlotValueGetterWithSwap, width: number, height: number) {
     const { linearPrivateScales, logPrivateScales } = useMemo(() => {
         const scaleGetter = curryGetScales(transactionDataArr, valueGetterWithSwap, width, height);
         const linearPrivateScales = scaleGetter(false)
@@ -331,7 +332,7 @@ function useClusterPrivateViewScales(transactionDataArr: TransactionData[], valu
  * @param logPrivateScales 
  * @returns circles for the chart with linear and log main axis, and the circles for the chart with swapped axis
  */
-function useClusterViewCachedCircles(transactionDataArr: TransactionData[], valueGetterWithSwap: ClusterViewValueGetterWithSwap, colourScale: PublicScale['colourScale'], linearPrivateScales: ClusterViewPrivateScale, logPrivateScales: ClusterViewPrivateScale) {
+function useScatterPlotCachedCircles(transactionDataArr: TransactionData[], valueGetterWithSwap: ScatterPlotValueGetterWithSwap, colourScale: PublicScale['colourScale'], linearPrivateScales: ScatterPlotPrivateScale, logPrivateScales: ScatterPlotPrivateScale) {
     const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useMemo(() => {
         console.time('re-calculating circleData')
         const circleDataArrLinear = getCircleDataArray(transactionDataArr, valueGetterWithSwap, { colourScale, ...linearPrivateScales }, false);
