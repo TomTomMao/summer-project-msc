@@ -10,22 +10,25 @@ export interface ClusterView2Props {
     layout: Partial<Plotly.Layout>;
     handleSelectIndex: (selectedDataIndex: number[]) => void
 }
-
 /**
  * reference https://github.com/plotly/react-plotly.js/blob/master/README.md
  * @param param0 
  * @returns 
  */
 export default function ClusterView2({ data, layout, handleSelectIndex }: ClusterView2Props) {
-    const [figure, setFigure] = useState<Figure>({ data, layout, frames: [] })
+    const [figure, setFigure] = useState<Figure>({ data: { ...data }, layout: { ...layout }, frames: [] })
+
 
     const handleSelected: (event: Readonly<PlotSelectionEvent>) => void = (event) => {
+
         let pointIndexes: number[] = [];
-        console.log('onselected', event)
+
         if (event) {
             pointIndexes = event.points.map(point => point.pointIndex)
         }
         handleSelectIndex(pointIndexes)
+
+
     }
 
     useEffect(() => { setFigure({ data, layout, frames: figure.frames }) }, [data, layout])
@@ -37,7 +40,9 @@ export default function ClusterView2({ data, layout, handleSelectIndex }: Cluste
             layout={figure.layout}
             frames={figure.frames === null ? undefined : figure.frames}
             onInitialized={(figure) => setFigure(figure)}
-            onUpdate={(figure) => setFigure(figure)}
+            onUpdate={(nextFigure) => {
+                setFigure(nextFigure)
+            }}
             onSelected={handleSelected}
         />
     );
