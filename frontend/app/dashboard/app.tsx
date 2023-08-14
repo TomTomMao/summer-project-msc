@@ -4,7 +4,7 @@ import { TransactionData } from "./utilities/DataObject";
 import CalendarView3 from "./components/CalendarView3/CalendarView3";
 
 import { temporalValueGetter } from "./utilities/consts/valueGetter";
-import { ScatterPlot } from "./components/ClusterView/ScatterPlot";
+import { ScatterPlot } from "./components/ScatterPlot/ScatterPlot";
 
 import ColourLegendList from "./components/ColourLegend/ColourLegend";
 import * as d3 from 'd3';
@@ -16,7 +16,7 @@ import ExpandableContainer from "./components/Containers/ExpandableContainer";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
 import * as colourLegendSlice from "./components/ColourLegend/colourLegendSlice"
-import * as scatterPlotSlice from "./components/ClusterView/scatterPlotSlice";
+import * as scatterPlotSlice from "./components/ScatterPlot/scatterPlotSlice";
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 
 import dynamic from 'next/dynamic'//no ssr 
@@ -173,26 +173,40 @@ export default function App() {
                         </ExpandableContainer>
                     </div>
                 </div>
-                {/* <FolderableContainer label="brushed data" initIsFolded={true}>
-                    <TableView transactionDataArr={transactionDataArr}
-                        handleClearSelect={() => setBrushedTransactionNumberSet(new Set())}
-                        transactionNumberSet={brushedTransactionNumberSet} colourScale={colourScale}
-                        colourValueGetter={PUBLIC_VALUEGETTER.colour}></TableView>
-                </FolderableContainer> */}
-                <ClusterView2 data={clusterViewDataPrepared}
-                    layout={clusterViewLayoutPrepared}
-                    handleSelectIndex={handleSelectIndex}
-                ></ClusterView2>
-                <ClusterViewControlPannel></ClusterViewControlPannel>
-                <FrequencyControlPannel />
-                <TableViewCollection transactionDataArr={transactionDataArr}
-                    brushedTransactionNumberSet={brushedTransactionNumberSet}
-                    handleClearBrush={() => setBrushedTransactionNumberSet(new Set())}
-                    selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
-                    handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
-                    colourScale={colourScale}
-                    colourValueGetter={PUBLIC_VALUEGETTER.colour}
-                ></TableViewCollection>
+
+                <div className="grid grid-cols-12">
+                    <div className="col-span-4">
+                        <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
+                            initStyle={getExpandableContainerStyle('initStyle')}
+                            expandedStyle={getExpandableContainerStyle('expandedStyle')}
+                        >
+                            <div>
+                                <ClusterView2 data={clusterViewDataPrepared}
+                                    layout={clusterViewLayoutPrepared}
+                                    handleSelectIndex={handleSelectIndex}
+                                ></ClusterView2>
+                            </div>
+                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px' }}>
+                                <FolderableContainer label="ControlPannel" initIsFolded={true}>
+                                    <div style={{ height: '300px', overflowY: 'scroll' }}>
+                                        <ClusterViewControlPannel></ClusterViewControlPannel>
+                                        <FrequencyControlPannel />
+                                    </div>
+                                </FolderableContainer>
+                            </div>
+                        </ExpandableContainer>
+                    </div>
+                    <div className="col-span-6">
+                        <TableViewCollection transactionDataArr={transactionDataArr}
+                            brushedTransactionNumberSet={brushedTransactionNumberSet}
+                            handleClearBrush={() => setBrushedTransactionNumberSet(new Set())}
+                            selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
+                            handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
+                            colourScale={colourScale}
+                            colourValueGetter={PUBLIC_VALUEGETTER.colour}
+                        ></TableViewCollection>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -204,12 +218,10 @@ function getExpandableContainerStyle(styleType: 'initStyle' | 'expandedStyle'): 
     if (styleType === 'initStyle') {
         return {
             position: 'relative',
-            backgroundColor: 'gray'
         }
     } else {
         return {
             position: 'fixed',
-            backgroundColor: 'gray',
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',

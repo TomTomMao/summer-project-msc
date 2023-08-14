@@ -31,6 +31,7 @@ export default function ClusterView2({ data, layout, handleSelectIndex }: Cluste
     useEffect(() => { setFigure({ data, layout, frames: figure.frames }) }, [data, layout])
 
     return (
+
         <Plot
             data={figure.data}
             layout={figure.layout}

@@ -2,6 +2,7 @@ import { CSSProperties, useState } from "react"
 import { TransactionData } from "../../utilities/DataObject"
 import { PublicScale, PublicValueGetter } from "../../utilities/types"
 import TableView from "./TableView"
+import FolderableContainer from "../Containers/FolderableContainer"
 
 interface TableViewCollectionProps {
     transactionDataArr: TransactionData[], // give it to the tables
@@ -39,29 +40,32 @@ export function TableViewCollection(props: TableViewCollectionProps) {
                     <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={currentTable === 'glyphTable'} onChange={handleChangeCurrentTable} />
                 </label>
             </span>
-            {currentTable === 'brushedTable' && <TableView
-                transactionDataArr={transactionDataArr}
-                transactionNumberSet={brushedTransactionNumberSet}
-                handleClearSelect={handleClearBrush}
-                colourScale={colourScale}
-                colourValueGetter={colourValueGetter}
-            ></TableView>}
-            {currentTable === 'glyphTable' && <TableView
-                transactionDataArr={transactionDataArr}
-                transactionNumberSet={selectedGlyphTransactionNumberSet}
-                handleClearSelect={handleClearGlyph}
-                colourScale={colourScale}
-                colourValueGetter={colourValueGetter}
-            ></TableView>}
+            <FolderableContainer label={"detailed data"} initIsFolded={false} >
+                {currentTable === 'brushedTable' && <TableView
+                    transactionDataArr={transactionDataArr}
+                    transactionNumberSet={brushedTransactionNumberSet}
+                    handleClearSelect={handleClearBrush}
+                    colourScale={colourScale}
+                    colourValueGetter={colourValueGetter}
+                ></TableView>}
+                {currentTable === 'glyphTable' && <TableView
+                    transactionDataArr={transactionDataArr}
+                    transactionNumberSet={selectedGlyphTransactionNumberSet}
+                    handleClearSelect={handleClearGlyph}
+                    colourScale={colourScale}
+                    colourValueGetter={colourValueGetter}
+                ></TableView>}
+            </FolderableContainer>
         </div>
     )
 }
 
 const style: CSSProperties = {
-    position: 'absolute',
-    right: '135px',
-    top: '420px',
+    // position: 'absolute',
+    // right: '135px',
+    // top: '420px',
     overflowY: 'scroll',
-    height:'400px',
-    width: '900px'
+    margin: 'auto auto'
+    // height:'400px',
+    // width: '900px'
 }

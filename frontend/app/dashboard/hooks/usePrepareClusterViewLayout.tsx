@@ -17,7 +17,13 @@ export function usePrepareClusterViewLayout(): ClusterView2Props['layout'] {
             height: data.height,
             title: data.title,
             xaxis: { type: data.xType, autorange: true },
-            yaxis: { type: data.yType, autorange: true }
+            yaxis: { type: data.yType, autorange: true },
+            margin:{
+                b:30,
+                l:30,
+                r:0,
+                t:40
+            }
         }
         return clusterView2Layout
     }, [data])

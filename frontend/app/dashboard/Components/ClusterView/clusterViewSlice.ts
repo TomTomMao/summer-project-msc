@@ -68,14 +68,14 @@ interface ClusterViewState {
   y: ValidAxisLabels;
 }
 const initialState: ClusterViewState = {
-  containerWidth: 500,
-  containerHeight: 400,
+  containerWidth: 545.98,
+  containerHeight: 350,
   expandedContainerWidth: 1500,
   expandedContainerHeight: 700,
   isExpanded: false,
   xLog: false,
   yLog: false,
-  title: "cluster view",
+  title: "",
 
   mainAxis: "log",
 

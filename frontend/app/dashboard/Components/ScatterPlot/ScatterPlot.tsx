@@ -58,7 +58,7 @@ const DEFAULT_STROKE_WIDTH = 1;
 export function ScatterPlot(props: ScatterPlotProps) {
     const { transactionDataArr, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, colourScale } = props;
     const [isSwap, setIsSwap] = useState(false);
-    useEffect(()=>{console.log('colourScaleChanged')},[colourScale])
+    useEffect(() => { console.log('colourScaleChanged') }, [colourScale])
     // configs
     const { currentContainerWidth, currentContainerHeight, margin, useLogScale, width, height } = useScatterPlotConfig()
     const dispatch = useAppDispatch()
@@ -167,22 +167,29 @@ export function ScatterPlot(props: ScatterPlotProps) {
         setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
         console.timeEnd('handleBrush')
     }
-    return (<div className="clusterView">
-        <svg width={currentContainerWidth} height={currentContainerHeight}>
-            <g transform={`translate(${margin.left},${margin.top})`}>
-                <g>{circlesToDisplay}</g>
-                <g ref={brushGRef}></g>
-                <g><AxisLeft yScale={scaleForYAxis} numberOfTicksTarget={6}></AxisLeft></g>
-                <g transform={`translate(0, ${height})`}><AxisBottom xScale={scaleForXAxis} numberOfTicksTarget={6}></AxisBottom></g>
-            </g>
-        </svg>
-        <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
-        <span> main axis: </span>
-        <label htmlFor="scatterPlotUseLog">log</label>
-        <input type="radio" name="scatterPlotUseLog" id="" checked={useLogScale} onChange={() => dispatch(scatterPlotSlice.setMainScale('log'))} />
-        <label htmlFor="scatterPlotUseLinear">linear</label>
-        <input type="radio" name="scatterPlotUseLinear" id="" checked={!useLogScale} onChange={() => dispatch(scatterPlotSlice.setMainScale('linear'))} />
-    </div>
+    return (
+        <div className="clusterView">
+            <div style={{
+                position: 'absolute',
+                left: '40px',
+                top: '5px'
+            }}>
+                <button onClick={() => setIsSwap(!isSwap)}>swap axis</button>
+                <span> main axis: </span>
+                <label htmlFor="scatterPlotUseLog">log</label>
+                <input type="radio" name="scatterPlotUseLog" id="" checked={useLogScale} onChange={() => dispatch(scatterPlotSlice.setMainScale('log'))} />
+                <label htmlFor="scatterPlotUseLinear">linear</label>
+                <input type="radio" name="scatterPlotUseLinear" id="" checked={!useLogScale} onChange={() => dispatch(scatterPlotSlice.setMainScale('linear'))} />
+            </div>
+            <svg width={currentContainerWidth} height={currentContainerHeight}>
+                <g transform={`translate(${margin.left},${margin.top})`}>
+                    <g>{circlesToDisplay}</g>
+                    <g ref={brushGRef}></g>
+                    <g><AxisLeft yScale={scaleForYAxis} numberOfTicksTarget={6}></AxisLeft></g>
+                    <g transform={`translate(0, ${height})`}><AxisBottom xScale={scaleForXAxis} numberOfTicksTarget={6}></AxisBottom></g>
+                </g>
+            </svg>
+        </div>
     );
 }
 
