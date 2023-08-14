@@ -5,7 +5,7 @@ import { PublicScale } from "../utilities/types";
 import { useMemo } from "react";
 import { ClusterView2Props } from "../components/ClusterView/ClusterView2";
 import * as d3 from 'd3'
-export function usePrepareClusterViewData(transactionDataArr: TransactionData[] | null, clusterDataArr: ClusterData[], colourScale: PublicScale['colourScale'] | null): ClusterView2Props['data'] | null {
+export function usePrepareClusterViewData(transactionDataArr: TransactionData[] | null, clusterDataArr: ClusterData[], colourScale: PublicScale['colourScale'] | null): ClusterView2Props['initData'] | null {
     const xLable = useAppSelector(state => state.clusterView.x);
     const yLable = useAppSelector(state => state.clusterView.y);
     const colour = useAppSelector(state => state.clusterView.colour);

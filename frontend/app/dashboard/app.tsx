@@ -181,8 +181,8 @@ export default function App() {
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
                             <div>
-                                <ClusterView2 data={clusterViewDataPrepared}
-                                    layout={clusterViewLayoutPrepared}
+                                <ClusterView2 initData={clusterViewDataPrepared}
+                                    initLayout={clusterViewLayoutPrepared}
                                     handleSelectIndex={handleSelectIndex}
                                 ></ClusterView2>
                             </div>

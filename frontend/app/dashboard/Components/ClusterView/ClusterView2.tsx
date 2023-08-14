@@ -1,13 +1,15 @@
 
 'use client'
 
+import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { PlotSelectionEvent } from 'plotly.js';
 import React, { useEffect, useState } from 'react'
 import Plot, { Figure } from 'react-plotly.js';
+import * as clusterViewSlice from './clusterViewSlice'
 
 export interface ClusterView2Props {
-    data: Plotly.Data[];
-    layout: Partial<Plotly.Layout>;
+    initData: Plotly.Data[];
+    initLayout: Partial<Plotly.Layout>;
     handleSelectIndex: (selectedDataIndex: number[]) => void
 }
 /**
@@ -15,23 +17,42 @@ export interface ClusterView2Props {
  * @param param0 
  * @returns 
  */
-export default function ClusterView2({ data, layout, handleSelectIndex }: ClusterView2Props) {
-    const [figure, setFigure] = useState<Figure>({ data: { ...data }, layout: { ...layout }, frames: [] })
-
-
-    const handleSelected: (event: Readonly<PlotSelectionEvent>) => void = (event) => {
-
-        let pointIndexes: number[] = [];
-
-        if (event) {
-            pointIndexes = event.points.map(point => point.pointIndex)
-        }
-        handleSelectIndex(pointIndexes)
-
-
+export default function ClusterView2({ initData, initLayout, handleSelectIndex }: ClusterView2Props) {
+    const [figure, setFigure] = useState<Figure>({ data: { ...initData }, layout: { ...initLayout }, frames: [] })
+    const datum = figure.data[0]
+    let selectedpoints: number[] | undefined;
+    if ('selectedpoints' in datum) {
+        selectedpoints = datum.selectedpoints as number[]
+    } else {
+        selectedpoints = undefined
     }
+    console.log(datum, selectedpoints)
+    useEffect(() => {
+        if (selectedpoints !== undefined) {
+            handleSelectIndex(selectedpoints)
+        } else {
+            handleSelectIndex([])
+        }
+    }, [selectedpoints])
+    // function handleSelected(event: Readonly<PlotSelectionEvent>) {
+    //     if (Object.getOwnPropertyNames(figure.layout).includes('dragmode')) {
+    //         console.log('bug1', figure.layout)
+    //         let pointIndexes: number[] = [];
 
-    useEffect(() => { setFigure({ data, layout, frames: figure.frames }) }, [data, layout])
+    //         if (event) {
+    //             pointIndexes = event.points.map(point => point.pointIndex)
+    //         }
+    //         if (Object.getOwnPropertyNames(figure.data).includes('selectedpoints')) {
+    //             handleSelectIndex(figure.data['selectedpoints'])
+    //         }
+    //         console.log('flag1')
+    //     } else {
+    //         handleSelectIndex([])
+    //         console.log('flag2')
+    //     }
+    // }
+
+    useEffect(() => { setFigure({ data: initData, layout: initLayout, frames: figure.frames }) }, [initData, initLayout])
 
     return (
 
@@ -43,7 +64,6 @@ export default function ClusterView2({ data, layout, handleSelectIndex }: Cluste
             onUpdate={(nextFigure) => {
                 setFigure(nextFigure)
             }}
-            onSelected={handleSelected}
         />
     );
 }
