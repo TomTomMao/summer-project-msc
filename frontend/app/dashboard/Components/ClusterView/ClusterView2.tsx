@@ -34,23 +34,6 @@ export default function ClusterView2({ initData, initLayout, handleSelectIndex }
             handleSelectIndex([])
         }
     }, [selectedpoints])
-    // function handleSelected(event: Readonly<PlotSelectionEvent>) {
-    //     if (Object.getOwnPropertyNames(figure.layout).includes('dragmode')) {
-    //         console.log('bug1', figure.layout)
-    //         let pointIndexes: number[] = [];
-
-    //         if (event) {
-    //             pointIndexes = event.points.map(point => point.pointIndex)
-    //         }
-    //         if (Object.getOwnPropertyNames(figure.data).includes('selectedpoints')) {
-    //             handleSelectIndex(figure.data['selectedpoints'])
-    //         }
-    //         console.log('flag1')
-    //     } else {
-    //         handleSelectIndex([])
-    //         console.log('flag2')
-    //     }
-    // }
 
     useEffect(() => { setFigure({ data: initData, layout: initLayout, frames: figure.frames }) }, [initData, initLayout])
 
