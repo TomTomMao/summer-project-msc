@@ -2,7 +2,7 @@ import { useAppSelector } from "@/app/hooks";
 import * as clusterViewSlice from '../components/ClusterView/clusterViewSlice'
 import { useMemo } from "react";
 import { ClusterView2Props } from "../components/ClusterView/ClusterView2";
-export function usePrepareClusterViewLayout(): ClusterView2Props['layout'] {
+export function usePrepareClusterViewLayout(): ClusterView2Props['initLayout'] {
     const width = useAppSelector(clusterViewSlice.selectCurrentContainerWidth);
     const height = useAppSelector(clusterViewSlice.selectCurrentContainerHeight);
     const title = useAppSelector(state => state.clusterView.title);

@@ -49,7 +49,7 @@ function ClusterViewMappingControlPannel() {
                         <td>
                             <select name="" id="" value={xLable} onChange={e => handleChangeXLable(e.target.value)}>
                                 <option value="transactionAmount">transaction amount</option>
-                                <option value="frequency">frequency(not supportted)</option>
+                                <option value="frequency">frequency</option>
                                 <option value="dayOfYear">dayOfYear</option>
                                 <option value="balance">balance</option>
                             </select>
@@ -60,7 +60,7 @@ function ClusterViewMappingControlPannel() {
                         <td>
                             <select name="" id="" value={yLable} onChange={e => handleChangeYLable(e.target.value)}>
                                 <option value="transactionAmount">transaction amount</option>
-                                <option value="frequency">frequency(not supportted)</option>
+                                <option value="frequency">frequency</option>
                                 <option value="dayOfYear">dayOfYear</option>
                                 <option value="balance">balance</option>
                             </select>
