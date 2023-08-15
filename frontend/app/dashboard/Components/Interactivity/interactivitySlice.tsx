@@ -71,7 +71,7 @@ export const {
 } = interactivitySlice.actions;
 
 // export the selectors
-export const selectSelectedTransansactionNumberArr = curryInferSelectedTransactionNumber()
+// export const selectSelectedTransansactionNumberArr = curryInferSelectedTransactionNumber()
 
 export const selectSelectedClusterIdArr = (state: RootState) => {
 
