@@ -1,11 +1,14 @@
 import * as colourChannelSlice from "@/app/dashboard/components/ColourChannel/colourChannelSlice";
 import { useAppSelector } from "@/app/hooks";
+import assert from "assert";
 import * as d3 from "d3";
 import { useMemo } from "react";
 
-export function useClusterColourScale() {
-  const domain = useAppSelector(colourChannelSlice.selectClusterColourDomain);
-  const scheme = useAppSelector(colourChannelSlice.selectClusterColourScheme);
+export function useClusterIdColourScale() {
+  const domain = useAppSelector(
+    colourChannelSlice.selectClusterIdColourIdDomain
+  );
+  const scheme = useAppSelector(colourChannelSlice.selectClusterIdColourScheme);
   const colourScale = useColourScale(domain, scheme);
   return colourScale;
 }
@@ -39,7 +42,7 @@ function useColourScale(
   colourScheme: colourChannelSlice.ColourScheme
 ) {
   const colourScale = useMemo(() => {
-    var interpolateFunction: ((t: number) => string) | undefined = undefined;
+    let interpolateFunction: ((t: number) => string) | undefined = undefined;
     switch (colourScheme) {
       case "PiYG":
         interpolateFunction = d3["interpolatePiYG"];
@@ -58,14 +61,17 @@ function useColourScale(
     if (interpolateFunction === undefined) {
       throw new Error("interpolateFunction is not defined!");
     }
+    const func = interpolateFunction;
     const colourRange = d3
-      .quantize(
-        (t) => d3.interpolateSpectral(t * 0.8 + 0.1),
-        colourDomain.length
-      )
+      .quantize((t) => func(t * 0.8 + 0.1), colourDomain.length)
       .reverse();
     const scale = d3.scaleOrdinal(colourDomain, colourRange);
+    console.log("debug1 colourDomain", colourDomain);
+    console.log("debug1 colourScheme", colourScheme);
+    console.log("debug1 interpolateFunction", interpolateFunction);
+    console.log("debug1 scale", scale);
     return scale;
   }, [colourDomain, colourScheme]);
+
   return colourScale;
 }

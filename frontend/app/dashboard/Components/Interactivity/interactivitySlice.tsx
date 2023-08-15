@@ -3,6 +3,7 @@ import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { TransactionData } from "../../utilities/DataObject";
 import { ClusterData } from "../../utilities/clusterDataObject";
+import * as colourChannelSlice from "../ColourChannel/colourChannelSlice";
 
 /**
  * key is the domain value for the colour channel
@@ -12,9 +13,9 @@ interface InteractivityState {
     transactionDataArr: TransactionData[],
     clusterDataArr: ClusterData[],
     selectedTransactionDataIndexArr: number[], // array for easy loop through
-    selectedClusterIdSet: Set<ClusterData['clusterId']>,
-    selectedCategorySet: Set<TransactionData['category']>,
-    selectedFrequencyUniqueKeySet: Set<TransactionData['frequencyUniqueKey']>
+    selectedClusterIdArr: Array<ClusterData['clusterId']>,
+    selectedCategoryArr: Array<TransactionData['category']>,
+    selectedFrequencyUniqueKeyArr: Array<TransactionData['frequencyUniqueKey']>
 }
 
 const initialState: InteractivityState = {
@@ -22,9 +23,9 @@ const initialState: InteractivityState = {
     transactionDataArr: [],
     clusterDataArr: [],
     selectedTransactionDataIndexArr: [],
-    selectedClusterIdSet: new Set(),
-    selectedCategorySet: new Set(),
-    selectedFrequencyUniqueKeySet: new Set()
+    selectedClusterIdArr: [],
+    selectedCategoryArr: [],
+    selectedFrequencyUniqueKeyArr: []
 };
 
 export const interactivitySlice = createSlice({
@@ -48,14 +49,26 @@ export const interactivitySlice = createSlice({
             })
             state.selectedTransactionDataIndexArr = action.payload
         },
-        setSelectedClusterIdSet(state, action: PayloadAction<Set<ClusterData['clusterId']> | Array<ClusterData['clusterId']>>) {
-            state.selectedClusterIdSet = new Set(action.payload)
+        toggleClusterId(state, action: PayloadAction<ClusterData['clusterId']>) {
+            if (state.selectedClusterIdArr.includes(action.payload)) {
+                state.selectedClusterIdArr = state.selectedClusterIdArr.filter(item => item !== action.payload)
+            } else {
+                state.selectedClusterIdArr.push(action.payload)
+            }
         },
-        setSelectedCategorySet(state, action: PayloadAction<Set<TransactionData['category']> | Array<TransactionData['category']>>) {
-            state.selectedCategorySet = new Set(action.payload)
+        toggleCategory(state, action: PayloadAction<TransactionData['category']>) {
+            if (state.selectedCategoryArr.includes(action.payload)) {
+                state.selectedCategoryArr = state.selectedCategoryArr.filter(item => item !== action.payload)
+            } else {
+                state.selectedCategoryArr.push(action.payload)
+            }
         },
-        setSelectedFrequencyUniqueKeySet(state, action: PayloadAction<Set<TransactionData['frequencyUniqueKey']> | Array<TransactionData['frequencyUniqueKey']>>) {
-            state.selectedFrequencyUniqueKeySet = new Set(action.payload)
+        toggleFrequencyUniqueKey(state, action: PayloadAction<TransactionData['frequencyUniqueKey']>) {
+            if (state.selectedFrequencyUniqueKeyArr.includes(action.payload)) {
+                state.selectedFrequencyUniqueKeyArr = state.selectedFrequencyUniqueKeyArr.filter(item => item !== action.payload)
+            } else {
+                state.selectedFrequencyUniqueKeyArr.push(action.payload)
+            }
         }
     },
 });
@@ -65,16 +78,34 @@ export const {
     setTransactionDataArr,
     setClusterDataArr,
     setSelectedTransactionIndexArr,
-    setSelectedClusterIdSet,
-    setSelectedCategorySet,
-    setSelectedFrequencyUniqueKeySet
+    toggleClusterId,
+    toggleCategory,
+    toggleFrequencyUniqueKey
 } = interactivitySlice.actions;
 
 // export the selectors
-// export const selectSelectedTransansactionNumberArr = curryInferSelectedTransactionNumber()
 
+// these three is for colour legends
 export const selectSelectedClusterIdArr = (state: RootState) => {
-
+    if (state.interactivity.selectedClusterIdArr.length === 0) {
+        return colourChannelSlice.selectClusterIdColourIdDomain(state)
+    } else {
+        return state.interactivity.selectedClusterIdArr
+    }
+}
+export const selectSelectedCategoryArr = (state: RootState) => {
+    if (state.interactivity.selectedCategoryArr.length === 0) {
+        return colourChannelSlice.selectCategoryColourDomain(state)
+    } else {
+        return state.interactivity.selectedCategoryArr
+    }
+}
+export const selectSelectedFrequencyUniqueKeyArr = (state: RootState) => {
+    if (state.interactivity.selectedFrequencyUniqueKeyArr.length === 0) {
+        return colourChannelSlice.selectFrequencyUniqueKeyColourDomain(state)
+    } else {
+        return state.interactivity.selectedFrequencyUniqueKeyArr
+    }
 }
 
 export const selectTransactionDataArr = (state: RootState) => {
@@ -85,14 +116,3 @@ export const selectClusterDataArr = (state: RootState) => {
 }
 
 export default interactivitySlice.reducer;
-
-// /**
-//  * If the elements of the number set doesn't change, it return the same reference the last set.
-//  * @returns 
-//  */
-// function curryInferSelectedTransactionNumber() {
-//     let lastSelectedTransactionNumberSet = new Set();
-//     return (state: RootState['interactivity']): Set<TransactionData['transactionNumber']> => {
-        
-//     }
-// }

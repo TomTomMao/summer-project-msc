@@ -5,7 +5,7 @@ import { ScaleOrdinal } from "d3";
 
 export type ColourScheme = "PuOr" | "Spectral" | "PiYG";
 
-export interface ColourChannelState {
+export type ColourChannelState = {
   cluster: {
     scheme: ColourScheme;
     scaleFunction: ScaleOrdinal<string, string, never> | null;
@@ -107,7 +107,7 @@ function outerSelectClusterColourDomain() {
     return lastClusterColourDomain;
   };
 }
-export const selectClusterColourDomain = outerSelectClusterColourDomain();
+export const selectClusterIdColourIdDomain = outerSelectClusterColourDomain();
 
 function outerSelectCategoryColourDomain() {
   let lastCategoryColourDomain: string[] | null = null;
@@ -192,18 +192,11 @@ function outerSelectFrequencyUniqueKeyColourDomain() {
 export const selectFrequencyUniqueKeyColourDomain =
   outerSelectFrequencyUniqueKeyColourDomain();
 
-export const selectClusterColourScheme = (state: RootState) =>
+export const selectClusterIdColourScheme = (state: RootState) =>
   state.colourChannel.cluster.scheme;
 export const selectCategoryColourScheme = (state: RootState) =>
   state.colourChannel.category.scheme;
 export const selectFrequencyUniqueKeyColourScheme = (state: RootState) =>
   state.colourChannel.frequencyUniqueKey.scheme;
-
-export const selectClusterColourScaleFunction = (state: RootState) =>
-  state.colourChannel.cluster.scaleFunction;
-export const selectCategoryColourScaleFunction = (state: RootState) =>
-  state.colourChannel.category.scaleFunction;
-export const selectFrequencyUniqueKeyColourScaleFunction = (state: RootState) =>
-  state.colourChannel.frequencyUniqueKey.scaleFunction;
 
 export default colourChannelSlice.reducer;

@@ -19,6 +19,13 @@ export interface ClusterView2Props {
  */
 export default function ClusterView2({ initData, initLayout, handleSelectIndex }: ClusterView2Props) {
     const [figure, setFigure] = useState<Figure>({ data: { ...initData }, layout: { ...initLayout }, frames: [] })
+    if (figure === undefined) {
+        throw new Error('figure')
+    }
+    if (figure.data === undefined) {
+        console.log('figure debug', figure)
+        throw new Error('figure.data is not defined, search "figure debug" in console')
+    }
     const datum = figure.data[0]
     let selectedpoints: number[] | undefined;
     if ('selectedpoints' in datum) {

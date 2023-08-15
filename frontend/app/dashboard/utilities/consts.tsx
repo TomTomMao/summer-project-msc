@@ -9,3 +9,5 @@ export const apiUrl = `http://${serverConfig.backend.ip}:${serverConfig.backend.
  * value getter for getting the domain value of the public scale
  */
 export const PUBLIC_VALUEGETTER = { colour: (d: TransactionData) => d.category }
+
+export const GRAY1 = 'RGB(233,233,233)'

@@ -27,10 +27,11 @@ import { usePrepareClusterViewLayout } from "./hooks/usePrepareClusterViewLayout
 
 import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";
 import { useTransactionDataArr } from "./hooks/useTransactionData";
-import { useClusterColourScale, useCategoryColourScale, useFrequencyUniqueKeyColourScale } from "./hooks/useColourScales";
+import { useClusterIdColourScale, useCategoryColourScale, useFrequencyUniqueKeyColourScale } from "./hooks/useColourScales";
 
 import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyControlPannel";
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
+import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "./components/ColourLegend/ColourLegends";
 
 // used for fixing the plotly scatter plot 'self not found' error
 const ClusterView2 = dynamic(
@@ -44,7 +45,7 @@ export default function App() {
     useSyncTransactionDataAndClusterData(); // app is reponsible for checking the relative states in the redux store and update the transactionDataArr and Clus
     const categoryColourScale = useCategoryColourScale()
     useEffect(() => console.log('categoryColourScale:', categoryColourScale.domain(), categoryColourScale.range()), [categoryColourScale])
-    const clusterColourScale = useClusterColourScale()
+    const clusterColourScale = useClusterIdColourScale()
     useEffect(() => console.log('clusterColourScale:', clusterColourScale.domain(), clusterColourScale.range()), [clusterColourScale])
     const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()
     useEffect(() => console.log('frequencyUniqueKeyColourScale:', frequencyUniqueKeyColourScale.domain(), frequencyUniqueKeyColourScale.range()), [frequencyUniqueKeyColourScale])
@@ -134,7 +135,7 @@ export default function App() {
         })
         return setOfTheDay
     }, [detailDay, transactionDataArr, isSuperPositioned])
-    if (transactionDataArr === null || clusterViewDataPrepared === null) {
+    if (transactionDataArr === null || clusterViewDataPrepared === null || clusterViewDataPrepared === undefined) {
         return <>loading...</>
     } else if (colourScale === null) {
         return <>initialising colour scale</>
@@ -217,6 +218,9 @@ export default function App() {
                         ></TableViewCollection>
                     </div>
                 </div>
+                <CategoryColourLegend></CategoryColourLegend>
+                <ClusterIdColourLegend></ClusterIdColourLegend>
+                <FrequencyUniqueKeyColourLegend></FrequencyUniqueKeyColourLegend>
             </div>
         )
     }
