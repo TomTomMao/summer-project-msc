@@ -1,85 +1,31 @@
 import * as colourChannelSlice from "@/app/dashboard/components/ColourChannel/colourChannelSlice";
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useAppSelector } from "@/app/hooks";
 import * as d3 from "d3";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 export function useClusterColourScale() {
-  const scaleFunction = useAppSelector(
-    colourChannelSlice.selectClusterColourScaleFunction
-  );
-  return scaleFunction;
+  const domain = useAppSelector(colourChannelSlice.selectClusterColourDomain);
+  const scheme = useAppSelector(colourChannelSlice.selectClusterColourScheme);
+  const colourScale = useColourScale(domain, scheme);
+  return colourScale;
 }
 
 export function useCategoryColourScale() {
-  const scaleFunction = useAppSelector(
-    colourChannelSlice.selectCategoryColourScaleFunction
-  );
-  return scaleFunction;
+  const domain = useAppSelector(colourChannelSlice.selectCategoryColourDomain);
+  const scheme = useAppSelector(colourChannelSlice.selectCategoryColourScheme);
+  const colourScale = useColourScale(domain, scheme);
+  return colourScale;
 }
 
 export function useFrequencyUniqueKeyColourScale() {
-  const scaleFunction = useAppSelector(
-    colourChannelSlice.selectFrequencyUniqueKeyColourScaleFunction
-  );
-  return scaleFunction;
-}
-
-/**
- * synchronise all the colour scale
- */
-export function useSyncColourScales() {
-  useSyncClusterColourScale();
-  useSyncCategoryColourScale();
-  useSyncFrequencyUniqueKeyColourScale();
-}
-
-/**
- * synchronise ClusterColourScale
- */
-function useSyncClusterColourScale() {
-  const dispatch = useAppDispatch();
-  const colourDomain = useAppSelector(
-    colourChannelSlice.selectClusterColourDomain
-  );
-  const colourScheme = useAppSelector(
-    colourChannelSlice.selectClusterColourScheme
-  );
-  const colourScale = useColourScale(colourDomain, colourScheme);
-  useEffect(() => {
-    dispatch(colourChannelSlice.setClusterColourScale(colourScale));
-  }, [colourScale]);
-}
-/**
- * synchronise CategoryColourScale
- */
-function useSyncCategoryColourScale() {
-  const dispatch = useAppDispatch();
-  const colourDomain = useAppSelector(
-    colourChannelSlice.selectCategoryColourDomain
-  );
-  const colourScheme = useAppSelector(
-    colourChannelSlice.selectCategoryColourScheme
-  );
-  const colourScale = useColourScale(colourDomain, colourScheme);
-  useEffect(() => {
-    dispatch(colourChannelSlice.setCategoryColourScale(colourScale));
-  }, [colourScale]);
-}
-/**
- * synchronise FrequencyUniqueKeyColourScale
- */
-function useSyncFrequencyUniqueKeyColourScale() {
-  const dispatch = useAppDispatch();
-  const colourDomain = useAppSelector(
+  const domain = useAppSelector(
     colourChannelSlice.selectFrequencyUniqueKeyColourDomain
   );
-  const colourScheme = useAppSelector(
+  const scheme = useAppSelector(
     colourChannelSlice.selectFrequencyUniqueKeyColourScheme
   );
-  const colourScale = useColourScale(colourDomain, colourScheme);
-  useEffect(() => {
-    dispatch(colourChannelSlice.setFrequencyUniqueKeyColourScale(colourScale));
-  }, [colourScale]);
+  const colourScale = useColourScale(domain, scheme);
+  return colourScale;
 }
 
 /**
