@@ -39,6 +39,6 @@ export function useTransactionDataArr() {
         dataAgent.updateFrequencyInfo(frequencyUniqueKeyConfig, metric1, metric2, numberOfCluster)
             .then(newTransactionDataArr => setTransactionDataArr(newTransactionDataArr))
     }, [frequencyUniqueKey, distanceMeasure, linkageMethod, numberOfClusterForString])
-
+    console.log(transactionDataArr)
     return transactionDataArr
 }

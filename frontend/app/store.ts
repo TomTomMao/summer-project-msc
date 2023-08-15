@@ -6,6 +6,7 @@ import clusterViewReducer from "./dashboard/components/ClusterView/clusterViewSl
 import colourLegendReducer from "./dashboard/components/ColourLegend/colourLegendSlice";
 import pieDayViewReducer from "./dashboard/components/CalendarView3/DayViews/pieDayViewSlice";
 import scatterPlotReducer from "@/app/dashboard/components/ScatterPlot/scatterPlotSlice";
+import interactivityReducer from "@/app/dashboard/components/Interactivity/interactivitySlice";
 export const store = configureStore({
   reducer: {
     barDayView: barDayViewReducer,
@@ -14,6 +15,7 @@ export const store = configureStore({
     clusterView: clusterViewReducer,
     colourLegend: colourLegendReducer,
     scatterPlot: scatterPlotReducer,
+    interactivity: interactivityReducer,
   },
 });
 
