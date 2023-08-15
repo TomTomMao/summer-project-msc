@@ -36,6 +36,7 @@ export const interactivitySlice = createSlice({
             state.transactionDataArr = action.payload
         },
         setClusterDataArr(state, action: PayloadAction<ClusterData[]>) {
+            state.selectedClusterIdArr = []
             state.clusterDataArr = action.payload
         },
         /**

@@ -18,7 +18,8 @@ export interface ClusterView2Props {
  * @returns 
  */
 export default function ClusterView2({ initData, initLayout, handleSelectIndex }: ClusterView2Props) {
-    const [figure, setFigure] = useState<Figure>({ data: { ...initData }, layout: { ...initLayout }, frames: [] })
+    const [figure, setFigure] = useState<Figure>({ data: initData , layout: initLayout , frames: [] })
+
     if (figure === undefined) {
         throw new Error('figure')
     }
