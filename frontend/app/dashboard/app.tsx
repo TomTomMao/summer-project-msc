@@ -21,7 +21,7 @@ import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 
 import dynamic from 'next/dynamic'//no ssr 
 import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel";
-import useClusterData from "./hooks/useClusterData";
+import useClusterDataArr from "./hooks/useClusterData";
 import { usePrepareClusterViewData } from "./hooks/userPrepareClusterViewData";
 import { usePrepareClusterViewLayout } from "./hooks/usePrepareClusterViewLayout";
 
@@ -29,6 +29,7 @@ import * as dataAgent from './utilities/dataAgent'
 import { useTransactionDataArr } from "./hooks/useTransactionData";
 import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyControlPannel";
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
+import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";
 
 // used for fixing the plotly scatter plot 'self not found' error
 const ClusterView2 = dynamic(
@@ -39,7 +40,10 @@ const ClusterView2 = dynamic(
 export default function App() {
     // const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
     const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set()) // cluster view's points in the brusher
+    useSyncTransactionDataAndClusterData(); // app is reponsible for checking the relative states in the redux store and update the transactionDataArr and Clus
+
     const transactionDataArr = useTransactionDataArr();
+    const clusterDataArr = useClusterDataArr()
     // cluster view's initial y axis's scale
     const [scatterPlotValueGetter, setScatterPlotValueGetter] = useState(temporalValueGetter);
 
@@ -108,7 +112,7 @@ export default function App() {
             }
         }
     }
-    const clusterDataArr = useClusterData(transactionDataArr)
+
     const clusterViewDataPrepared = usePrepareClusterViewData(transactionDataArr, clusterDataArr, colourScale)
     const clusterViewLayoutPrepared = usePrepareClusterViewLayout();
     const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)

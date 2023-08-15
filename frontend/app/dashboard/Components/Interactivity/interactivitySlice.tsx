@@ -77,6 +77,13 @@ export const selectSelectedClusterIdArr = (state: RootState) => {
 
 }
 
+export const selectTransactionDataArr = (state: RootState) => {
+    return state.interactivity.transactionDataArr
+}
+export const selectClusterDataArr = (state: RootState) => {
+    return state.interactivity.clusterDataArr
+}
+
 export default interactivitySlice.reducer;
 
 // /**

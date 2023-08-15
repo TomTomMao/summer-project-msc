@@ -36,15 +36,16 @@ export type LinkageMethod =
   | "centroid"
   | "median"
   | "ward";
-export type FrequencyConfig =
-  | { frequencyUniqueKey: "transactionDescription" | "category" }
-  | {
-      frequencyUniqueKey: "clusteredTransactionDescription";
-      stringClusterAlgorithm: StringClusteringAlgorithm;
-      distanceMeasure: DistanceMeasure;
-      linkageMethod: LinkageMethod;
-      numberOfClusterForString: number;
-    };
+export type FrequencyConfig = {
+  frequencyUniqueKey:
+    | "transactionDescription"
+    | "category"
+    | "clusteredTransactionDescription";
+  stringClusterAlgorithm: StringClusteringAlgorithm;
+  distanceMeasure: DistanceMeasure;
+  linkageMethod: LinkageMethod;
+  numberOfClusterForString: number;
+};
 
 interface ClusterViewState {
   // for usePrepareClusterViewLayout
@@ -91,7 +92,11 @@ const initialState: ClusterViewState = {
   },
 
   frequencyConfig: {
-    frequencyUniqueKey: "transactionDescription",
+    frequencyUniqueKey: "clusteredTransactionDescription",
+    stringClusterAlgorithm: "linkage",
+    distanceMeasure: "levenshtein",
+    linkageMethod: "ward",
+    numberOfClusterForString: 250,
   },
 
   clusterData: [],
@@ -154,8 +159,8 @@ export const clusterViewSlice = createSlice({
       state.frequencyConfig = action.payload;
     },
     removeJustChangedSize(state) {
-      state.justChangedSize = false
-    }
+      state.justChangedSize = false;
+    },
   },
 });
 
@@ -173,7 +178,7 @@ export const {
   setYScale,
   swap,
   setFrequency,
-  removeJustChangedSize
+  removeJustChangedSize,
 } = clusterViewSlice.actions;
 
 // export the selectors
@@ -236,41 +241,18 @@ export const selectStringClusterAlgorithm = function (
 
 export const selectDistanceMeasure = function (
   state: RootState
-): DistanceMeasure | null {
-  if (
-    state.clusterView.frequencyConfig.frequencyUniqueKey ===
-    "clusteredTransactionDescription"
-  ) {
-    return state.clusterView.frequencyConfig.distanceMeasure;
-  } else {
-    return null;
-  }
+): DistanceMeasure {
+  return state.clusterView.frequencyConfig.distanceMeasure;
 };
 
-export const selectLinkageMethod = function (
-  state: RootState
-): LinkageMethod | null {
-  if (
-    state.clusterView.frequencyConfig.frequencyUniqueKey ===
-    "clusteredTransactionDescription"
-  ) {
-    return state.clusterView.frequencyConfig.linkageMethod;
-  } else {
-    return null;
-  }
+export const selectLinkageMethod = function (state: RootState): LinkageMethod {
+  return state.clusterView.frequencyConfig.linkageMethod;
 };
 
 export const selectNumberOfClusterForString = function (
   state: RootState
-): number | null {
-  if (
-    state.clusterView.frequencyConfig.frequencyUniqueKey ===
-    "clusteredTransactionDescription"
-  ) {
-    return state.clusterView.frequencyConfig.numberOfClusterForString;
-  } else {
-    return null;
-  }
+): number {
+  return state.clusterView.frequencyConfig.numberOfClusterForString;
 };
 export const selectJustChangedSize = function (state: RootState) {
   return state.clusterView.justChangedSize;
