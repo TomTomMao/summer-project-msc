@@ -54,21 +54,33 @@ export const interactivitySlice = createSlice({
             if (state.selectedClusterIdArr.includes(action.payload)) {
                 state.selectedClusterIdArr = state.selectedClusterIdArr.filter(item => item !== action.payload)
             } else {
-                state.selectedClusterIdArr.push(action.payload)
+                if (new Set(state.clusterDataArr.map(d => d.clusterId)).size === state.selectedClusterIdArr.length + 1) {
+                    state.selectedClusterIdArr = []
+                } else {
+                    state.selectedClusterIdArr.push(action.payload)
+                }
             }
         },
         toggleCategory(state, action: PayloadAction<TransactionData['category']>) {
             if (state.selectedCategoryArr.includes(action.payload)) {
                 state.selectedCategoryArr = state.selectedCategoryArr.filter(item => item !== action.payload)
             } else {
-                state.selectedCategoryArr.push(action.payload)
+                if (new Set(state.transactionDataArr.map(d => d.category)).size === state.selectedCategoryArr.length + 1) {
+                    state.selectedCategoryArr = []
+                } else {
+                    state.selectedCategoryArr.push(action.payload)
+                }
             }
         },
         toggleFrequencyUniqueKey(state, action: PayloadAction<TransactionData['frequencyUniqueKey']>) {
             if (state.selectedFrequencyUniqueKeyArr.includes(action.payload)) {
                 state.selectedFrequencyUniqueKeyArr = state.selectedFrequencyUniqueKeyArr.filter(item => item !== action.payload)
             } else {
-                state.selectedFrequencyUniqueKeyArr.push(action.payload)
+                if (new Set(state.transactionDataArr.map(d => d.frequencyUniqueKey)).size === state.selectedFrequencyUniqueKeyArr.length + 1) {
+                    state.selectedFrequencyUniqueKeyArr = []
+                } else {
+                    state.selectedFrequencyUniqueKeyArr.push(action.payload)
+                }
             }
         }
     },

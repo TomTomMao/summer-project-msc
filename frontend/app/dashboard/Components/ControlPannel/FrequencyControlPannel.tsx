@@ -17,11 +17,11 @@ export function FrequencyControlPannel() {
     const [linkageMethod, setLinkageMethod] = useState(initLinkageMethod === null ? 'average' : initLinkageMethod)
     const initNumberOfClusterForString = useAppSelector(clusterViewSlice.selectNumberOfClusterForString)
     const [numberOfClusterForString, setNumberOfClusterForString] = useState(initNumberOfClusterForString === null ? 100 : initNumberOfClusterForString)
-    const isChanged = initFrequencyUniqueKey !== frequencyUniqueKey 
-    || initStringClusterAlgorithm !== stringClusterAlgorithm 
-    || initDistanceMeasure !== distanceMeasure
-    || initLinkageMethod !== linkageMethod
-    || initNumberOfClusterForString !== numberOfClusterForString
+    const isChanged = initFrequencyUniqueKey !== frequencyUniqueKey
+        || initStringClusterAlgorithm !== stringClusterAlgorithm
+        || initDistanceMeasure !== distanceMeasure
+        || initLinkageMethod !== linkageMethod
+        || initNumberOfClusterForString !== numberOfClusterForString
     const dispatch = useAppDispatch()
 
     const handleReset = () => {
@@ -32,18 +32,12 @@ export function FrequencyControlPannel() {
     }
     const handleSave = () => {
         let frequencyConfig: clusterViewSlice.FrequencyConfig
-        if (frequencyUniqueKey === 'clusteredTransactionDescription') {
-            frequencyConfig = {
-                frequencyUniqueKey: frequencyUniqueKey,
-                stringClusterAlgorithm,
-                distanceMeasure,
-                linkageMethod,
-                numberOfClusterForString
-            }
-        } else {
-            frequencyConfig = {
-                frequencyUniqueKey: frequencyUniqueKey,
-            }
+        frequencyConfig = {
+            frequencyUniqueKey: frequencyUniqueKey,
+            stringClusterAlgorithm,
+            distanceMeasure,
+            linkageMethod,
+            numberOfClusterForString
         }
         dispatch(clusterViewSlice.setFrequency(frequencyConfig))
     }
