@@ -66,10 +66,6 @@ function useColourScale(
       .quantize((t) => func(t * 0.8 + 0.1), colourDomain.length)
       .reverse();
     const scale = d3.scaleOrdinal(colourDomain, colourRange);
-    console.log("debug1 colourDomain", colourDomain);
-    console.log("debug1 colourScheme", colourScheme);
-    console.log("debug1 interpolateFunction", interpolateFunction);
-    console.log("debug1 scale", scale);
     return scale;
   }, [colourDomain, colourScheme]);
 
