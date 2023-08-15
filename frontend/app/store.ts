@@ -7,6 +7,7 @@ import colourLegendReducer from "./dashboard/components/ColourLegend/colourLegen
 import pieDayViewReducer from "./dashboard/components/CalendarView3/DayViews/pieDayViewSlice";
 import scatterPlotReducer from "@/app/dashboard/components/ScatterPlot/scatterPlotSlice";
 import interactivityReducer from "@/app/dashboard/components/Interactivity/interactivitySlice";
+import colourChannelReducer from "@/app/dashboard/components/ColourChannel/colourChannelSlice";
 export const store = configureStore({
   reducer: {
     barDayView: barDayViewReducer,
@@ -16,6 +17,7 @@ export const store = configureStore({
     colourLegend: colourLegendReducer,
     scatterPlot: scatterPlotReducer,
     interactivity: interactivityReducer,
+    colourChannel: colourChannelReducer,
   },
 });
 
