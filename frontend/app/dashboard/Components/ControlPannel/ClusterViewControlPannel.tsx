@@ -160,7 +160,7 @@ function ClusterAlgorithmControlPannel() {
                             <Button onClick={resetTable} available={isChanged}>reset</Button>
                         </td>
                         <td>
-                            <Button onClick={saveTable} available={isChanged}>save</Button>
+                            <Button onClick={saveTable} available={isChanged}>update</Button>
                         </td>
                     </tr>
                 </tbody>

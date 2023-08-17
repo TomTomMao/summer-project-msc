@@ -199,9 +199,11 @@ export default function App() {
                             </div>
                             <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px' }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div style={{ height: '400px', overflowY: 'scroll' }}>
+                                    <div style={{ height: '450px',  backgroundColor:'RGB(197,197,197)'}}>
+                                        <div style={{margin: '2px'}}>
                                         <ClusterViewControlPannel></ClusterViewControlPannel>
                                         <FrequencyControlPannel />
+                                        </div>
                                     </div>
                                 </FolderableContainer>
                             </div>

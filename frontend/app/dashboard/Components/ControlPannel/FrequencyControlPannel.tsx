@@ -57,7 +57,7 @@ export function FrequencyControlPannel() {
                 />
                 <hr />
                 <Button onClick={handleReset} available={isChanged} >reset</Button>
-                <Button onClick={handleSave} available={isChanged}>save</Button>
+                <Button onClick={handleSave} available={isChanged}>update</Button>
             </div>
             <hr />
         </>
