@@ -10,7 +10,7 @@ export default function ColourLegendList({ colourScale }: { colourScale: PublicS
     const colourMappingArr = domainArr.map(domain => {
         return {
             domain: domain,
-            value: colourScale(domain),
+            value: colourScale.getColour(domain),
             highLighted: allHighLighted || highLightedDomainSet.has(domain)
         }
     })

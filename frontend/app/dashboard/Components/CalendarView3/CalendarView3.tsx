@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as calendarViewSlice from './calendarViewSlice'
 import * as barDayViewSlice from './DayViews/barDayViewSlice'
 import { ColourDomainInfo } from "../ColourLegend/colourLegendSlice";
+import { useCategoryColourScale } from "../../hooks/useColourScales";
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type HighLightedColourDomainValueSetByLegend = Set<ColourDomainInfo['domainValue']>
@@ -45,9 +46,10 @@ export type Day = {
     year: number;
 };
 
-export default function CalendarView3({ transactionDataArr, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, initCurrentYear, colourScale, colourValueGetter }:
+export default function CalendarView3(props:
     CalendarViewProps) {
-
+    const { transactionDataArr, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend } = props
+    const colourScale = useCategoryColourScale()
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
 
     // config

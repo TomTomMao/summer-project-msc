@@ -22,7 +22,7 @@ import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 import dynamic from 'next/dynamic'//no ssr 
 import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel";
 import useClusterDataArr from "./hooks/useClusterData";
-import { usePrepareClusterViewData } from "./hooks/userPrepareClusterViewData";
+import { usePrepareClusterViewData } from "./hooks/usePrepareClusterViewData";
 import { usePrepareClusterViewLayout } from "./hooks/usePrepareClusterViewLayout";
 
 import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";
@@ -32,6 +32,7 @@ import { useClusterIdColourScale, useCategoryColourScale, useFrequencyUniqueKeyC
 import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyControlPannel";
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "./components/ColourLegend/ColourLegends";
+import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
 
 // used for fixing the plotly scatter plot 'self not found' error
 const ClusterView2 = dynamic(
@@ -40,15 +41,17 @@ const ClusterView2 = dynamic(
 )
 
 export default function App() {
-    // const [transactionDataArr, setTransactionDataArr] = useState<Array<TransactionData> | null>(null)
-    const [brushedTransactionNumberSet, setBrushedTransactionNumberSet] = useState<Set<TransactionData['transactionNumber']>>(new Set()) // cluster view's points in the brusher
+    const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
+    const brushedTransactionNumberSet = useMemo(() => new Set(brushedTransactionNumberArr), [brushedTransactionNumberArr])
+    useEffect(() => { console.log('brushedTransactionNumberArr updated', brushedTransactionNumberArr) }, [brushedTransactionNumberArr])
+
     useSyncTransactionDataAndClusterData(); // app is reponsible for checking the relative states in the redux store and update the transactionDataArr and Clus
-    const categoryColourScale = useCategoryColourScale()
-    useEffect(() => console.log('categoryColourScale:', categoryColourScale.domain(), categoryColourScale.range()), [categoryColourScale])
-    const clusterColourScale = useClusterIdColourScale()
-    useEffect(() => console.log('clusterColourScale:', clusterColourScale.domain(), clusterColourScale.range()), [clusterColourScale])
-    const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()
-    useEffect(() => console.log('frequencyUniqueKeyColourScale:', frequencyUniqueKeyColourScale.domain(), frequencyUniqueKeyColourScale.range()), [frequencyUniqueKeyColourScale])
+    const categoryColourScaleWithTransactionNumber = useCategoryColourScale()
+    useEffect(() => console.log('categoryColourScale:', categoryColourScaleWithTransactionNumber.domain(), categoryColourScaleWithTransactionNumber.range()), [categoryColourScaleWithTransactionNumber])
+    const clusterColourScaleWithTransactionNumber = useClusterIdColourScale()
+    useEffect(() => console.log('clusterColourScale:', clusterColourScaleWithTransactionNumber.domain(), clusterColourScaleWithTransactionNumber.range()), [clusterColourScaleWithTransactionNumber])
+    const frequencyUniqueKeyColourScaleWithTransactionNumber = useFrequencyUniqueKeyColourScale()
+    useEffect(() => console.log('frequencyUniqueKeyColourScale:', frequencyUniqueKeyColourScaleWithTransactionNumber.domain(), frequencyUniqueKeyColourScaleWithTransactionNumber.range()), [frequencyUniqueKeyColourScaleWithTransactionNumber])
     const transactionDataArr = useTransactionDataArr();
     const clusterDataArr = useClusterDataArr()
     // cluster view's initial y axis's scale
@@ -59,13 +62,22 @@ export default function App() {
     const handleSelectIndex = (indexes: number[]) => {
         if (transactionDataArr === null) {
             throw new Error("transactionDataArr is null");
-
         }
-        const nextBrushedTransactionNumberSet = new Set<TransactionData['transactionNumber']>;
-        indexes.forEach(
-            index => nextBrushedTransactionNumberSet.add(transactionDataArr[index].transactionNumber)
-        )
-        setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
+        dispatch(interactivitySlice.setSelectedTransactionIndexArr(indexes))
+
+        // setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
+    }
+
+    const handleSetSelectTransactionNumberSet = (brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>) => {
+        // const indexes = transactionDataArr.filter(transactionData => brushedTransactionNumberSet.has(transactionData.transactionNumber))
+        //     .map((_, index) => index)
+        const indexes: number[] = []
+        transactionDataArr.forEach(({ transactionNumber }, index) => {
+            if (brushedTransactionNumberSet.has(transactionNumber)) {
+                indexes.push(index)
+            }
+        })
+        dispatch(interactivitySlice.setSelectedTransactionIndexArr(indexes))
     }
     // highlighted colour channel
     const highLightedColourSet = useAppSelector(colourLegendSlice.selectHighLightedColourDomainValueSet)
@@ -79,19 +91,6 @@ export default function App() {
     }, [transactionDataArr])
     const colourDomain = useAppSelector(colourLegendSlice.selectDomain)
     useEffect(() => { console.log('colourDomain at app.tsx changed', colourDomain) }, [colourDomain])
-    // calculate and cache the public colour scale
-    /**
-     * colourScale: based on the domain from the colourLegendSlice store
-    */
-    const colourScale: null | PublicScale['colourScale'] = useMemo(() => {
-        if (colourDomain.length === 0) {
-            return null;
-        }
-        const colourRange = d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), colourDomain.length).reverse(); // ref: https://observablehq.com/@d3/pie-chart/2?intent=fork
-        const colourScale: PublicScale['colourScale'] = d3.scaleOrdinal(colourDomain, colourRange)
-        return colourScale
-    }, [colourDomain])
-    useEffect(() => { console.log('colourScale at app.tsx changed') }, [colourScale])
 
     // expanding handler
     /**
@@ -120,7 +119,7 @@ export default function App() {
         }
     }
 
-    const clusterViewDataPrepared = usePrepareClusterViewData(transactionDataArr, clusterDataArr, colourScale)
+    const clusterViewDataPrepared = usePrepareClusterViewData(transactionDataArr, clusterDataArr)
     const clusterViewLayoutPrepared = usePrepareClusterViewLayout();
     const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
@@ -137,7 +136,7 @@ export default function App() {
     }, [detailDay, transactionDataArr, isSuperPositioned])
     if (transactionDataArr === null || clusterViewDataPrepared === null || clusterViewDataPrepared === undefined) {
         return <>loading...</>
-    } else if (colourScale === null) {
+    } else if (categoryColourScaleWithTransactionNumber === null) {
         return <>initialising colour scale</>
     }
     else {
@@ -145,7 +144,7 @@ export default function App() {
             <div>
                 <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE', zIndex: 999 }}>
                     <FolderableContainer label="colour legends" initIsFolded={false}>
-                        <ColourLegendList colourScale={colourScale}></ColourLegendList>
+                        <CategoryColourLegend></CategoryColourLegend>
                     </FolderableContainer>
                 </div>
                 <div className="grid grid-cols-12">
@@ -156,8 +155,7 @@ export default function App() {
                         >
                             <ScatterPlot transactionDataArr={transactionDataArr} valueGetter={scatterPlotValueGetter}
                                 brushedTransactionNumberSet={brushedTransactionNumberSet}
-                                setBrushedTransactionNumberSet={setBrushedTransactionNumberSet}
-                                colourScale={colourScale}
+                                setBrushedTransactionNumberSet={handleSetSelectTransactionNumberSet}
                             />
                         </ExpandableContainer>
                     </div>
@@ -177,7 +175,7 @@ export default function App() {
                                     initCurrentYear={2016}
                                     highLightedTransactionNumberSetByBrusher={brushedTransactionNumberSet}
                                     highLightedColourDomainValueSetByLegend={highLightedColourSet}
-                                    colourScale={colourScale}
+                                    colourScale={categoryColourScaleWithTransactionNumber}
                                     colourValueGetter={PUBLIC_VALUEGETTER.colour}
                                 ></CalendarView3>
                             </div>
@@ -199,10 +197,10 @@ export default function App() {
                             </div>
                             <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px' }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div style={{ height: '450px',  backgroundColor:'RGB(197,197,197)'}}>
-                                        <div style={{margin: '2px'}}>
-                                        <ClusterViewControlPannel></ClusterViewControlPannel>
-                                        <FrequencyControlPannel />
+                                    <div style={{ height: '450px', backgroundColor: 'RGB(197,197,197)' }}>
+                                        <div style={{ margin: '2px' }}>
+                                            <ClusterViewControlPannel></ClusterViewControlPannel>
+                                            <FrequencyControlPannel />
                                         </div>
                                     </div>
                                 </FolderableContainer>
@@ -212,10 +210,10 @@ export default function App() {
                     <div className="col-span-6">
                         <TableViewCollection transactionDataArr={transactionDataArr}
                             brushedTransactionNumberSet={brushedTransactionNumberSet}
-                            handleClearBrush={() => setBrushedTransactionNumberSet(new Set())}
+                            handleClearBrush={() => handleSetSelectTransactionNumberSet(new Set())}
                             selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
                             handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
-                            colourScale={colourScale}
+                            colourScale={categoryColourScaleWithTransactionNumber}
                             colourValueGetter={PUBLIC_VALUEGETTER.colour}
                         ></TableViewCollection>
                     </div>

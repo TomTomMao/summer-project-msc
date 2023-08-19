@@ -1,4 +1,5 @@
+import { ScaleOrdinalWithTransactionNumber } from "../hooks/useColourScales";
 import { TransactionData } from "./DataObject";
 
-export type PublicScale = { colourScale: d3.ScaleOrdinal<string, string, never> };
+export type PublicScale = { colourScale: ScaleOrdinalWithTransactionNumber};
 export type PublicValueGetter = { colour: (d: TransactionData) => string; }

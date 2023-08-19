@@ -21,7 +21,7 @@ export function CategoryColourLegend() {
     const colourMappingArr = domainArr.map(domainValue => {
         return {
             domain: domainValue,
-            value: colourScale(domainValue),
+            value: colourScale.getColour(domainValue),
             highLighted: highLightedDomainSet.has(domainValue)
         }
     })
@@ -65,7 +65,7 @@ export function FrequencyUniqueKeyColourLegend() {
     const colourMappingArr = domainArr.map(domainValue => {
         return {
             domain: domainValue,
-            value: colourScale(domainValue),
+            value: colourScale.getColour(domainValue),
             highLighted: highLightedDomainSet.has(domainValue)
         }
     })
@@ -108,7 +108,7 @@ export function ClusterIdColourLegend() {
     const colourMappingArr = domainArr.map(domainValue => {
         return {
             domain: domainValue,
-            value: colourScale(domainValue),
+            value: colourScale.getColour(domainValue),
             highLighted: highLightedDomainSet.has(domainValue)
         }
     })

@@ -34,12 +34,29 @@ export class TransactionData {
         frequency: number,
         frequencyUniqueKey: string) {
 
+        for (let i = 0; i < transactionNumber.length; i++) {
+            if (parseInt(transactionNumber[i])===undefined ){
+                throw new Error(`invalid transactionNumber: '${transactionNumber}', int must be string with digit`);
+            }
+        }
         this.transactionNumber = transactionNumber;
+
         this.date = date;
         this.transactionType = transactionType;
         this.transactionDescription = transactionDescription;
+
+        if (debitAmount === 0 && creditAmount === 0) {
+            throw new Error("invalid argument, either debitAmount or creditAmount should be 0");
+        }
+        if (debitAmount < 0) {
+            throw new Error('invalid debitAmount, it must be 0 or greater than 0')
+        }
+        if (creditAmount < 0) {
+            throw new Error('invalid creditAmount, it must be 0 or greater than 0')
+        }
         this.debitAmount = debitAmount;
         this.creditAmount = creditAmount;
+
         this.balance = balance;
         this.category = category;
         this.locationCity = locationCity;

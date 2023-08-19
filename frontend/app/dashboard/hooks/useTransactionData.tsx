@@ -3,7 +3,7 @@ import { useAppSelector } from "@/app/hooks";
 import * as interactivitySlice from "../components/Interactivity/interactivitySlice";
 
 /**
- * dependancy: metric1, metric2, numberOfCluster, frequencyUniqueKey, distanceMeasure, linkageMethod, numberOfClusterForString
+ * get the transaction data from the store
  */
 export function useTransactionDataArr() {
     const transactionDataArr = useAppSelector(interactivitySlice.selectTransactionDataArr)

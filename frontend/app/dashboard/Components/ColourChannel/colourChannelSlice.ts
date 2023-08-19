@@ -3,7 +3,7 @@ import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ScaleOrdinal } from "d3";
 
-export type ColourScheme = "PuOr" | "Spectral" | "PiYG";
+export type ColourScheme = "PuOr" | "Spectral" | "PiYG" | 'Rainbow' | 'Sinebow';
 
 export type ColourChannelState = {
   cluster: {
@@ -26,7 +26,7 @@ const initialState: ColourChannelState = {
     scaleFunction: null,
   },
   category: {
-    scheme: "Spectral",
+    scheme: "Rainbow",
     scaleFunction: null,
   },
   frequencyUniqueKey: {
@@ -147,6 +147,10 @@ function outerSelectCategoryColourDomain() {
 }
 export const selectCategoryColourDomain = outerSelectCategoryColourDomain();
 
+/**
+ * 
+ * @returns a memorised selector
+ */
 function outerSelectFrequencyUniqueKeyColourDomain() {
   let lastFrequencyUniqueKeyColourDomain: string[] | null = null;
   return (state: RootState) => {

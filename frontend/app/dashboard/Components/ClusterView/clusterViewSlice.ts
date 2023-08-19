@@ -2,17 +2,18 @@ import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { apiUrl } from "../../utilities/consts";
 import { ClusterData } from "../../utilities/clusterDataObject";
+import {
+  selectClusterDataArr,
+  selectTransactionDataArr,
+} from "../Interactivity/interactivitySlice";
+import { getClusterDataMapFromArr } from "../../hooks/useClusterData";
 
 export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance";
 export type ValidClusterMetrics =
   | "transactionAmount"
   | "category"
   | "frequency";
-export type ValidColours =
-  | "category"
-  | "cluster"
-  | "frequency"
-  | "frequencyUniqueKey";
+export type ValidColours = "category" | "cluster" | "frequencyUniqueKey";
 type ClusterMetric = "transactionAmount" | "category" | "frequency";
 type ClustererConfig = {
   metric1: ClusterMetric;
@@ -257,6 +258,55 @@ export const selectNumberOfClusterForString = function (
 export const selectJustChangedSize = function (state: RootState) {
   return state.clusterView.justChangedSize;
 };
+
+export function selectColourDomain(state: RootState): {
+  domain: string;
+  transactionNumber: string;
+}[] {
+  const colour = state.clusterView.colour;
+  const transactionDataArr = selectTransactionDataArr(state);
+  const clusterDataArr = selectClusterDataArr(state);
+  const clusterDataMap = getClusterDataMapFromArr(clusterDataArr);
+  switch (colour) {
+    case "category":
+      return transactionDataArr.map((d) => ({
+        domain: d.category,
+        transactionNumber: d.transactionNumber,
+      }));
+    case "frequencyUniqueKey":
+      return transactionDataArr.map((d) => ({
+        domain: d.frequencyUniqueKey,
+        transactionNumber: d.transactionNumber,
+      }));
+    case "cluster":
+      return transactionDataArr.map((d) => ({
+        domain: clusterDataMap.get(
+          d.transactionNumber
+        ) as ClusterData["clusterId"],
+        transactionNumber: d.transactionNumber,
+      }));
+    default:
+      const _exhaustiveCheck: never = colour; // incase add new key, this place will automatically highlighted.
+      throw new Error("This should not happen");
+  }
+}
+
+/**
+ * 
+ * @param state 
+ * @returns the x data for rendering
+ */
+export function selectXdata(state:RootState):number[] {
+  return selectTransactionDataArr(state).map(transactionData => transactionData[state.clusterView.x])
+}
+/**
+ * 
+ * @param state 
+ * @returns the y data for rendering
+ */
+export function selectYdata(state:RootState):number[] {
+  return selectTransactionDataArr(state).map(transactionData => transactionData[state.clusterView.y])
+}
 
 export default clusterViewSlice.reducer;
 

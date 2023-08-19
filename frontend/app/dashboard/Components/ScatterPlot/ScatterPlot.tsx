@@ -7,9 +7,12 @@ import { PublicScale } from "../../utilities/types";
 import * as scatterPlotSlice from './scatterPlotSlice'
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as colourLegendSlice from '../ColourLegend/colourLegendSlice'
-import { PUBLIC_VALUEGETTER } from "../../utilities/consts";
+import { GRAY1, PUBLIC_VALUEGETTER } from "../../utilities/consts";
+import * as colourChannelSlice from "../ColourChannel/colourChannelSlice";
+import { ScaleOrdinalWithTransactionNumber, useCategoryColourScale } from "../../hooks/useColourScales";
+import { useTransactionDataArr } from "../../hooks/useTransactionData";
 
-const BRUSH_MODE = 'brush end'
+const BRUSH_MODE = 'end'
 /**
  * render a scatterplot
  *
@@ -36,31 +39,27 @@ type ScatterPlotPrivateScale = {
     xScaleSwap: d3.ScaleLogarithmic<number, number, never>;
     yScaleSwap: d3.ScaleLinear<number, number, never>;
 }
-type ScatterPlotScale = ScatterPlotPrivateScale & { colourScale: PublicScale['colourScale'] }
+type ScatterPlotScale = ScatterPlotPrivateScale & { colourScale: ScaleOrdinalWithTransactionNumber }
 type ScatterPlotProps = {
     transactionDataArr: TransactionData[];
     valueGetter: ScatterPlotValueGetter;
     brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>;
-    setBrushedTransactionNumberSet: Dispatch<SetStateAction<Set<TransactionData['transactionNumber']>>>;
-    colourScale: PublicScale['colourScale']
+    setBrushedTransactionNumberSet: (transactionNumberSet: Set<TransactionData['transactionNumber']>) => void;
 }
 
 const DEFAULT_MARGIN = { top: 5, right: 5, bottom: 30, left: 40 };
 const DEFAULT_RADIUS = 2;
-const DEFAULT_FILL_OPACITY = 0.2;
-const DEFAULT_OPACITY = 0.2;
-const DEFAULT_STROKE_WIDTH = 1;
 /**
  * draw a scatter plot of transactionDataArr, the mapping depends of the valueGetter, support x, y, and colour, assert valueGetter can successfully get value of transactionData
  * @param props
  * @returns 
  */
 export function ScatterPlot(props: ScatterPlotProps) {
-    const { transactionDataArr, valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet, colourScale } = props;
+    const { valueGetter, brushedTransactionNumberSet, setBrushedTransactionNumberSet } = props;
+    const transactionDataArr = useTransactionDataArr()
     const [isSwap, setIsSwap] = useState(false);
-    useEffect(() => { console.log('colourScaleChanged') }, [colourScale])
     // configs
-    const { currentContainerWidth, currentContainerHeight, margin, useLogScale, width, height } = useScatterPlotConfig()
+    const { currentContainerWidth, currentContainerHeight, margin, useLogScale, width, height, colourScale } = useScatterPlotConfig()
     const dispatch = useAppDispatch()
     const brushGRef = useRef<SVGGElement | null>(null)
     const valueGetterWithSwap = useMemo(() => {
@@ -72,42 +71,6 @@ export function ScatterPlot(props: ScatterPlotProps) {
 
     // cache the circles 
     const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useScatterPlotCachedCircles(transactionDataArr, valueGetterWithSwap, colourScale, linearPrivateScales, logPrivateScales)
-
-    // for highlighting
-    const highLightedColourSet = useAppSelector(colourLegendSlice.selectHighLightedColourDomainValueSet)
-    useEffect(() => {
-        console.time('updating opacity')
-        // set all points to highlighted if no point get brushed
-        const brushingMode = brushedTransactionNumberSet.size > 0;
-        const highLightingMode = highLightedColourSet.size < colourScale.domain().length
-        const highLightInfo = transactionDataArr.map(transactionData => {
-            if (!brushingMode) {
-                return {
-                    id: transactionData.transactionNumber,
-                    isHighLighted: highLightedColourSet.has(PUBLIC_VALUEGETTER.colour(transactionData))
-                }
-            } else {
-                return {
-                    id: transactionData.transactionNumber,
-                    isHighLighted: brushedTransactionNumberSet.has(transactionData.transactionNumber) && highLightedColourSet.has(PUBLIC_VALUEGETTER.colour(transactionData))
-                }
-            }
-        })
-
-        highLightInfo.forEach(({ id, isHighLighted }) => {
-            const circleElement: HTMLElement | null = document.getElementById(id)
-            if (circleElement !== null) {
-                circleElement.style.opacity = isHighLighted ? '1' : '0.1';
-                if (highLightingMode && isHighLighted) {
-                    circleElement.style.stroke = 'black'
-                } else {
-                    circleElement.style.stroke = ''
-                }
-            };
-        })
-
-        console.timeEnd('updating opacity')
-    }, [brushedTransactionNumberSet, highLightedColourSet])
 
 
     useEffect(() => {
@@ -216,7 +179,7 @@ function getCircleDataArray(transactionDataArr: TransactionData[],
                 cx: scales.xScale(valueGetterWithSwap.x(transactionData)),
                 cy: scales.yScale(valueGetterWithSwap.y(transactionData)),
                 r: DEFAULT_RADIUS,
-                fill: scales.colourScale(valueGetterWithSwap.colour(transactionData)).valueOf(),
+                fill: scales.colourScale.getColour(valueGetterWithSwap.colour(transactionData), transactionData.transactionNumber).valueOf(),
             })
         })
     } else {
@@ -226,12 +189,17 @@ function getCircleDataArray(transactionDataArr: TransactionData[],
                 cx: scales.xScaleSwap(valueGetterWithSwap.getXSwap(transactionData)),
                 cy: scales.yScaleSwap(valueGetterWithSwap.getYSwap(transactionData)),
                 r: DEFAULT_RADIUS,
-                fill: scales.colourScale(valueGetterWithSwap.colour(transactionData)).valueOf(),
+                fill: scales.colourScale.getColour(valueGetterWithSwap.colour(transactionData), transactionData.transactionNumber).valueOf(),
             })
         })
 
     }
-    return circleDataArr
+    if (circleDataArr.some(circleData => circleData.fill === GRAY1)) {
+        // return the circledata such that the gray points is at the first
+        return [...circleDataArr.filter(circleData => circleData.fill === GRAY1), ...circleDataArr.filter(circleData => circleData.fill !== GRAY1)]
+    } else {
+        return circleDataArr
+    }
 }
 
 /**
@@ -306,10 +274,10 @@ function useScatterPlotConfig() {
     console.log('mainAxis flage', mainAxis)
     // config dispatcher
     const dispatch = useAppDispatch();
-
+    const colourScale = useCategoryColourScale()
     const width = currentContainerWidth - margin.left - margin.right
     const height = currentContainerHeight - margin.top - margin.bottom;
-    return { currentContainerWidth, currentContainerHeight, useLogScale, margin, dispatch, width, height }
+    return { currentContainerWidth, currentContainerHeight, useLogScale, margin, dispatch, width, height, colourScale }
 }
 
 /**
@@ -339,7 +307,7 @@ function useScatterPlotScales(transactionDataArr: TransactionData[], valueGetter
  * @param logPrivateScales 
  * @returns circles for the chart with linear and log main axis, and the circles for the chart with swapped axis
  */
-function useScatterPlotCachedCircles(transactionDataArr: TransactionData[], valueGetterWithSwap: ScatterPlotValueGetterWithSwap, colourScale: PublicScale['colourScale'], linearPrivateScales: ScatterPlotPrivateScale, logPrivateScales: ScatterPlotPrivateScale) {
+function useScatterPlotCachedCircles(transactionDataArr: TransactionData[], valueGetterWithSwap: ScatterPlotValueGetterWithSwap, colourScale: ScaleOrdinalWithTransactionNumber, linearPrivateScales: ScatterPlotPrivateScale, logPrivateScales: ScatterPlotPrivateScale) {
     const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useMemo(() => {
         console.time('re-calculating circleData')
         const circleDataArrLinear = getCircleDataArray(transactionDataArr, valueGetterWithSwap, { colourScale, ...linearPrivateScales }, false);

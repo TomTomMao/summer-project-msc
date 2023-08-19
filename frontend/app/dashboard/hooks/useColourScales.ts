@@ -1,8 +1,24 @@
 import * as colourChannelSlice from "@/app/dashboard/components/ColourChannel/colourChannelSlice";
 import { useAppSelector } from "@/app/hooks";
-import assert from "assert";
 import * as d3 from "d3";
 import { useMemo } from "react";
+import * as interactivitySlice from "../components/Interactivity/interactivitySlice";
+import { assert } from "console";
+import { TransactionData } from "../utilities/DataObject";
+import { GRAY1 } from "../utilities/consts";
+
+/**
+ * read only scale with transactionNumber, it has the knowledge of interactivitySlice.selectSelectedTransactionNumberArrMemorised selected from the redux store. it use d3.scaleOrdinal
+ * given a domain value, if it is not in the selectedTransactionNumberArrMemorised, then it will return the colour using d3.scaleOrdinal, otherwise it will returns gray colour
+ */
+export type ScaleOrdinalWithTransactionNumber = {
+  getColour: (
+    valueForColour: string,
+    transactionNumber?: TransactionData["transactionNumber"]
+  ) => string;
+  domain: () => string[];
+  range: () => string[];
+};
 
 export function useClusterIdColourScale() {
   const domain = useAppSelector(
@@ -15,6 +31,7 @@ export function useClusterIdColourScale() {
 
 export function useCategoryColourScale() {
   const domain = useAppSelector(colourChannelSlice.selectCategoryColourDomain);
+
   const scheme = useAppSelector(colourChannelSlice.selectCategoryColourScheme);
   const colourScale = useColourScale(domain, scheme);
   return colourScale;
@@ -41,33 +58,73 @@ function useColourScale(
   colourDomain: string[],
   colourScheme: colourChannelSlice.ColourScheme
 ) {
+  if (colourDomain.hasOwnProperty("length") === false) {
+    throw new Error("colourDomain does not has length");
+  }
+  const selectedTransactionNumberArr = useAppSelector(
+    interactivitySlice.selectSelectedTransactionNumberArrMemorised
+  );
+
   const colourScale = useMemo(() => {
-    let interpolateFunction: ((t: number) => string) | undefined = undefined;
+    let interpolateFunction: (t: number) => string;
     switch (colourScheme) {
       case "PiYG":
-        interpolateFunction = d3["interpolatePiYG"];
+        interpolateFunction = d3.interpolatePiYG;
         break;
       case "PuOr":
-        interpolateFunction = d3["interpolatePuOr"];
+        interpolateFunction = d3.interpolatePuOr;
         break;
       case "Spectral":
-        interpolateFunction = d3["interpolateSpectral"];
+        interpolateFunction = d3.interpolateSpectral;
+        break;
+      case "Rainbow":
+        interpolateFunction = d3.interpolateRainbow;
+        break;
+      case "Sinebow":
+        interpolateFunction = d3.interpolateSinebow;
         break;
       default:
         // reference for exhaustiveCheck: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking
         const _exhaustiveCheck: never = colourScheme;
-        break;
+        throw new Error("this should never happen");
     }
-    if (interpolateFunction === undefined) {
-      throw new Error("interpolateFunction is not defined!");
-    }
-    const func = interpolateFunction;
     const colourRange = d3
-      .quantize((t) => func(t * 0.8 + 0.1), colourDomain.length)
+      .quantize((t) => interpolateFunction(t * 0.8 + 0.1), colourDomain.length)
       .reverse();
     const scale = d3.scaleOrdinal(colourDomain, colourRange);
     return scale;
   }, [colourDomain, colourScheme]);
 
-  return colourScale;
+  const colourScaleWithTransactionNumber: ScaleOrdinalWithTransactionNumber =
+    useMemo(() => {
+      const selectedTransactionNumberSet = new Set(
+        selectedTransactionNumberArr
+      );
+
+      const getColour = function (
+        valueForColour: string,
+        transactionNumber?: TransactionData["transactionNumber"]
+      ): string {
+        if (selectedTransactionNumberSet.size === 0) {
+          return colourScale(valueForColour);
+        } else if (
+          transactionNumber === undefined ||
+          selectedTransactionNumberSet.has(transactionNumber)
+        ) {
+          return colourScale(valueForColour);
+        } else {
+          return GRAY1;
+        }
+      };
+
+      const colourScaleWithTransactionNumber: ScaleOrdinalWithTransactionNumber =
+        {
+          getColour: getColour,
+          domain: () => colourScale.domain(),
+          range: () => colourScale.range(),
+        };
+      return colourScaleWithTransactionNumber;
+    }, [colourScale, selectedTransactionNumberArr]);
+
+  return colourScaleWithTransactionNumber;
 }

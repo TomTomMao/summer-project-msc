@@ -115,7 +115,7 @@ export function PieDayView(props: PieDayViewProps) {
                 }
             }
 
-            return <path id={transactionData.transactionNumber + 'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale(valueGetter.colour(transactionData))}
+            return <path id={transactionData.transactionNumber + 'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale.getColour(valueGetter.colour(transactionData))}
                 opacity={opacity} stroke={stroke}
             />;
         })

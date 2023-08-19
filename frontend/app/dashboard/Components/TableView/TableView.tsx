@@ -29,7 +29,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
     const transactionRows = useMemo(() => {
         return (
             filteredTransactionDataArr.map(transactionData => {
-                const colour = colourScale(colourValueGetter(transactionData));
+                const colour = colourScale.getColour(colourValueGetter(transactionData));
                 return (
                     <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
                         <td>{transactionData.transactionNumber}</td>

@@ -7,16 +7,17 @@ import { useAppSelector } from "@/app/hooks";
 import * as barDayViewSlice from "./barDayViewSlice";
 import * as calendarViewSlice from "../calendarViewSlice";
 import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
+import { PublicScale } from "@/app/dashboard/utilities/types";
 
 export type BarGlyphScalesLinearHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
     heightScale: d3.ScaleLinear<number, number, never>,
-    colourScale: d3.ScaleOrdinal<string, string, never>
+    colourScale: PublicScale['colourScale']
 }
 export type BarGlyphScalesLogHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
     heightScale: d3.ScaleLogarithmic<number, number, never>,
-    colourScale: d3.ScaleOrdinal<string, string, never>
+    colourScale: PublicScale['colourScale']
 }
 export type BarGlyphScales = BarGlyphScalesLogHeight | BarGlyphScalesLinearHeight
 
@@ -113,7 +114,7 @@ export function BarDayView(props: BarDayViewProps) {
                         y={containerHeight - rectHeight}
                         width={bandWidth}
                         height={containerHeight}
-                        fill={colourScale(valueGetter.colour(d))}
+                        fill={colourScale.getColour(valueGetter.colour(d))}
                         opacity={opacity}
                         stroke={stroke}
                     />
