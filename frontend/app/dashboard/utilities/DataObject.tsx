@@ -1,6 +1,7 @@
 'use client';
 
 import assert from "assert";
+import { Day } from "../components/CalendarView3/CalendarView3";
 
 
 export type TransactionDataAttrs = "dayOfYear" | "transactionAmount" | "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry" | "frequency" | "frequencyUniqueKey";
@@ -35,7 +36,7 @@ export class TransactionData {
         frequencyUniqueKey: string) {
 
         for (let i = 0; i < transactionNumber.length; i++) {
-            if (parseInt(transactionNumber[i])===undefined ){
+            if (parseInt(transactionNumber[i]) === undefined) {
                 throw new Error(`invalid transactionNumber: '${transactionNumber}', int must be string with digit`);
             }
         }
@@ -138,5 +139,29 @@ export class TransactionData {
             throw new Error('both creditamount and debit amount is greater than 0');
         }
     }
+    /**
+     * return: 1-31, day of the month
+     */
+    public get day() {
+        return this.date.getDate()
+    }
 
+    /**
+     * return: 1-12, month of year
+     */
+    public get month() {
+        return this.date.getMonth() + 1
+    }
+
+    public get year() {
+        return this.date.getFullYear()
+    }
+
+    public get calendarDay(): Day {
+        return {
+            day: this.day,
+            month: this.month,
+            year: this.year
+        }
+    }
 }

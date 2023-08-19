@@ -60,13 +60,9 @@ export default function App() {
             throw new Error("transactionDataArr is null");
         }
         dispatch(interactivitySlice.setSelectedTransactionIndexArr(indexes))
-
-        // setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
     }
 
     const handleSetSelectTransactionNumberSet = (brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>) => {
-        // const indexes = transactionDataArr.filter(transactionData => brushedTransactionNumberSet.has(transactionData.transactionNumber))
-        //     .map((_, index) => index)
         const indexes: number[] = []
         transactionDataArr.forEach(({ transactionNumber }, index) => {
             if (brushedTransactionNumberSet.has(transactionNumber)) {
