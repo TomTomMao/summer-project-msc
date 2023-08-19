@@ -15,6 +15,9 @@ import * as barDayViewSlice from './DayViews/barDayViewSlice'
 import { useCategoryColourScale } from "../../hooks/useColourScales";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { useTransactionDataArr } from "../../hooks/useTransactionData";
+import { useHighLightedCalendarDayBorderMMDDSet } from "./useCalendarDayHighlightInfo";
+
+import styles from './styles.module.css'
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
@@ -75,6 +78,12 @@ export default function CalendarView3(props:
     const transactionAmountSumMapByDayMD = useMemo(() => {
         return getGroupedTransactionAmountMapMD(transactionDataArr)
     }, [transactionDataArr])
+
+    // for highlight the border of glyphs, // mm-dd: '1-1' means jan first; it wont be '0x-0x'.
+    // use mm-dd string because it is hashable.
+    // I assert that it would be emply only if selectedTransactionNumberSet is empty. which means no there is no selection 
+    const highLightedCalendarDayBorderMMDDSet = useHighLightedCalendarDayBorderMMDDSet()// usememo based on transactionDataArr, selectedTransactionNumberSet, isSuperPositioned, currentYear
+    // high light the border of mm's month and dd's day 
 
     // used for pie glyph's radius
     const { linearRadiusScale, logRadiusScale } = useMemo(() => {
@@ -166,7 +175,9 @@ export default function CalendarView3(props:
                         dayViewContainerSize={{
                             containerWidth: currentContainerWidth,
                             containerHeight: currentContainerHeight
-                        }} />)}
+                        }}
+                        highLightedCalendarDayBorderMMDDSet={highLightedCalendarDayBorderMMDDSet}
+                    />)}
                 </tbody>
             </table>
         </ >
@@ -188,25 +199,30 @@ type MonthViewProps = {
     onShowDayDetail: (day: number, month: number, year: number) => void,
     detailDay: Day | null,
     dayViewContainerSize: { containerWidth: number, containerHeight: number }
+    highLightedCalendarDayBorderMMDDSet: Set<string>
 } & {
 
 }
 
 function MonthView(props: MonthViewProps) {
-    const { month, currentYear, detailDay, onShowDayDetail } = props
+    const { month, currentYear, detailDay, onShowDayDetail, highLightedCalendarDayBorderMMDDSet } = props
     const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
     function handleShowDayDetail(day: number) {
         onShowDayDetail(day, month, currentYear);
     }
+    const numberOfDaysInMonth = getNumberOfDaysInMonth(isSuperPositioned ? 2016 : currentYear, month)
     // month: 1to12 
-    return (<tr>
+    return (<tr className={styles.monthrow}>
         <td style={{ color: detailDay && detailDay.month === month && detailDay.year === currentYear ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
 
         {
+
             // 'isSuperPositioned ? 2016 : currentYear' is for use big year to show all the data
-            (Array.from(Array(getNumberOfDaysInMonth(isSuperPositioned ? 2016 : currentYear, month)).keys())).map(i => {
+            (Array.from(Array(31).keys())).map(i => {
+                const hasDay = i < numberOfDaysInMonth;
                 const isDetailDay = detailDay !== null && detailDay.day === i + 1 && detailDay.month === month && detailDay.year === currentYear;
+                const isDayHasSelectedTransaction = highLightedCalendarDayBorderMMDDSet.has(`${month}-${i + 1}`)
                 const barDayViewProps: BarDayViewProps = {
                     day: i + 1, ...props,
                     scales: props.barDayViewScales,
@@ -219,34 +235,33 @@ function MonthView(props: MonthViewProps) {
                     valueGetter: props.pieDayViewValueGetter,
                     containerSize: props.dayViewContainerSize,
                 }
-                return <td onClick={() => handleShowDayDetail(i + 1)} className={isDetailDay ? `border-2 border-rose-500` : `border-2 border-black`} key={`${month}-${i + 1}`}>
-                    {glyphType === 'pie' ? <PieDayView {...pieDayViewProps} /> : <BarDayView {...barDayViewProps} />}
+                let dayView;
+                if (hasDay) {
+                    dayView = glyphType === 'pie' ? <PieDayView {...pieDayViewProps} /> : <BarDayView {...barDayViewProps} />
+                } else {
+                    dayView = <div style={{
+                        //reference: https://www.jianshu.com/p/4278f70c2721
+                        background: 'repeating-linear-gradient(60deg, white, gray, white, gray, white, gray, white, gray, white, gray, white, gray, white, gray)',
+                        width: props.dayViewContainerSize.containerWidth, height: props.dayViewContainerSize.containerHeight
+                    }}></div>
+                }
+                return <td onClick={() => handleShowDayDetail(i + 1)} style={{ padding: '0px' }} >
+                    <div key={`${month}-${i + 1}`}
+                        style={{ zIndex: isDayHasSelectedTransaction ? 900 : 800, borderColor: isDayHasSelectedTransaction ? 'blue' : 'gray' }}
+                    >
+                        {dayView}
+                    </div>
+
                 </td>
             })}
-    </tr>)
+    </tr >)
 
 }
 
-type DetailViewProps = {
-    day: number,
-    month: number,
-    currentYear: number,
-    transactionDataMapYMD: TransactionDataMapYMD,
-    colourScale: PublicScale['colourScale'],
-    colourValueGetter: PublicValueGetter['colour'],
-    onClearDetail(): void
-}
-function DetailView({ day, month, currentYear, transactionDataMapYMD, colourScale, colourValueGetter, onClearDetail }: DetailViewProps) {
-    const dayData = getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear)
 
-    return <TableView transactionDataArr={dayData}
-        transactionNumberSet={new Set(dayData.map(d => d.transactionNumber))}
-        handleClearSelect={onClearDetail}
-        colourScale={colourScale}
-        colourValueGetter={colourValueGetter}
-    />
-}
-
+// the following function are used for getting data of each day in constant time
+// function whose name like ...MD() is for superpositioned view
+// function whose name like ...YMD() is for page-based view 
 /**
  * get the data in O(1)
  * @param transactionDataMapYMD 

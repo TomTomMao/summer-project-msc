@@ -164,4 +164,11 @@ export class TransactionData {
             year: this.year
         }
     }
+
+    /**
+     * example: jan first: 1-1; Sep 29: 9-29; no 0 digit at the beginning
+     */
+    public get MMDD(): string {
+        return `${this.month}-${this.day}`
+    }
 }
