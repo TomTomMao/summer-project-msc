@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { Data, getDataFromTransactionAmountSumByDayMD, getDataFromTransactionAmountSumByDayYMD, getDataFromTransactionDataMapMD, getDataFromTransactionDataMapYMD } from "../CalendarView3";
 import { useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
-import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
+import { GRAY1, PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 import { useAppSelector } from "@/app/hooks";
 import * as pieDayViewSlice from "./pieDayViewSlice"
 import * as calendarViewSlice from "../calendarViewSlice"
@@ -37,7 +37,7 @@ export const pieCalendarViewValueGetter: PieCalendarViewValueGetter = {
 export function PieDayView(props: PieDayViewProps) {
     //reference: Holtz, Y. (n.d.). Pie chart with React. Retrieved 17 July 2023, from https://www.react-graph-gallery.com/pie-plot
     const { day, month, currentYear, data, scales, valueGetter, containerSize } = props;
-    const { highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, transactionDataMapYMD, transactionAmountSumMapByDayYMD, transactionDataMapMD, transactionAmountSumMapByDayMD } = data
+    const { highLightedTransactionNumberSetByBrusher, transactionDataMapYMD, transactionAmountSumMapByDayYMD, transactionDataMapMD, transactionAmountSumMapByDayMD } = data
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
 
     /** 
@@ -96,31 +96,15 @@ export function PieDayView(props: PieDayViewProps) {
         }));
         return arcs
     }, [valueGetter, dayData, containerWidth, radius])
-    const brushingMode = highLightedTransactionNumberSetByBrusher.size > 0;
     const paths = useMemo(() => {
         const paths = arcs.map((arc, i) => {
-            let opacity: number;
-            let stroke: string = ''
-            const transactionData = dayData[i]
-            if (!brushingMode) {
-                opacity = highLightedColourDomainValueSetByLegend.has(PUBLIC_VALUEGETTER.colour(transactionData)) ? 1 : 0.3
-                if (opacity === 1 && highLightedColourDomainValueSetByLegend.size < colourScale.domain().length) {
-                    stroke = 'black'
-                }
-            } else {
-                opacity = highLightedTransactionNumberSetByBrusher.has(transactionData.transactionNumber) &&
-                    highLightedColourDomainValueSetByLegend.has(PUBLIC_VALUEGETTER.colour(transactionData)) ? 1 : 0.3
-                if (opacity === 1 && highLightedColourDomainValueSetByLegend.size < colourScale.domain().length) {
-                    stroke = 'black'
-                }
-            }
-
-            return <path id={transactionData.transactionNumber + 'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale.getColour(valueGetter.colour(transactionData))}
-                opacity={opacity} stroke={stroke}
+            const {category, transactionNumber} = dayData[i]
+            return <path id={transactionNumber + 'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale.getColour(category, transactionNumber)}
+                opacity={1}
             />;
         })
         return paths
-    }, [arcs, colourScale, valueGetter, dayData, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend])
+    }, [arcs, colourScale, valueGetter, dayData])
 
     return (
         <svg width={containerWidth} height={containerHeight}>

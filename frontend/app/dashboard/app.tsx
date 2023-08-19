@@ -6,16 +6,12 @@ import CalendarView3 from "./components/CalendarView3/CalendarView3";
 import { temporalValueGetter } from "./utilities/consts/valueGetter";
 import { ScatterPlot } from "./components/ScatterPlot/ScatterPlot";
 
-import ColourLegendList from "./components/ColourLegend/ColourLegend";
-import * as d3 from 'd3';
 import CalendarViewControlPannel from "./components/ControlPannel/CalendarViewControlPannel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
-import { PublicScale } from "./utilities/types";
-import { parseTime, apiUrl, PUBLIC_VALUEGETTER } from "./utilities/consts";
+import { PUBLIC_VALUEGETTER } from "./utilities/consts";
 import ExpandableContainer from "./components/Containers/ExpandableContainer";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
-import * as colourLegendSlice from "./components/ColourLegend/colourLegendSlice"
 import * as scatterPlotSlice from "./components/ScatterPlot/scatterPlotSlice";
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 
@@ -79,18 +75,6 @@ export default function App() {
         })
         dispatch(interactivitySlice.setSelectedTransactionIndexArr(indexes))
     }
-    // highlighted colour channel
-    const highLightedColourSet = useAppSelector(colourLegendSlice.selectHighLightedColourDomainValueSet)
-
-    // initialise the colour domain
-    useEffect(() => {
-        if (transactionDataArr !== null) {
-            const colourDomain: string[] = Array.from(new Set(transactionDataArr.map(PUBLIC_VALUEGETTER.colour)))
-            dispatch(colourLegendSlice.initColourDomainInfo(colourDomain))
-        }
-    }, [transactionDataArr])
-    const colourDomain = useAppSelector(colourLegendSlice.selectDomain)
-    useEffect(() => { console.log('colourDomain at app.tsx changed', colourDomain) }, [colourDomain])
 
     // expanding handler
     /**
@@ -174,7 +158,6 @@ export default function App() {
                                 <CalendarView3 transactionDataArr={transactionDataArr}
                                     initCurrentYear={2016}
                                     highLightedTransactionNumberSetByBrusher={brushedTransactionNumberSet}
-                                    highLightedColourDomainValueSetByLegend={highLightedColourSet}
                                     colourScale={categoryColourScaleWithTransactionNumber}
                                     colourValueGetter={PUBLIC_VALUEGETTER.colour}
                                 ></CalendarView3>

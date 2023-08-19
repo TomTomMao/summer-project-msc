@@ -70,11 +70,11 @@ export function BarDayView(props: BarDayViewProps) {
     const comparator = useMemo(() => TransactionData.curryCompare(sortingKey, isDesc), [sortingKey, isDesc]);
 
     // highLightedTransactionNumberSetByBrusher used for checking if the transaction is selected when rendering or creating rectangles
-    const { transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend } = data;
+    const { transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher } = data;
     const brushingMode = highLightedTransactionNumberSetByBrusher.size > 0; // for deciding the style of rect
     const { heightScaleLog, heightScaleLinear, colourScale } = scales; // heightScale for bar glyph, colourScale for category
     const heightScale = heightAxis === 'log' ? heightScaleLog : heightScaleLinear;
-    const colourHighLightingMode = highLightedColourDomainValueSetByLegend.size < colourScale.domain().length
+    
 
     // cache the bars of all the years.
     const barsOfEachYear: { year: number; bars: JSX.Element[]; }[] = useMemo(() => {
@@ -98,15 +98,6 @@ export function BarDayView(props: BarDayViewProps) {
                 let stroke: '' | 'black' = '';
                 const bandWidth = xScale.bandwidth();
                 const rectHeight = heightScale(valueGetter.height(d));
-                const isThisDataHighLightedByBrusher = highLightedTransactionNumberSetByBrusher.has(d.transactionNumber);
-                const isThisDataHighLightedByColourLegend = highLightedColourDomainValueSetByLegend.has(PUBLIC_VALUEGETTER.colour(d))
-                if (!brushingMode) {
-                    opacity = isThisDataHighLightedByColourLegend ? 1 : 0.3;
-                    stroke = colourHighLightingMode && opacity === 1 ? 'black' : ''
-                } else {
-                    opacity = isThisDataHighLightedByBrusher && isThisDataHighLightedByColourLegend ? 1 : 0.3;
-                    stroke = colourHighLightingMode && opacity === 1 ? 'black' : ''
-                }
                 return (
                     <rect
                         key={d.transactionNumber}
@@ -114,9 +105,7 @@ export function BarDayView(props: BarDayViewProps) {
                         y={containerHeight - rectHeight}
                         width={bandWidth}
                         height={containerHeight}
-                        fill={colourScale.getColour(valueGetter.colour(d))}
-                        opacity={opacity}
-                        stroke={stroke}
+                        fill={colourScale.getColour(valueGetter.colour(d), d.transactionNumber)}
                     />
                 );
             });

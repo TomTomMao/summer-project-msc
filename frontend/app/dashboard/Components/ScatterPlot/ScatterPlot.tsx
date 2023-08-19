@@ -3,12 +3,9 @@ import { useState, useEffect, useRef, useMemo, Dispatch, SetStateAction } from "
 import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
 import { AxisBottom, AxisLeft } from "../Axis";
-import { PublicScale } from "../../utilities/types";
 import * as scatterPlotSlice from './scatterPlotSlice'
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import * as colourLegendSlice from '../ColourLegend/colourLegendSlice'
-import { GRAY1, PUBLIC_VALUEGETTER } from "../../utilities/consts";
-import * as colourChannelSlice from "../ColourChannel/colourChannelSlice";
+import { GRAY1 } from "../../utilities/consts";
 import { ScaleOrdinalWithTransactionNumber, useCategoryColourScale } from "../../hooks/useColourScales";
 import { useTransactionDataArr } from "../../hooks/useTransactionData";
 
@@ -82,6 +79,7 @@ export function ScatterPlot(props: ScatterPlotProps) {
             return () => { brushG.on('.brush', null) }
         }
     }, [width, height, isSwap, useLogScale])
+
     let circlesToDisplay;
     let scaleForXAxis: d3.ScaleLinear<number, number, never> | d3.ScaleLogarithmic<number, number, never>;
     let scaleForYAxis: d3.ScaleLinear<number, number, never> | d3.ScaleLogarithmic<number, number, never>;

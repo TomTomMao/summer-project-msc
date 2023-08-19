@@ -12,11 +12,11 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 
 import * as calendarViewSlice from './calendarViewSlice'
 import * as barDayViewSlice from './DayViews/barDayViewSlice'
-import { ColourDomainInfo } from "../ColourLegend/colourLegendSlice";
 import { useCategoryColourScale } from "../../hooks/useColourScales";
+import * as interactivitySlice from "../Interactivity/interactivitySlice";
+import { useTransactionDataArr } from "../../hooks/useTransactionData";
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
-type HighLightedColourDomainValueSetByLegend = Set<ColourDomainInfo['domainValue']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
 type TransactionDataMapMD = d3.InternMap<number, d3.InternMap<number, TransactionData[]>>
 type TransactionAmountSumMapByDayYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, number>>> // used for cacheing, so when need the sum of the day, no need to search through the transactionDataArr
@@ -25,7 +25,6 @@ export type Data = {
     transactionDataMapYMD: TransactionDataMapYMD;
     transactionDataMapMD: TransactionDataMapMD;
     highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
-    highLightedColourDomainValueSetByLegend: HighLightedColourDomainValueSetByLegend;
     transactionAmountSumMapByDayYMD: TransactionAmountSumMapByDayYMD
     transactionAmountSumMapByDayMD: TransactionAmountSumMapByDayMD
 }
@@ -33,7 +32,6 @@ export type Data = {
 type CalendarViewProps = {
     transactionDataArr: TransactionData[];
     highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
-    highLightedColourDomainValueSetByLegend: HighLightedColourDomainValueSetByLegend;
     initCurrentYear: number;
     // heightScaleType: 'log' | 'linear',
     colourScale: PublicScale['colourScale']
@@ -48,20 +46,16 @@ export type Day = {
 
 export default function CalendarView3(props:
     CalendarViewProps) {
-    const { transactionDataArr, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend } = props
+    const transactionDataArr = useTransactionDataArr()
     const colourScale = useCategoryColourScale()
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
-
+    const highLightedTransactionNumberSetByBrusher = useAppSelector(interactivitySlice.selectSelectedTransactionNumberSetMemorised)
     // config
     const currentContainerHeight = useAppSelector(calendarViewSlice.selectCurrentContainerHeight)
     const currentContainerWidth = useAppSelector(calendarViewSlice.selectCurrentContainerWidth)
     const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)
     const currentYear = useAppSelector(calendarViewSlice.selectCurrentYear)
     const dispatch = useAppDispatch()
-
-    const handleChangeCurrentYear = (nextCurrentYear: number) => {
-        dispatch(calendarViewSlice.changeCurrentYear(nextCurrentYear))
-    }
 
     // used when user click a day cell
     function handleShowDayDetail(day: number, month: number, year: number) {
@@ -116,12 +110,11 @@ export default function CalendarView3(props:
             transactionDataMapYMD: transactionDataMapYMD,
             transactionDataMapMD: transactionDataMapMD,
             highLightedTransactionNumberSetByBrusher: highLightedTransactionNumberSetByBrusher,
-            highLightedColourDomainValueSetByLegend: highLightedColourDomainValueSetByLegend,
             transactionAmountSumMapByDayYMD: transactionAmountSumMapByDayYMD,
             transactionAmountSumMapByDayMD: transactionAmountSumMapByDayMD
         }
     },
-        [transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher, highLightedColourDomainValueSetByLegend, transactionAmountSumMapByDayYMD, transactionAmountSumMapByDayMD])
+        [transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher, transactionAmountSumMapByDayYMD, transactionAmountSumMapByDayMD])
 
     // create public height scale for the bar glyph, and pie glyph
     const heightDomain = d3.extent(transactionDataArr, barCalendarViewValueGetter.height); // height for bar glyph
@@ -176,16 +169,6 @@ export default function CalendarView3(props:
                         }} />)}
                 </tbody>
             </table>
-            {/* <div>
-                {detailDay !== null && <FolderableContainer label={`detail of the transaction happened in ${currentYear}-${detailDay.month}-${detailDay.day}`} initIsFolded={false}><DetailView day={detailDay.day}
-                    month={detailDay.month}
-                    currentYear={detailDay.year}
-                    transactionDataMapYMD={transactionDataMapYMD}
-                    colourScale={colourScale}
-                    colourValueGetter={colourValueGetter}
-                    onClearDetail={() => dispatch(calendarViewSlice.clearDetailDay())}
-                /></FolderableContainer>}
-            </div> */}
         </ >
     )
 }
