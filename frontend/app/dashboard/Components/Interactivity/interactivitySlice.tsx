@@ -13,18 +13,20 @@ interface InteractivityState {
     // selectedTransactionNumber: TransactionData['transactionNumber'][],
     transactionDataArr: TransactionData[],
     clusterDataArr: ClusterData[],
-    selectedTransactionDataIndexArr: number[], // array for easy loop through
+    scatterPlotSelectedTransactionNumberArr: TransactionData['transactionNumber'][], // array  for easy loop through
+    clusterViewSelectedTransactionNumberArr: TransactionData['transactionNumber'][], // array for easy loop through
     selectedClusterIdArr: Array<ClusterData['clusterId']>,
     selectedCategoryArr: Array<TransactionData['category']>,
     selectedFrequencyUniqueKeyArr: Array<TransactionData['frequencyUniqueKey']>,
-    currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'transactionDataIndex' | ''
+    currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | ''
 }
 
 const initialState: InteractivityState = {
     // selectedTransactionNumber: [],
     transactionDataArr: [],
     clusterDataArr: [],
-    selectedTransactionDataIndexArr: [],
+    scatterPlotSelectedTransactionNumberArr: [],
+    clusterViewSelectedTransactionNumberArr: [],
     selectedClusterIdArr: [],
     selectedCategoryArr: [],
     selectedFrequencyUniqueKeyArr: [],
@@ -42,31 +44,38 @@ export const interactivitySlice = createSlice({
             state.selectedClusterIdArr = []
             state.clusterDataArr = action.payload
         },
-        /** 
-         * @param action payload is an array of index,  0 <= action.payload <= transactionDataArr.length - 1 
-         */
-        setSelectedTransactionIndexArr(state, action: PayloadAction<number[]>) {
-            action.payload.forEach(index => {
-                if (index < 0 || index >= state.transactionDataArr.length) {
-                    throw new Error("invalid index");
-                }
-            })
 
-            state.selectedTransactionDataIndexArr = action.payload
+        setScatterPlotSelectedTransactionNumberArr(state, action: PayloadAction<TransactionData['transactionNumber'][]>) {
+            state.scatterPlotSelectedTransactionNumberArr = action.payload
             if (action.payload.length === 0) {
                 state.currentSelector = ''
             } else {
-                state.currentSelector = 'transactionDataIndex'
+                state.currentSelector = 'scatterPlot'
                 state.selectedClusterIdArr = []
                 state.selectedFrequencyUniqueKeyArr = []
                 state.selectedCategoryArr = []
+                state.clusterViewSelectedTransactionNumberArr = []
             }
         },
+        setClusterViewSelectedTransactionNumberArr(state, action: PayloadAction<TransactionData['transactionNumber'][]>) {
+            state.clusterViewSelectedTransactionNumberArr = action.payload
+            if (action.payload.length === 0) {
+                state.currentSelector = ''
+            } else {
+                state.currentSelector = 'clusterView'
+                state.selectedClusterIdArr = []
+                state.selectedFrequencyUniqueKeyArr = []
+                state.selectedCategoryArr = []
+                state.scatterPlotSelectedTransactionNumberArr = []
+            }
+        },
+
         toggleClusterId(state, action: PayloadAction<ClusterData['clusterId']>) {
             state.currentSelector = 'clusterId';
             state.selectedCategoryArr = []
             state.selectedFrequencyUniqueKeyArr = []
-            state.selectedTransactionDataIndexArr = []
+            state.clusterViewSelectedTransactionNumberArr = []
+            state.scatterPlotSelectedTransactionNumberArr = []
             if (state.selectedClusterIdArr.includes(action.payload)) {
                 state.selectedClusterIdArr = state.selectedClusterIdArr.filter(item => item !== action.payload)
             } else {
@@ -82,7 +91,8 @@ export const interactivitySlice = createSlice({
             state.currentSelector = 'category';
             state.selectedClusterIdArr = []
             state.selectedFrequencyUniqueKeyArr = []
-            state.selectedTransactionDataIndexArr = []
+            state.clusterViewSelectedTransactionNumberArr = []
+            state.scatterPlotSelectedTransactionNumberArr = []
             if (state.selectedCategoryArr.includes(action.payload)) {
                 state.selectedCategoryArr = state.selectedCategoryArr.filter(item => item !== action.payload)
             } else {
@@ -98,7 +108,8 @@ export const interactivitySlice = createSlice({
             state.currentSelector = 'frequencyUniqueKey';
             state.selectedClusterIdArr = []
             state.selectedCategoryArr = []
-            state.selectedTransactionDataIndexArr = []
+            state.clusterViewSelectedTransactionNumberArr = []
+            state.scatterPlotSelectedTransactionNumberArr = []
             if (state.selectedFrequencyUniqueKeyArr.includes(action.payload)) {
                 state.selectedFrequencyUniqueKeyArr = state.selectedFrequencyUniqueKeyArr.filter(item => item !== action.payload)
             } else {
@@ -109,6 +120,9 @@ export const interactivitySlice = createSlice({
                     state.selectedFrequencyUniqueKeyArr.push(action.payload)
                 }
             }
+        },
+        clearBrush(state) {
+            state.currentSelector = ''
         }
     },
 });
@@ -117,10 +131,12 @@ export const interactivitySlice = createSlice({
 export const {
     setTransactionDataArr,
     setClusterDataArr,
-    setSelectedTransactionIndexArr,
     toggleClusterId,
     toggleCategory,
     toggleFrequencyUniqueKey,
+    setScatterPlotSelectedTransactionNumberArr,
+    setClusterViewSelectedTransactionNumberArr,
+    clearBrush,
 } = interactivitySlice.actions;
 
 // export the selectors
@@ -180,9 +196,14 @@ export const selectSelectedTransactionNumberArr = (state: RootState) => {
             const selectedFrequencyUniqueKeySet = new Set(state.interactivity.selectedFrequencyUniqueKeyArr)
             return state.interactivity.transactionDataArr.filter(transactionData => selectedFrequencyUniqueKeySet.has(transactionData.frequencyUniqueKey))
                 .map(transactionData => transactionData.transactionNumber)
-        case 'transactionDataIndex':
-            const transactionDataArr = state.interactivity.transactionDataArr
-            return state.interactivity.selectedTransactionDataIndexArr.map(index => transactionDataArr[index].transactionNumber)
+        case 'clusterView':
+            return state.interactivity.clusterViewSelectedTransactionNumberArr
+        // var transactionDataArr = state.interactivity.transactionDataArr
+        // return state.interactivity.clusterViewSelectedTransactionDataIndexArr.map(index => transactionDataArr[index].transactionNumber)
+        case 'scatterPlot':
+            return state.interactivity.scatterPlotSelectedTransactionNumberArr
+        // var transactionDataArr = state.interactivity.transactionDataArr
+        // return state.interactivity.scatterPlotSelectedTransactionDataIndexArr.map(index => transactionDataArr[index].transactionNumber)
         default:
             const _exausthive: never = state.interactivity.currentSelector
             throw new Error("invalid currentSelector");

@@ -29,6 +29,7 @@ import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyCont
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "./components/ColourLegend/ColourLegends";
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
+import ClusterView from "./components/ClusterView/ClusterView";
 
 // used for fixing the plotly scatter plot 'self not found' error
 const ClusterView2 = dynamic(
@@ -59,19 +60,15 @@ export default function App() {
         if (transactionDataArr === null) {
             throw new Error("transactionDataArr is null");
         }
-        dispatch(interactivitySlice.setSelectedTransactionIndexArr(indexes))
+        // dispatch(interactivitySlice.setSelectedTransactionIndexArr(indexes))
     }
 
-    const handleSetSelectTransactionNumberSet = (brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>) => {
-        const indexes: number[] = []
-        transactionDataArr.forEach(({ transactionNumber }, index) => {
-            if (brushedTransactionNumberSet.has(transactionNumber)) {
-                indexes.push(index)
-            }
-        })
-        dispatch(interactivitySlice.setSelectedTransactionIndexArr(indexes))
+    const handleClearBrush = () => {
+        dispatch(interactivitySlice.clearBrush())
     }
-
+    const handleScatterPlotSetSelectTransactionNumberSet = (brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>) => {
+        dispatch(interactivitySlice.setScatterPlotSelectedTransactionNumberArr(Array.from(brushedTransactionNumberSet)))
+    }
     // expanding handler
     /**
      * tell the components which are wrapped inside the expandablecontainer it is expanded or folded
@@ -135,7 +132,7 @@ export default function App() {
                         >
                             <ScatterPlot transactionDataArr={transactionDataArr} valueGetter={scatterPlotValueGetter}
                                 brushedTransactionNumberSet={brushedTransactionNumberSet}
-                                setBrushedTransactionNumberSet={handleSetSelectTransactionNumberSet}
+                                setBrushedTransactionNumberSet={handleScatterPlotSetSelectTransactionNumberSet}
                             />
                         </ExpandableContainer>
                     </div>
@@ -189,7 +186,7 @@ export default function App() {
                     <div className="col-span-6">
                         <TableViewCollection transactionDataArr={transactionDataArr}
                             brushedTransactionNumberSet={brushedTransactionNumberSet}
-                            handleClearBrush={() => handleSetSelectTransactionNumberSet(new Set())}
+                            handleClearBrush={handleClearBrush}
                             selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
                             handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
                             colourScale={categoryColourScaleWithTransactionNumber}
@@ -197,6 +194,8 @@ export default function App() {
                         ></TableViewCollection>
                     </div>
                 </div>
+                <ClusterView onSelectTransactionNumberArr={() => console.log('selecting')}></ClusterView>
+                
                 <CategoryColourLegend></CategoryColourLegend>
                 <ClusterIdColourLegend></ClusterIdColourLegend>
                 <FrequencyUniqueKeyColourLegend></FrequencyUniqueKeyColourLegend>

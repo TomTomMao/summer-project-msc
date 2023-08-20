@@ -7,6 +7,14 @@ import {
   selectTransactionDataArr,
 } from "../Interactivity/interactivitySlice";
 import { getClusterDataMapFromArr } from "../../hooks/useClusterData";
+import {
+  comparingArray,
+  createMemorisedFunction,
+} from "../../utilities/createMemorisedFunction";
+import { TransactionData } from "../../utilities/DataObject";
+
+const marginExpanded = {left: 40, top: 10, right: 10, bottom: 30}
+const marginFolded = {left: 40, top: 10, right: 10, bottom: 30}
 
 export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance";
 export type ValidClusterMetrics =
@@ -73,6 +81,11 @@ interface ClusterViewState {
   colour: ValidColours;
   x: ValidAxisLabels;
   y: ValidAxisLabels;
+
+  sliderXMin: number | "min";
+  sliderXMax: number | "max";
+  sliderYMin: number | "min";
+  sliderYMax: number | "max";
 }
 const initialState: ClusterViewState = {
   containerWidth: 545.98,
@@ -106,6 +119,10 @@ const initialState: ClusterViewState = {
   y: "transactionAmount",
 
   justChangedSize: false,
+  sliderXMin: "min",
+  sliderXMax: "max",
+  sliderYMin: "min",
+  sliderYMax: "max",
 };
 
 export const clusterViewSlice = createSlice({
@@ -292,21 +309,79 @@ export function selectColourDomain(state: RootState): {
 }
 
 /**
- * 
- * @param state 
+ *
+ * @param state
  * @returns the x data for rendering
  */
-export function selectXdata(state:RootState):number[] {
-  return selectTransactionDataArr(state).map(transactionData => transactionData[state.clusterView.x])
+export function selectXdata(state: RootState): number[] {
+  return selectClusterViewFilteredTransactionDataArr(state).map(
+    (transactionData) => transactionData[state.clusterView.x]
+  );
 }
 /**
- * 
- * @param state 
+ *
+ * @param state
  * @returns the y data for rendering
  */
-export function selectYdata(state:RootState):number[] {
-  return selectTransactionDataArr(state).map(transactionData => transactionData[state.clusterView.y])
+export function selectYdata(state: RootState): number[] {
+  return selectClusterViewFilteredTransactionDataArr(state).map(
+    (transactionData) => transactionData[state.clusterView.y]
+  );
 }
+
+function selectIdArr(state: RootState): TransactionData["transactionNumber"][] {
+  return selectClusterViewFilteredTransactionDataArr(state).map(
+    (transactionData) => transactionData["transactionNumber"]
+  );
+}
+
+/**the filtered transactionDataArr for cluster view */
+function selectClusterViewFilteredTransactionDataArr(state: RootState) {
+  const clusterViewFilteredTransactionDataArr: TransactionData[] = [];
+  const transactionDataArr = selectTransactionDataArr(state);
+  const { sliderXMin, sliderXMax, sliderYMin, sliderYMax } = state.clusterView;
+  const { x, y } = state.clusterView;
+  transactionDataArr.forEach((transactionData) => {
+    const xData = transactionData[x];
+    const yData = transactionData[y];
+    const xMinTrue = sliderXMin === "min" || xData >= sliderXMin;
+    const xMaxTrue = sliderXMax === "max" || xData >= sliderXMax;
+    const yMinTrue = sliderYMin === "min" || yData >= sliderYMin;
+    const yMaxTrue = sliderYMax === "max" || yData >= sliderYMax;
+    if (xMinTrue && xMaxTrue && yMinTrue && yMaxTrue) {
+      clusterViewFilteredTransactionDataArr.push(transactionData);
+    }
+  });
+  return clusterViewFilteredTransactionDataArr;
+}
+
+export const selectIdArrMemorised = createMemorisedFunction(
+  selectIdArr,
+  comparingArray
+);
+
+export const selectXdataMemorised = createMemorisedFunction(
+  selectXdata,
+  comparingArray
+);
+
+export const selectYdataMemorised = createMemorisedFunction(
+  selectYdata,
+  comparingArray
+);
+
+export const selectXAxisLabel = (state: RootState) => state.clusterView.x;
+export const selectYAxisLabel = (state: RootState) => state.clusterView.y;
+export const selectXlog = (state: RootState) => state.clusterView.xLog;
+export const selectYlog = (state: RootState) => state.clusterView.yLog;
+export const selectColourLabel = (state: RootState) => state.clusterView.colour
+
+export const selectMarginLeft = (state:RootState) => state.clusterView.isExpanded ? marginExpanded.left : marginFolded.left
+export const selectMarginRight = (state:RootState) => state.clusterView.isExpanded ? marginExpanded.right : marginFolded.right
+export const selectMarginTop= (state:RootState) => state.clusterView.isExpanded ? marginExpanded.top : marginFolded.top
+export const selectMarginBottom = (state:RootState) => state.clusterView.isExpanded ? marginExpanded.bottom: marginFolded.bottom
+
+export const selectShouldShowClusterViewBrusher = (state:RootState) => state.interactivity.currentSelector === 'clusterView'
 
 export default clusterViewSlice.reducer;
 
