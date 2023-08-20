@@ -152,7 +152,7 @@ export default function CalendarView3(props:
 
     // public scales for pie :
     const pieCalendarViewSharedScales: PieCalendarViewSharedScales = { colourScale, linearRadiusScale, logRadiusScale }
-
+    console.log('calendarview colourscale 1', colourScale.getColour('Savings'))
 
     return (
         <>

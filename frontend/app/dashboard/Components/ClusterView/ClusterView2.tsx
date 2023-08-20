@@ -37,13 +37,16 @@ export default function ClusterView2({ initData, initLayout, handleSelectIndex }
     const clusterIdColourScale = useClusterIdColourScale()// can't be put in the store so use hook
     const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()// can't be put in the store so use hook
     const colourScale = colour === 'category' ? categoryColourScale : colour === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale // can't be put in the store so use hook
-    
+    console.log('clusterView2', colourScale)
+    console.log('clusterView2', colourScale.getColour('savings'))
+
+
     const xData = useAppSelector(clusterViewSlice.selectXdata)
     const yData = useAppSelector(clusterViewSlice.selectYdata)
     const colourData = colourDataDomain.map(value => colourScale.getColour(value.domain, value.transactionNumber))
-    
-    
-    
+
+
+
     const [figure, setFigure] = useState<Figure>({ data: initData, layout: initLayout, frames: [] })
 
     if (figure === undefined) {

@@ -5,6 +5,8 @@ import { TransactionData } from "../../utilities/DataObject";
 import { ScaleLinear, ScaleLogarithmic, max, min, scaleLinear, scaleLog } from "d3";
 import { CanvasHTMLAttributes, DetailedHTMLProps, LegacyRef, useEffect, useMemo, useRef, useState } from "react";
 import { AxisBottom, AxisLeft } from "../Axis";
+import * as interactivitySlice from "../Interactivity/interactivitySlice";
+import { GRAY1 } from "../../utilities/consts";
 
 export interface ClusterViewProps {
     onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void
@@ -12,9 +14,13 @@ export interface ClusterViewProps {
 export default function ClusterView(props: ClusterViewProps) {
     const [lastBrushedValueExtent, setLastBrushedValueExtent] = useState<[[number, number], [number, number]] | null>(null) // if null, the brush should be hidden
 
-    const categoryColourScale = useCategoryColourScale()
-    const clusterIdColourScale = useClusterIdColourScale()
-    const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()
+    const categoryColourScale = useCategoryColourScale()// can't be put in the store so use hook
+    const clusterIdColourScale = useClusterIdColourScale()// can't be put in the store so use hook
+    const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()// can't be put in the store so use hook
+    const colour = useAppSelector(state => state.clusterView.colour);
+    const colourScale = colour === 'category' ? categoryColourScale : colour === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale // can't be put in the store so use hook
+    console.log('clusterView1', colourScale)
+    console.log('clusterView1', colourScale.getColour('savings'))
 
     // layout
     const containerHeight = useAppSelector(clusterViewSlice.selectCurrentContainerHeight)
@@ -31,6 +37,8 @@ export default function ClusterView(props: ClusterViewProps) {
     const y = useAppSelector(clusterViewSlice.selectYdataMemorised)
     const colourDomain = useAppSelector(clusterViewSlice.selectColourDomain)
     const id = useAppSelector(clusterViewSlice.selectIdArrMemorised)
+    const selectedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArr)
+    const selectedTransactionNumberSet = useMemo(() => new Set(selectedTransactionNumberArr), [selectedTransactionNumberArr])
     // length checking
     if (x.length !== y.length || x.length !== colourDomain.length || x.length !== id.length) {
         console.log('invalid length of different columns', x, y, colourDomain, id)
@@ -75,16 +83,21 @@ export default function ClusterView(props: ClusterViewProps) {
     // scales
     const xScale = useXYScale([xDomainMin, xDomainMax], [xRangeMin, xRangeMax], xLog)
     const yScale = useXYScale([yDomainMin, yDomainMax], [yRangeMin, yRangeMax], yLog)
-    const colourScale = colourLabel === 'category' ? categoryColourScale : (colourLabel === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
 
     // visualData 
     const xVisualData = useXYVisualData({ data: x, accessor: d => d, scale: xScale })
     const yVisualData = useXYVisualData({ data: y, accessor: d => d, scale: yScale })
-    const colourVisualData = useColourVisualData<ReturnType<typeof clusterViewSlice.selectColourDomain>[0]>({ data: colourDomain, accessor: d => d.domain, scale: colourScale })
+    const colourVisualData = colourDomain.map(({ domain, transactionNumber }) => {
+        if (selectedTransactionNumberSet.size === 0 || selectedTransactionNumberSet.has(transactionNumber)) {
+            return colourScale.getColour(domain)
+        } else {
+            return GRAY1
+        }
+    })
 
     return (
         <div style={{ position: 'static' }}>
-            <div style={{position:'relative'}}>
+            <div style={{ position: 'relative' }}>
                 <svg width={containerWidth} height={containerHeight} style={{ zIndex: 1, position: 'absolute' }}>
                     <g transform={`translate(${marginLeft},${marginTop})`}>
                         {/* <g>{circlesToDisplay}</g> */}
@@ -131,11 +144,11 @@ interface ColourChannel<Datum> {
     accessor: (datum: Datum) => string,
     scale: ScaleOrdinalWithTransactionNumber
 }
-function useColourVisualData<Datum>(channel: ColourChannel<Datum>): string[] {
+function getColourVisualData<Datum>(channel: ColourChannel<Datum>): string[] {
     const data = channel.data
     const accessor = channel.accessor
     const scale = channel.scale
-    const range = useMemo(() => data.map(datum => scale.getColour(accessor(datum))), [data, accessor, scale])
+    const range = data.map(datum => scale.getColour(accessor(datum)))
     return range
 }
 
