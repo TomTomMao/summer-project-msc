@@ -3,7 +3,7 @@ import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ScaleOrdinal } from "d3";
 
-export type ColourScheme = "PuOr" | "Spectral" | "PiYG" | 'Rainbow' | 'Sinebow';
+export type ColourScheme = "PuOr" | "Spectral" | "PiYG" | 'Rainbow' | 'Sinebow' | 'Warm'| 'Cool'  // colour scale are from: reference: https://github.com/d3/d3-scale-chromatic
 
 export type ColourChannelState = {
   cluster: {
@@ -22,7 +22,7 @@ export type ColourChannelState = {
 
 const initialState: ColourChannelState = {
   cluster: {
-    scheme: "PuOr",
+    scheme: "Warm",
     scaleFunction: null,
   },
   category: {
@@ -30,7 +30,7 @@ const initialState: ColourChannelState = {
     scaleFunction: null,
   },
   frequencyUniqueKey: {
-    scheme: "PiYG",
+    scheme: "Cool",
     scaleFunction: null,
   },
 };

@@ -83,6 +83,12 @@ function useColourScale(
       case "Sinebow":
         interpolateFunction = d3.interpolateSinebow;
         break;
+      case "Cool":
+        interpolateFunction = d3.interpolateCool;
+        break;
+      case "Warm":
+        interpolateFunction = d3.interpolateWarm;
+        break;
       default:
         // reference for exhaustiveCheck: https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking
         const _exhaustiveCheck: never = colourScheme;

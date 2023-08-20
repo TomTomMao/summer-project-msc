@@ -194,8 +194,8 @@ export default function App() {
                         ></TableViewCollection>
                     </div>
                 </div>
-                <ClusterView onSelectTransactionNumberArr={() => console.log('selecting')}></ClusterView>
-                
+                <ClusterView onSelectTransactionNumberArr={(selectedTransactionNumberArr) => dispatch(interactivitySlice.setClusterViewSelectedTransactionNumberArr(selectedTransactionNumberArr))}></ClusterView>
+
                 <CategoryColourLegend></CategoryColourLegend>
                 <ClusterIdColourLegend></ClusterIdColourLegend>
                 <FrequencyUniqueKeyColourLegend></FrequencyUniqueKeyColourLegend>

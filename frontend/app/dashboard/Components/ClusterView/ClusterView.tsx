@@ -2,27 +2,29 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { ScaleOrdinalWithTransactionNumber, useCategoryColourScale, useClusterIdColourScale, useFrequencyUniqueKeyColourScale } from "../../hooks/useColourScales";
 import * as clusterViewSlice from "./clusterViewSlice";
 import { TransactionData } from "../../utilities/DataObject";
-import { ScaleLinear, ScaleLogarithmic, indexes, max, min, scaleLinear, scaleLog } from "d3";
-import { CanvasHTMLAttributes, DetailedHTMLProps, LegacyRef, useEffect, useMemo, useState } from "react";
+import * as d3 from "d3";
+import { CanvasHTMLAttributes, DetailedHTMLProps, LegacyRef, useEffect, useMemo, useRef, useState } from "react";
 import { AxisBottom, AxisLeft } from "../Axis";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { GRAY1 } from "../../utilities/consts";
 import { Circles } from "./CirclesGL";
-
+const BRUSH_MODE = 'end'
 export const POINT_SIZE = 2
 export interface ClusterViewProps {
     onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void
 }
 export default function ClusterView(props: ClusterViewProps) {
-    const [lastBrushedValueExtent, setLastBrushedValueExtent] = useState<[[number, number], [number, number]] | null>(null) // if null, the brush should be hidden
+    // record the mapped data for the brusher, when the chart's scale changed, use scale.
+
+    const [lastBrushedValueExtent, setLastBrushedValueExtent] = useState<{ xMin: number, yMin: number, xMax: number, yMax: number } | null>(null) // if null, the brush should be hidden
+    const brush = useRef<d3.BrushBehavior<SVGGElement> | null>(null)
+    const brushGRef = useRef<SVGGElement | null>(null)
 
     const categoryColourScale = useCategoryColourScale()// can't be put in the store so use hook
     const clusterIdColourScale = useClusterIdColourScale()// can't be put in the store so use hook
     const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()// can't be put in the store so use hook
     const colour = useAppSelector(state => state.clusterView.colour);
     const colourScale = colour === 'category' ? categoryColourScale : colour === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale // can't be put in the store so use hook
-    console.log('clusterView1', colourScale)
-    console.log('clusterView1', colourScale.getColour('savings'))
 
     // layout
     const containerHeight = useAppSelector(clusterViewSlice.selectCurrentContainerHeight)
@@ -60,10 +62,10 @@ export default function ClusterView(props: ClusterViewProps) {
     // scales' range, domain, and isLogInfo
     const xLog = useAppSelector(clusterViewSlice.selectXlog)
     const yLog = useAppSelector(clusterViewSlice.selectYlog)
-    const xDomainMin = useMemo(() => min(x), [x])
-    const xDomainMax = useMemo(() => max(x), [x])
-    const yDomainMin = useMemo(() => min(y), [y])
-    const yDomainMax = useMemo(() => max(y), [y])
+    const xDomainMin = useMemo(() => d3.min(x), [x])
+    const xDomainMax = useMemo(() => d3.max(x), [x])
+    const yDomainMin = useMemo(() => d3.min(y), [y])
+    const yDomainMax = useMemo(() => d3.max(y), [y])
     const xRangeMin = 0
     const xRangeMax = width
     const yRangeMin = height
@@ -72,12 +74,50 @@ export default function ClusterView(props: ClusterViewProps) {
     const shouldShowBrusher = useAppSelector(clusterViewSlice.selectShouldShowClusterViewBrusher)
     useEffect(() => setLastBrushedValueExtent(null), [shouldShowBrusher]) // hide the brusher
 
-    const handleBrush = () => {
-        // use handler from the prop
-        const brushedValueExtent = []
+    const handleBrush = (event: d3.D3BrushEvent<SVGGElement> | undefined): void => {
+        if (event === undefined) {
+            setLastBrushedValueExtent(null)
+            return
+        }
+        const selection = event.selection
+        if (selection === null) {
+            setLastBrushedValueExtent(null)
+            props.onSelectTransactionNumberArr([]);
+            return;
+        }
+        let x0: number, y0: number, x1: number, y1: number;
+        if (Array.isArray(selection) && Array.isArray(selection[0]) && Array.isArray(selection[1])) {
+            [[x0, y0], [x1, y1]] = selection; // ref this line: https://observablehq.com/@d3/brushable-scatterplot
+        } else {
+            throw new Error("selection type is not valid");
+        }
+        const [[xMin, xMax], [yMin, yMax]] = [[xScale.invert(x0), xScale.invert(x1)], [yScale.invert(y1), yScale.invert(y0)]]; // y1 and y0 are reverted because the coordinate system starts from the top
+        setLastBrushedValueExtent({ xMin, xMax, yMin, yMax })
+
+        // derive the brushed transactionNumberArr from x array, y array and id array
         const brushedTransactionNumberArr: TransactionData['transactionNumber'][] = []
+        for (let i = 0; i < x.length; i++) {
+            if (x[i] >= xMin && x[i] <= xMax && y[i] >= yMin && y[i] <= yMax) {
+                brushedTransactionNumberArr.push(id[i])
+            }
+        }
+        // use handler from the prop
         props.onSelectTransactionNumberArr(brushedTransactionNumberArr)
     }
+    // add and update the brusher
+    useEffect(() => {
+        if (brush.current === null) {
+            brush.current = d3.brush<SVGGElement>()
+            brush.current.extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush))
+        }
+        if (brushGRef.current !== null) {
+            const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current)
+            brush.current.extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush))
+            brush.current(brushG)
+            brush.current.on(BRUSH_MODE, (handleBrush))
+            //move the brushes' position to the right place
+        }
+    }, [width, height, xLog, yLog, xLabel, yLabel, x, y])
 
     if (xDomainMin === undefined || xDomainMax === undefined || yDomainMin === undefined || yDomainMax === undefined) {
         return <>waiting for data</>
@@ -101,15 +141,17 @@ export default function ClusterView(props: ClusterViewProps) {
         <div style={{ position: 'relative' }}>
             <svg width={containerWidth} height={containerHeight} style={{ zIndex: 1 }}>
                 <g transform={`translate(${marginLeft},${marginTop})`}>
-                    {/* <g>{circlesToDisplay}</g> */}
                     <g><AxisLeft yScale={yScale} numberOfTicksTarget={6}></AxisLeft></g>
                     <g transform={`translate(0, ${height})`}><AxisBottom xScale={xScale} numberOfTicksTarget={6}></AxisBottom></g>
-                    {/* <g ref={brushGRef}></g> */}
+                    <g ref={brushGRef}></g>
                 </g>
             </svg>
             <div style={{ position: 'absolute', left: marginLeft, top: marginTop, zIndex: 2 }}>
                 <Circles xVisualData={xVisualData} yVisualData={yVisualData} colourVisualData={colourVisualData} width={width} height={height}></Circles>
             </div>
+            <svg width={containerWidth} height={containerHeight} style={{ position: 'absolute', left: marginLeft, top: marginTop, zIndex: 3 }}>
+                <g ref={brushGRef}></g>
+            </svg>
         </div>
     )
 }
@@ -125,16 +167,16 @@ export default function ClusterView(props: ClusterViewProps) {
 const useXYScale = (domain: [number, number],
     range: [number, number],
     logScale: boolean, domainArr: number[]):
-    ScaleLogarithmic<number, number> | ScaleLinear<number, number> => {
+    d3.ScaleLogarithmic<number, number> | d3.ScaleLinear<number, number> => {
     const [domainMin, domainMax] = domain
     const [rangeMin, rangeMax] = range
     const scale = useMemo(() => {
         if (domainArr.length < 1) {
             throw new Error("invalid domainArr lenght, must be >= 1");
         }
-        const scaleFunction = logScale ? scaleLog : scaleLinear
+        const scaleFunction = logScale ? d3.scaleLog : d3.scaleLinear
         let domainMinGreaterThan0 = domainMin;
-        if (logScale && domainMin <= 0 && min(domainArr) as number < 0) {
+        if (logScale && domainMin <= 0 && d3.min(domainArr) as number < 0) {
             domainMinGreaterThan0 = domainArr.reduce((a, b) => b < a && b > 0 ? b : a, Number.MAX_VALUE)
         }
         return scaleFunction().domain([domainMinGreaterThan0, domainMax]).rangeRound([rangeMin, rangeMax])
