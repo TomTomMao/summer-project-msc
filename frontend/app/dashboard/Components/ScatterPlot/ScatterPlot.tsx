@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useMemo, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, useRef, useMemo, Dispatch, SetStateAction, useLayoutEffect } from "react";
 import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from 'd3';
 import { AxisBottom, AxisLeft } from "../Axis";
@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { GRAY1 } from "../../utilities/consts";
 import { ScaleOrdinalWithTransactionNumber, useCategoryColourScale } from "../../hooks/useColourScales";
 import { useTransactionDataArr } from "../../hooks/useTransactionData";
+import * as interactivitySlice from "../Interactivity/interactivitySlice";
 
 const BRUSH_MODE = 'end'
 /**
@@ -58,7 +59,10 @@ export function ScatterPlot(props: ScatterPlotProps) {
     // configs
     const { currentContainerWidth, currentContainerHeight, margin, useLogScale, width, height, colourScale } = useScatterPlotConfig()
     const dispatch = useAppDispatch()
+
+    const brush = useRef<d3.BrushBehavior<SVGGElement> | null>(null)
     const brushGRef = useRef<SVGGElement | null>(null)
+
     const valueGetterWithSwap = useMemo(() => {
         return { ...valueGetter, getXSwap: valueGetter.y, getYSwap: valueGetter.x };
     }, [])
@@ -68,17 +72,19 @@ export function ScatterPlot(props: ScatterPlotProps) {
 
     // cache the circles 
     const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useScatterPlotCachedCircles(transactionDataArr, valueGetterWithSwap, colourScale, linearPrivateScales, logPrivateScales)
+    const currentSelector = useAppSelector(interactivitySlice.selectCurrentSelector)
+    const shouldShowBrusher = currentSelector !== 'clusterId' && currentSelector !== 'category' && currentSelector !== 'frequencyUniqueKey'
 
-
+    // clear brush when it should be shown
     useEffect(() => {
-        //https://github.com/d3/d3-brush
-        if (brushGRef.current !== null) {
+        if (brush.current !== null && brushGRef.current !== null) {
             const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current)
-            const brush = d3.brush<SVGGElement>().extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush))
-            brush(brushG)
-            return () => { brushG.on('.brush', null) }
+            console.log('brushGRef',brushGRef)
+            console.log('brushG',brushG)
+            brushGRef.current.setAttribute('opacity',shouldShowBrusher ? '1' : '0')
+            // brushG.attr('opacity', shouldShowBrusher ? '1' : '0')
         }
-    }, [width, height, isSwap, useLogScale])
+    }, [shouldShowBrusher])
 
     let circlesToDisplay;
     let scaleForXAxis: d3.ScaleLinear<number, number, never> | d3.ScaleLogarithmic<number, number, never>;
@@ -105,6 +111,9 @@ export function ScatterPlot(props: ScatterPlotProps) {
         }
     }
     const handleBrush = (event: d3.D3BrushEvent<SVGGElement>): void => {
+        if (event === undefined) {
+            return
+        }
         console.time('handleBrush')
         if (event.selection === null) {
             setBrushedTransactionNumberSet(new Set());
@@ -128,6 +137,22 @@ export function ScatterPlot(props: ScatterPlotProps) {
         setBrushedTransactionNumberSet(nextBrushedTransactionNumberSet)
         console.timeEnd('handleBrush')
     }
+
+    // change the brush's scale and clear
+    useEffect(() => {
+        if (brush.current === null) {
+            brush.current = d3.brush<SVGGElement>()
+            brush.current.extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush))
+        }
+        if (brushGRef.current !== null) {
+            const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current)
+            brush.current(brushG)
+            brush.current.on(BRUSH_MODE, (handleBrush))
+            //move the brushes' position to the right place
+        }
+    }, [width, height, isSwap, useLogScale])
+
+
     return (
         <div className="clusterView">
             <div style={{
@@ -260,7 +285,7 @@ function Circle(props: CircleProps) {
  * @returns an object with  currentContainerWidth, currentContainerHeight, useLogScale, margin, dispatch, width, height
  */
 function useScatterPlotConfig() {
-    console.log('scatter plot view config information changed')
+    // console.log('scatter plot view config information changed')
     const currentContainerWidth = useAppSelector(scatterPlotSlice.selectCurrentContainerWidth);
     const currentContainerHeight = useAppSelector(scatterPlotSlice.selectCurrentContainerHeight);
     const mainAxis = useAppSelector(scatterPlotSlice.selectMainAxis);
@@ -268,8 +293,8 @@ function useScatterPlotConfig() {
     const margin = DEFAULT_MARGIN
 
     const useLogScale = mainAxis === 'log' ? true : false;
-    console.log('useLogScale flage', useLogScale)
-    console.log('mainAxis flage', mainAxis)
+    // console.log('useLogScale flage', useLogScale)
+    // console.log('mainAxis flage', mainAxis)
     // config dispatcher
     const dispatch = useAppDispatch();
     const colourScale = useCategoryColourScale()

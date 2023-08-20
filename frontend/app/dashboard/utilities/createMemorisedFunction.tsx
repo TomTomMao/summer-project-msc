@@ -9,11 +9,11 @@ export function createMemorisedFunction<InputValue, ReturnValue>(regularFunction
     return function memorisedFunction(inputValue: InputValue): ReturnValue {
         const newReturnValue = regularFunction(inputValue);
         if (lastReturnValue === undefined || !comparingFunction(lastReturnValue, newReturnValue)) {
-            console.log('memorised function updated return value')
+            // console.log('memorised function updated return value')
             lastReturnValue = newReturnValue;
         } else {
             // do nothing
-            console.log('memorised function use the previous return value')
+            // console.log('memorised function use the previous return value')
         }
         return lastReturnValue;
     };

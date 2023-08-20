@@ -39,15 +39,15 @@ const ClusterView2 = dynamic(
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
     const brushedTransactionNumberSet = useMemo(() => new Set(brushedTransactionNumberArr), [brushedTransactionNumberArr])
-    useEffect(() => { console.log('brushedTransactionNumberArr updated', brushedTransactionNumberArr) }, [brushedTransactionNumberArr])
+    // useEffect(() => { console.log('brushedTransactionNumberArr updated', brushedTransactionNumberArr) }, [brushedTransactionNumberArr])
 
     useSyncTransactionDataAndClusterData(); // app is reponsible for checking the relative states in the redux store and update the transactionDataArr and Clus
     const categoryColourScaleWithTransactionNumber = useCategoryColourScale()
-    useEffect(() => console.log('categoryColourScale:', categoryColourScaleWithTransactionNumber.domain(), categoryColourScaleWithTransactionNumber.range()), [categoryColourScaleWithTransactionNumber])
+    // useEffect(() => console.log('categoryColourScale:', categoryColourScaleWithTransactionNumber.domain(), categoryColourScaleWithTransactionNumber.range()), [categoryColourScaleWithTransactionNumber])
     const clusterColourScaleWithTransactionNumber = useClusterIdColourScale()
-    useEffect(() => console.log('clusterColourScale:', clusterColourScaleWithTransactionNumber.domain(), clusterColourScaleWithTransactionNumber.range()), [clusterColourScaleWithTransactionNumber])
+    // useEffect(() => console.log('clusterColourScale:', clusterColourScaleWithTransactionNumber.domain(), clusterColourScaleWithTransactionNumber.range()), [clusterColourScaleWithTransactionNumber])
     const frequencyUniqueKeyColourScaleWithTransactionNumber = useFrequencyUniqueKeyColourScale()
-    useEffect(() => console.log('frequencyUniqueKeyColourScale:', frequencyUniqueKeyColourScaleWithTransactionNumber.domain(), frequencyUniqueKeyColourScaleWithTransactionNumber.range()), [frequencyUniqueKeyColourScaleWithTransactionNumber])
+    // useEffect(() => console.log('frequencyUniqueKeyColourScale:', frequencyUniqueKeyColourScaleWithTransactionNumber.domain(), frequencyUniqueKeyColourScaleWithTransactionNumber.range()), [frequencyUniqueKeyColourScaleWithTransactionNumber])
     const transactionDataArr = useTransactionDataArr();
     const clusterDataArr = useClusterDataArr()
     // cluster view's initial y axis's scale

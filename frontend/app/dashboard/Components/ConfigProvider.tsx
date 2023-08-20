@@ -40,7 +40,7 @@ type CalendarViewConfigAction = { targetChart: 'calendar view', type: 'change gl
 function calendarViewConfigReducer(calendarConfig: CalendarConfig, action: CalendarViewConfigAction): CalendarConfig {
     switch (action.type) {
         case 'change glyph type':
-            console.log('change glyph type')
+            // console.log('change glyph type')
             return { ...calendarConfig, glyphType: action.glyphType }
         default:
             throw new Error("undefined action type");
@@ -177,7 +177,7 @@ function configReducer(config: Config, action: Action): Config {
             return { ...config, clusterViewConfig: nextClusterViewConfig };
         case 'dashboard':
             const nextConfig = dashboardReducer(config, action);
-            console.log('dispatching dashboard', nextConfig)
+            // console.log('dispatching dashboard', nextConfig)
             return nextConfig;
         default:
             throw new Error("undefined targetChart");

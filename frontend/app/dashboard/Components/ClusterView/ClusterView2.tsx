@@ -50,7 +50,7 @@ export default function ClusterView2({ initData, initLayout, handleSelectIndex }
         throw new Error('figure')
     }
     if (figure.data === undefined) {
-        console.log('figure debug', figure)
+        // console.log('figure debug', figure)
         throw new Error('figure.data is not defined, search "figure debug" in console')
     }
     const datum = figure.data[0]

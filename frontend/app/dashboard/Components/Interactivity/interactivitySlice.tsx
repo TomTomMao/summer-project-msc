@@ -195,4 +195,6 @@ export const selectSelectedTransactionNumberArr = (state: RootState) => {
 export const selectSelectedTransactionNumberArrMemorised: (state: RootState) => TransactionData['transactionNumber'][]
     = createMemorisedFunction(selectSelectedTransactionNumberArr, comparingArray)
 
+export const selectCurrentSelector = (state: RootState) => state.interactivity.currentSelector
+
 export default interactivitySlice.reducer;
