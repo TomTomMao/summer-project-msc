@@ -247,7 +247,7 @@ function MonthView(props: MonthViewProps) {
                 }
                 return <td onClick={() => handleShowDayDetail(i + 1)} style={{ padding: '0px' }} >
                     <div key={`${month}-${i + 1}`}
-                        style={{ zIndex: isDayHasSelectedTransaction ? 900 : 800, borderColor: isDayHasSelectedTransaction ? 'blue' : 'gray' }}
+                        style={{ zIndex: isDayHasSelectedTransaction ? 900 : 800, borderColor: isDayHasSelectedTransaction ? 'blue' : isDetailDay ? 'red' : 'RGB(200,200,200)' }}
                     >
                         {dayView}
                     </div>

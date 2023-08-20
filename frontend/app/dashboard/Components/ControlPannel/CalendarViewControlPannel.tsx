@@ -131,7 +131,7 @@ export default function CalendarViewControlPannel() {
                 </tr>
                 <tr>
                     <td>
-                        barGlyph heigth axis:
+                        barGlyph height axis:
                     </td>
                     <td>
                         <select name="" id="" value={barDayViewHeightAxis} onChange={(e) => handleSetBarGlyphHeightAxis(e.target.value)}>

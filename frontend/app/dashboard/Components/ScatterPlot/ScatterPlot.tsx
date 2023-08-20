@@ -146,6 +146,7 @@ export function ScatterPlot(props: ScatterPlotProps) {
         }
         if (brushGRef.current !== null) {
             const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current)
+            brush.current.extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush))
             brush.current(brushG)
             brush.current.on(BRUSH_MODE, (handleBrush))
             //move the brushes' position to the right place
