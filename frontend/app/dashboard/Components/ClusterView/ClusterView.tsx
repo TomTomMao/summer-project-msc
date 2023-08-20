@@ -8,6 +8,7 @@ import { AxisBottom, AxisLeft } from "../Axis";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { GRAY1 } from "../../utilities/consts";
 
+const POINT_SIZE = 2
 export interface ClusterViewProps {
     onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void
 }
@@ -81,8 +82,8 @@ export default function ClusterView(props: ClusterViewProps) {
         return <>waiting for data</>
     }
     // scales
-    const xScale = useXYScale([xDomainMin, xDomainMax], [xRangeMin, xRangeMax], xLog)
-    const yScale = useXYScale([yDomainMin, yDomainMax], [yRangeMin, yRangeMax], yLog)
+    const xScale = useXYScale([xDomainMin, xDomainMax], [(xRangeMax - xRangeMin) * 0.01, xRangeMax * 0.98], xLog)
+    const yScale = useXYScale([yDomainMin, yDomainMax], [yRangeMin * 0.98, (yRangeMin-yRangeMax) * 0.01], yLog)
 
     // visualData 
     const xVisualData = useXYVisualData({ data: x, accessor: d => d, scale: xScale })
@@ -96,19 +97,17 @@ export default function ClusterView(props: ClusterViewProps) {
     })
 
     return (
-        <div style={{ position: 'static' }}>
-            <div style={{ position: 'relative' }}>
-                <svg width={containerWidth} height={containerHeight} style={{ zIndex: 1, position: 'absolute' }}>
-                    <g transform={`translate(${marginLeft},${marginTop})`}>
-                        {/* <g>{circlesToDisplay}</g> */}
-                        <g><AxisLeft yScale={yScale} numberOfTicksTarget={6}></AxisLeft></g>
-                        <g transform={`translate(0, ${height})`}><AxisBottom xScale={xScale} numberOfTicksTarget={6}></AxisBottom></g>
-                        {/* <g ref={brushGRef}></g> */}
-                    </g>
-                </svg>
-                <div style={{ position: 'absolute', left: marginLeft, top: marginTop, zIndex: 2 }}>
-                    <Circles xVisualData={xVisualData} yVisualData={yVisualData} colourVisualData={colourVisualData} width={width} height={height}></Circles>
-                </div>
+        <div style={{ position: 'relative' }}>
+            <svg width={containerWidth} height={containerHeight} style={{ zIndex: 1 }}>
+                <g transform={`translate(${marginLeft},${marginTop})`}>
+                    {/* <g>{circlesToDisplay}</g> */}
+                    <g><AxisLeft yScale={yScale} numberOfTicksTarget={6}></AxisLeft></g>
+                    <g transform={`translate(0, ${height})`}><AxisBottom xScale={xScale} numberOfTicksTarget={6}></AxisBottom></g>
+                    {/* <g ref={brushGRef}></g> */}
+                </g>
+            </svg>
+            <div style={{ position: 'absolute', left: marginLeft, top: marginTop, zIndex: 2 }}>
+                <Circles xVisualData={xVisualData} yVisualData={yVisualData} colourVisualData={colourVisualData} width={width} height={height}></Circles>
             </div>
         </div>
     )
@@ -136,19 +135,6 @@ function useXYVisualData<Datum, Domain, Range>(channel: XYChannel<Datum, Domain,
     const accessor = channel.accessor
     const scale = channel.scale
     const range = useMemo(() => data.map(datum => scale(accessor(datum))), [data, accessor, scale])
-    return range
-}
-
-interface ColourChannel<Datum> {
-    data: Datum[],
-    accessor: (datum: Datum) => string,
-    scale: ScaleOrdinalWithTransactionNumber
-}
-function getColourVisualData<Datum>(channel: ColourChannel<Datum>): string[] {
-    const data = channel.data
-    const accessor = channel.accessor
-    const scale = channel.scale
-    const range = data.map(datum => scale.getColour(accessor(datum)))
     return range
 }
 
@@ -193,7 +179,7 @@ function Circles({ xVisualData, yVisualData, colourVisualData, width, height }:
                 context2.fillStyle = fill
                 indexes.forEach(index => {
                     context2.beginPath();
-                    context2.arc(xVisualData[index], yVisualData[index], 1.7, 0 * Math.PI, 2 * Math.PI);
+                    context2.arc(xVisualData[index], yVisualData[index], POINT_SIZE, 0 * Math.PI, 2 * Math.PI);
                     context2.fill();
                 })
             })
