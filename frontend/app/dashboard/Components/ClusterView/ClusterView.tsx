@@ -11,7 +11,8 @@ import { Circles } from "./CirclesGL";
 const BRUSH_MODE = 'end'
 export const POINT_SIZE = 2
 export interface ClusterViewProps {
-    onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void
+    onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void,
+    onSetThisSelector: () => void
 }
 export default function ClusterView(props: ClusterViewProps) {
     // record the mapped data for the brusher, when the chart's scale changed, use scale.
@@ -72,8 +73,14 @@ export default function ClusterView(props: ClusterViewProps) {
     const yRangeMax = 0
 
     const shouldShowBrusher = useAppSelector(clusterViewSlice.selectShouldShowClusterViewBrusher)
-    useEffect(() => setLastBrushedValueExtent(null), [shouldShowBrusher]) // hide the brusher
+    useEffect(() => {
+        if (brushGRef.current !== null) {
+            brushGRef.current.setAttribute('opacity', shouldShowBrusher ? '1' : '0')
+        }
+        setLastBrushedValueExtent(null)
+    }, [shouldShowBrusher]) // hide the brusher
 
+    const handleSetThisSelector = props.onSetThisSelector
     const handleBrush = (event: d3.D3BrushEvent<SVGGElement> | undefined): void => {
         if (event === undefined) {
             setLastBrushedValueExtent(null)
@@ -108,6 +115,7 @@ export default function ClusterView(props: ClusterViewProps) {
     useEffect(() => {
         if (brush.current === null) {
             brush.current = d3.brush<SVGGElement>()
+            brush.current.on('brush', handleSetThisSelector)
             brush.current.extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush))
         }
         if (brushGRef.current !== null) {
@@ -138,7 +146,7 @@ export default function ClusterView(props: ClusterViewProps) {
     })
 
     return (
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative' }} className="clusterView">
             <svg width={containerWidth} height={containerHeight} style={{ zIndex: 1 }}>
                 <g transform={`translate(${marginLeft},${marginTop})`}>
                     <g><AxisLeft yScale={yScale} numberOfTicksTarget={6}></AxisLeft></g>

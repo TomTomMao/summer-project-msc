@@ -123,6 +123,9 @@ export const interactivitySlice = createSlice({
         },
         clearBrush(state) {
             state.currentSelector = ''
+        },
+        setCurrentSelector(state, action: PayloadAction<InteractivityState['currentSelector']>) {
+            state.currentSelector = action.payload
         }
     },
 });
@@ -137,6 +140,7 @@ export const {
     setScatterPlotSelectedTransactionNumberArr,
     setClusterViewSelectedTransactionNumberArr,
     clearBrush,
+    setCurrentSelector
 } = interactivitySlice.actions;
 
 // export the selectors

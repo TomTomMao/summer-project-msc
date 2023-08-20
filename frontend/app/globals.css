@@ -72,8 +72,12 @@
 
 
 /* cluster view */
-.clusterView {
+.scatterPlot {
     background-color: white;
     font-size: 12px;
-    padding: 2em 2em 2em 2em;
+    padding-top: 2em;
+}
+
+.clusterVie{
+    background-color: white;
 }

@@ -9,8 +9,6 @@ import { POINT_SIZE } from "./ClusterView";
  */
 export function Circles({ xVisualData, yVisualData, colourVisualData, width, height }: { xVisualData: number[]; yVisualData: number[]; colourVisualData: string[]; width: number; height: number; }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-
-
     useEffect(() => {
 
         // create a map: colour->index[]

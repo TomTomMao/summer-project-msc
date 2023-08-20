@@ -73,16 +73,12 @@ export function ScatterPlot(props: ScatterPlotProps) {
     // cache the circles 
     const { circlesLinear, swapCirclesLinear, circlesLog, swapCirclesLog } = useScatterPlotCachedCircles(transactionDataArr, valueGetterWithSwap, colourScale, linearPrivateScales, logPrivateScales)
     const currentSelector = useAppSelector(interactivitySlice.selectCurrentSelector)
-    const shouldShowBrusher = currentSelector !== 'clusterId' && currentSelector !== 'category' && currentSelector !== 'frequencyUniqueKey'
+    const shouldShowBrusher = currentSelector === 'scatterPlot'
 
-    // clear brush when it should be shown
+    // clear brush when it should not be shown
     useEffect(() => {
         if (brush.current !== null && brushGRef.current !== null) {
-            const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current)
-            console.log('brushGRef',brushGRef)
-            console.log('brushG',brushG)
-            brushGRef.current.setAttribute('opacity',shouldShowBrusher ? '1' : '0')
-            // brushG.attr('opacity', shouldShowBrusher ? '1' : '0')
+            brushGRef.current.setAttribute('opacity', shouldShowBrusher ? '1' : '0')
         }
     }, [shouldShowBrusher])
 
@@ -142,6 +138,8 @@ export function ScatterPlot(props: ScatterPlotProps) {
     useEffect(() => {
         if (brush.current === null) {
             brush.current = d3.brush<SVGGElement>()
+            
+            brush.current.on('brush', () => dispatch(interactivitySlice.setCurrentSelector('scatterPlot')))
             brush.current.extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush))
         }
         if (brushGRef.current !== null) {
@@ -155,7 +153,7 @@ export function ScatterPlot(props: ScatterPlotProps) {
 
 
     return (
-        <div className="clusterView">
+        <div className="scatterPlot">
             <div style={{
                 position: 'absolute',
                 left: '40px',

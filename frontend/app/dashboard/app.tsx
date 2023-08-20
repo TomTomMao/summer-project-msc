@@ -96,8 +96,6 @@ export default function App() {
         }
     }
 
-    const clusterViewDataPrepared = usePrepareClusterViewData(transactionDataArr, clusterDataArr)
-    const clusterViewLayoutPrepared = usePrepareClusterViewLayout();
     const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
     const selectedGlyphTransactionNumberSet = useMemo(() => {
@@ -111,7 +109,7 @@ export default function App() {
         })
         return setOfTheDay
     }, [detailDay, transactionDataArr, isSuperPositioned])
-    if (transactionDataArr === null || clusterViewDataPrepared === null || clusterViewDataPrepared === undefined) {
+    if (transactionDataArr === null) {
         return <>loading...</>
     } else if (categoryColourScaleWithTransactionNumber === null) {
         return <>initialising colour scale</>
@@ -165,13 +163,7 @@ export default function App() {
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
-                            <div>
-                                <ClusterView2 initData={clusterViewDataPrepared}
-                                    initLayout={clusterViewLayoutPrepared}
-                                    handleSelectIndex={handleSelectIndex}
-                                ></ClusterView2>
-                            </div>
-                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px' }}>
+                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 4 }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
                                     <div style={{ height: '450px', backgroundColor: 'RGB(197,197,197)' }}>
                                         <div style={{ margin: '2px' }}>
@@ -181,6 +173,9 @@ export default function App() {
                                     </div>
                                 </FolderableContainer>
                             </div>
+                            <div style={{ height: '20px' }}></div>
+                            <ClusterView onSelectTransactionNumberArr={(selectedTransactionNumberArr) => dispatch(interactivitySlice.setClusterViewSelectedTransactionNumberArr(selectedTransactionNumberArr))}
+                                onSetThisSelector={() => dispatch(interactivitySlice.setCurrentSelector('clusterView'))}></ClusterView>
                         </ExpandableContainer>
                     </div>
                     <div className="col-span-6">
@@ -194,7 +189,6 @@ export default function App() {
                         ></TableViewCollection>
                     </div>
                 </div>
-                <ClusterView onSelectTransactionNumberArr={(selectedTransactionNumberArr) => dispatch(interactivitySlice.setClusterViewSelectedTransactionNumberArr(selectedTransactionNumberArr))}></ClusterView>
 
                 <CategoryColourLegend></CategoryColourLegend>
                 <ClusterIdColourLegend></ClusterIdColourLegend>
@@ -218,7 +212,8 @@ function getExpandableContainerStyle(styleType: 'initStyle' | 'expandedStyle'): 
             top: '50%',
             transform: 'translate(-50%, -50%)',
             zIndex: 998,
-            border: '1px black solid'
+            border: '1px black solid',
+            backgroundColor: 'white'
         }
     }
 }
