@@ -3,12 +3,13 @@ import { ScaleOrdinalWithTransactionNumber, useCategoryColourScale, useClusterId
 import * as clusterViewSlice from "./clusterViewSlice";
 import { TransactionData } from "../../utilities/DataObject";
 import { ScaleLinear, ScaleLogarithmic, indexes, max, min, scaleLinear, scaleLog } from "d3";
-import { CanvasHTMLAttributes, DetailedHTMLProps, LegacyRef, useEffect, useMemo, useRef, useState } from "react";
+import { CanvasHTMLAttributes, DetailedHTMLProps, LegacyRef, useEffect, useMemo, useState } from "react";
 import { AxisBottom, AxisLeft } from "../Axis";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { GRAY1 } from "../../utilities/consts";
+import { Circles } from "./CirclesGL";
 
-const POINT_SIZE = 2
+export const POINT_SIZE = 2
 export interface ClusterViewProps {
     onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void
 }
@@ -82,8 +83,8 @@ export default function ClusterView(props: ClusterViewProps) {
         return <>waiting for data</>
     }
     // scales
-    const xScale = useXYScale([xDomainMin, xDomainMax], [(xRangeMax - xRangeMin) * 0.005, xRangeMax * 0.99], xLog)
-    const yScale = useXYScale([yDomainMin, yDomainMax], [yRangeMin * 0.99, (yRangeMin - yRangeMax) * 0.005], yLog)
+    const xScale = useXYScale([xDomainMin, xDomainMax], [(xRangeMax - xRangeMin) * 0.005, xRangeMax * 0.99], xLog, x)
+    const yScale = useXYScale([yDomainMin, yDomainMax], [yRangeMin * 0.99, (yRangeMin - yRangeMax) * 0.005], yLog, y)
 
     // visualData 
     const xVisualData = useXYVisualData({ data: x, accessor: d => d, scale: xScale })
@@ -113,17 +114,34 @@ export default function ClusterView(props: ClusterViewProps) {
     )
 }
 
-const useXYScale: (domain: [number, number], range: [number, number], logScale: boolean) => ScaleLogarithmic<number, number> | ScaleLinear<number, number> =
-    (domain: [number, number], range: [number, number], logScale: boolean) => {
-        const [domainMin, domainMax] = domain
-        const [rangeMin, rangeMax] = range
-        const scale = useMemo(() => {
-            const scaleFunction = logScale ? scaleLog : scaleLinear
-            return scaleFunction().domain([domainMin, domainMax]).rangeRound([rangeMin, rangeMax])
+/**
+ * 
+ * @param domain domain for creating the scale
+ * @param range range for creating the scale
+ * @param logScale if use logscale or not
+ * @param domainArr this will be used if there the min value in domain is <= 0, the smallest number which is > 0 will be used for domain min value, length must >= 1
+ * @returns 
+ */
+const useXYScale = (domain: [number, number],
+    range: [number, number],
+    logScale: boolean, domainArr: number[]):
+    ScaleLogarithmic<number, number> | ScaleLinear<number, number> => {
+    const [domainMin, domainMax] = domain
+    const [rangeMin, rangeMax] = range
+    const scale = useMemo(() => {
+        if (domainArr.length < 1) {
+            throw new Error("invalid domainArr lenght, must be >= 1");
+        }
+        const scaleFunction = logScale ? scaleLog : scaleLinear
+        let domainMinGreaterThan0 = domainMin;
+        if (logScale && domainMin <= 0 && min(domainArr) as number < 0) {
+            domainMinGreaterThan0 = domainArr.reduce((a, b) => b < a && b > 0 ? b : a, Number.MAX_VALUE)
+        }
+        return scaleFunction().domain([domainMinGreaterThan0, domainMax]).rangeRound([rangeMin, rangeMax])
 
-        }, [domainMin, domainMax, rangeMin, rangeMax, logScale])
-        return scale
-    }
+    }, [domainMin, domainMax, rangeMin, rangeMax, logScale])
+    return scale
+}
 
 interface XYChannel<Datum, Domain, Range> {
     data: Datum[],
@@ -136,87 +154,4 @@ function useXYVisualData<Datum, Domain, Range>(channel: XYChannel<Datum, Domain,
     const scale = channel.scale
     const range = useMemo(() => data.map(datum => scale(accessor(datum))), [data, accessor, scale])
     return range
-}
-
-/**
- * colourVisualData: a list of string in this format: 'RGB(XXX,XXX,XXX)'
- * @param param0 
- * @returns render data on canvas, the GRAY1 points will be at the bottom
- */
-function Circles({ xVisualData, yVisualData, colourVisualData, width, height }:
-    { xVisualData: number[], yVisualData: number[], colourVisualData: string[], width: number, height: number }) {
-    const canvasRef = useRef<HTMLCanvasElement>(null)
-
-
-    useEffect(() => {
-
-        // create a map: colour->index[]
-        const colourIndexMap = new Map<string, number[]>()
-        colourVisualData.forEach((colourVisualDatum, index) => {
-            const currentColourIndexArr = colourIndexMap.get(colourVisualDatum)
-            if (currentColourIndexArr === undefined) {
-                colourIndexMap.set(colourVisualDatum, [index])
-            } else {
-                currentColourIndexArr.push(index)
-            }
-        })
-
-
-        const canvas = canvasRef.current
-        let context: CanvasRenderingContext2D | null = null;
-        if (canvas !== null) {
-            let hdCanvas = createHDCanvas(canvas, width, height)
-            context = hdCanvas.getContext('2d')
-            if (context === null) {
-                return // do nothing
-            }
-            // loop through the keys, for each key, draw data based on the corresponding xdata and ydata, and key(which is colour)
-            const context2 = context
-            context2.clearRect(0, 0, width, height)
-            // draw circles
-
-            // make the gray values at the bottom
-            const colourIndexArrGRAY1: { fill: string, indexes: number[] }[] = []
-            const colourIndexArrNOTGRAY1: { fill: string, indexes: number[] }[] = []
-            colourIndexMap.forEach((indexes, fill) => {
-                if (fill === GRAY1) {
-                    colourIndexArrGRAY1.push({ fill, indexes })
-                } else {
-                    colourIndexArrNOTGRAY1.push({ fill, indexes })
-                }
-            })
-            const colourIndexArrStartGRAY1 = [...colourIndexArrGRAY1, ...colourIndexArrNOTGRAY1]
-            colourIndexArrStartGRAY1.forEach(({ indexes, fill }) => {
-                // reference: https://dirask.com/posts/JavaScript-draw-point-on-canvas-element-PpOBLD
-                context2.fillStyle = fill
-                indexes.forEach(index => {
-                    context2.beginPath();
-                    context2.arc(xVisualData[index], yVisualData[index], POINT_SIZE, 0 * Math.PI, 2 * Math.PI);
-                    context2.fill();
-                })
-            })
-        }
-
-    }, [xVisualData, yVisualData, colourVisualData])
-
-    return (
-        <canvas ref={canvasRef} width={width} height={height}>
-        </canvas>
-    )
-}
-
-function createHDCanvas(canvas: HTMLCanvasElement, w: number, h: number) {
-    // reference: https://juejin.cn/post/7014765000916992036
-    const ratio = window.devicePixelRatio || 1;
-    canvas.width = w * ratio;
-    canvas.height = h * ratio;
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
-    const ctx = canvas.getContext('2d')
-    if (ctx === null) {
-        throw new Error("shold be null, check args for getContext()");
-
-    }
-    ctx.scale(ratio, ratio)
-    return canvas;
 }
