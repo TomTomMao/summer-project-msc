@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { ScaleOrdinalWithTransactionNumber, useCategoryColourScale, useClusterIdColourScale, useFrequencyUniqueKeyColourScale } from "../../hooks/useColourScales";
 import * as clusterViewSlice from "./clusterViewSlice";
 import { TransactionData } from "../../utilities/DataObject";
-import { ScaleLinear, ScaleLogarithmic, max, min, scaleLinear, scaleLog } from "d3";
+import { ScaleLinear, ScaleLogarithmic, indexes, max, min, scaleLinear, scaleLog } from "d3";
 import { CanvasHTMLAttributes, DetailedHTMLProps, LegacyRef, useEffect, useMemo, useRef, useState } from "react";
 import { AxisBottom, AxisLeft } from "../Axis";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
@@ -82,8 +82,8 @@ export default function ClusterView(props: ClusterViewProps) {
         return <>waiting for data</>
     }
     // scales
-    const xScale = useXYScale([xDomainMin, xDomainMax], [(xRangeMax - xRangeMin) * 0.01, xRangeMax * 0.98], xLog)
-    const yScale = useXYScale([yDomainMin, yDomainMax], [yRangeMin * 0.98, (yRangeMin-yRangeMax) * 0.01], yLog)
+    const xScale = useXYScale([xDomainMin, xDomainMax], [(xRangeMax - xRangeMin) * 0.005, xRangeMax * 0.99], xLog)
+    const yScale = useXYScale([yDomainMin, yDomainMax], [yRangeMin * 0.99, (yRangeMin - yRangeMax) * 0.005], yLog)
 
     // visualData 
     const xVisualData = useXYVisualData({ data: x, accessor: d => d, scale: xScale })
@@ -141,7 +141,7 @@ function useXYVisualData<Datum, Domain, Range>(channel: XYChannel<Datum, Domain,
 /**
  * colourVisualData: a list of string in this format: 'RGB(XXX,XXX,XXX)'
  * @param param0 
- * @returns 
+ * @returns render data on canvas, the GRAY1 points will be at the bottom
  */
 function Circles({ xVisualData, yVisualData, colourVisualData, width, height }:
     { xVisualData: number[], yVisualData: number[], colourVisualData: string[], width: number, height: number }) {
@@ -174,7 +174,19 @@ function Circles({ xVisualData, yVisualData, colourVisualData, width, height }:
             const context2 = context
             context2.clearRect(0, 0, width, height)
             // draw circles
+
+            // make the gray values at the bottom
+            const colourIndexArrGRAY1: { fill: string, indexes: number[] }[] = []
+            const colourIndexArrNOTGRAY1: { fill: string, indexes: number[] }[] = []
             colourIndexMap.forEach((indexes, fill) => {
+                if (fill === GRAY1) {
+                    colourIndexArrGRAY1.push({ fill, indexes })
+                } else {
+                    colourIndexArrNOTGRAY1.push({ fill, indexes })
+                }
+            })
+            const colourIndexArrStartGRAY1 = [...colourIndexArrGRAY1, ...colourIndexArrNOTGRAY1]
+            colourIndexArrStartGRAY1.forEach(({ indexes, fill }) => {
                 // reference: https://dirask.com/posts/JavaScript-draw-point-on-canvas-element-PpOBLD
                 context2.fillStyle = fill
                 indexes.forEach(index => {
