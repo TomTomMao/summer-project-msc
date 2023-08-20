@@ -112,7 +112,8 @@ export default function CalendarView3(props:
     }, [transactionDataArr, currentContainerWidth, currentContainerHeight, isSuperPositioned])
 
     if (transactionDataArr.length === 0 || linearRadiusScale === null || logRadiusScale === null) {
-        return <div>loading</div>
+        throw new Error("transactionDataArr.length === 0 || linearRadiusScale === null || logRadiusScale === null");
+        
     }
     const data: Data = useMemo(() => {
         return {

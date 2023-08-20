@@ -18,6 +18,7 @@ export default function ClusterView(props: ClusterViewProps) {
     // record the mapped data for the brusher, when the chart's scale changed, use scale.
 
     const [lastBrushedValueExtent, setLastBrushedValueExtent] = useState<{ xMin: number, yMin: number, xMax: number, yMax: number } | null>(null) // if null, the brush should be hidden
+    
     const brush = useRef<d3.BrushBehavior<SVGGElement> | null>(null)
     const brushGRef = useRef<SVGGElement | null>(null)
 
@@ -42,7 +43,7 @@ export default function ClusterView(props: ClusterViewProps) {
     const y = useAppSelector(clusterViewSlice.selectYdataMemorised)
     const colourDomain = useAppSelector(clusterViewSlice.selectColourDomain)
     const id = useAppSelector(clusterViewSlice.selectIdArrMemorised)
-    const selectedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArr)
+    const selectedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
     const selectedTransactionNumberSet = useMemo(() => new Set(selectedTransactionNumberArr), [selectedTransactionNumberArr])
     // length checking
     if (x.length !== y.length || x.length !== colourDomain.length || x.length !== id.length) {
@@ -75,6 +76,7 @@ export default function ClusterView(props: ClusterViewProps) {
     const shouldShowBrusher = useAppSelector(clusterViewSlice.selectShouldShowClusterViewBrusher)
     useEffect(() => {
         if (brushGRef.current !== null) {
+            console.log('flag changed opacity: ', shouldShowBrusher ? '1' : '0')
             brushGRef.current.setAttribute('opacity', shouldShowBrusher ? '1' : '0')
         }
         setLastBrushedValueExtent(null)
@@ -82,12 +84,14 @@ export default function ClusterView(props: ClusterViewProps) {
 
     const handleSetThisSelector = props.onSetThisSelector
     const handleBrush = (event: d3.D3BrushEvent<SVGGElement> | undefined): void => {
-        if (event === undefined) {
-            setLastBrushedValueExtent(null)
+        if (event === undefined || event.sourceEvent === undefined) {
+            // setLastBrushedValueExtent(null)
+            console.log('flag1')
             return
         }
         const selection = event.selection
         if (selection === null) {
+            console.log('flag2')
             setLastBrushedValueExtent(null)
             props.onSelectTransactionNumberArr([]);
             return;
@@ -98,6 +102,8 @@ export default function ClusterView(props: ClusterViewProps) {
         } else {
             throw new Error("selection type is not valid");
         }
+        console.log('flag3')
+        console.log('flag3 event', event)
         const [[xMin, xMax], [yMin, yMax]] = [[xScale.invert(x0), xScale.invert(x1)], [yScale.invert(y1), yScale.invert(y0)]]; // y1 and y0 are reverted because the coordinate system starts from the top
         setLastBrushedValueExtent({ xMin, xMax, yMin, yMax })
 
@@ -144,7 +150,26 @@ export default function ClusterView(props: ClusterViewProps) {
             return GRAY1
         }
     })
+    console.log(brush.current)
+    console.log(brushGRef.current)
+    useEffect(() => {
+        // move brush base on last point
+        if (brush.current !== null && brushGRef.current !== null) {
+            const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current)
+            if (lastBrushedValueExtent !== null) {
+                console.log('flag4,lastBrushedValueExtent:', lastBrushedValueExtent)
+                const xMin = xScale(lastBrushedValueExtent.xMin)
+                const xMax = xScale(lastBrushedValueExtent.xMax)
+                const yMin = yScale(lastBrushedValueExtent.yMin)
+                const yMax = yScale(lastBrushedValueExtent.yMax)
+                const extent: [[number, number], [number, number]] = [[d3.min([xMin, xMax]) as number, d3.min([yMin, yMax]) as number], [d3.max([xMin, xMax]) as number, d3.max([yMin, yMax]) as number]]
+                console.log('flag4 extent', extent)
+                brush.current.move(brushG, extent, undefined)
+            }
+        }
+    }, [containerHeight, containerWidth, xScale, yScale])
 
+    
     return (
         <div style={{ position: 'relative' }} className="clusterView">
             <svg width={containerWidth} height={containerHeight} style={{ zIndex: 1 }}>

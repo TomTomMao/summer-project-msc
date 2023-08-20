@@ -44,13 +44,7 @@ export default function App() {
 
     useSyncTransactionDataAndClusterData(); // app is reponsible for checking the relative states in the redux store and update the transactionDataArr and Clus
     const categoryColourScaleWithTransactionNumber = useCategoryColourScale()
-    // useEffect(() => console.log('categoryColourScale:', categoryColourScaleWithTransactionNumber.domain(), categoryColourScaleWithTransactionNumber.range()), [categoryColourScaleWithTransactionNumber])
-    const clusterColourScaleWithTransactionNumber = useClusterIdColourScale()
-    // useEffect(() => console.log('clusterColourScale:', clusterColourScaleWithTransactionNumber.domain(), clusterColourScaleWithTransactionNumber.range()), [clusterColourScaleWithTransactionNumber])
-    const frequencyUniqueKeyColourScaleWithTransactionNumber = useFrequencyUniqueKeyColourScale()
-    // useEffect(() => console.log('frequencyUniqueKeyColourScale:', frequencyUniqueKeyColourScaleWithTransactionNumber.domain(), frequencyUniqueKeyColourScaleWithTransactionNumber.range()), [frequencyUniqueKeyColourScaleWithTransactionNumber])
     const transactionDataArr = useTransactionDataArr();
-    const clusterDataArr = useClusterDataArr()
     // cluster view's initial y axis's scale
     const [scatterPlotValueGetter, setScatterPlotValueGetter] = useState(temporalValueGetter);
 
@@ -109,7 +103,7 @@ export default function App() {
         })
         return setOfTheDay
     }, [detailDay, transactionDataArr, isSuperPositioned])
-    if (transactionDataArr === null) {
+    if (transactionDataArr.length===0) {
         return <>loading...</>
     } else if (categoryColourScaleWithTransactionNumber === null) {
         return <>initialising colour scale</>
