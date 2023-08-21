@@ -13,8 +13,8 @@ import {
 } from "../../utilities/createMemorisedFunction";
 import { TransactionData } from "../../utilities/DataObject";
 
-const marginExpanded = {left: 40, top: 10, right: 10, bottom: 30}
-const marginFolded = {left: 40, top: 10, right: 10, bottom: 30}
+const marginExpanded = {left: 60, top: 20, right: 10, bottom: 20}
+const marginFolded = {left: 60, top: 20, right: 10, bottom: 20}
 
 export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance";
 export type ValidClusterMetrics =
@@ -91,7 +91,7 @@ const initialState: ClusterViewState = {
   containerWidth: 545.98,
   containerHeight: 350,
   expandedContainerWidth: 1500,
-  expandedContainerHeight: 700,
+  expandedContainerHeight: 750,
   isExpanded: false,
   xLog: false,
   yLog: false,
@@ -152,9 +152,13 @@ export const clusterViewSlice = createSlice({
     },
     setXLable: (state, action: PayloadAction<ClusterViewState["x"]>) => {
       state.x = action.payload;
+      state.sliderXMax='max'
+      state.sliderXMin='min'
     },
     setYLable: (state, action: PayloadAction<ClusterViewState["y"]>) => {
       state.y = action.payload;
+      state.sliderYMax='max'
+      state.sliderYMin='min'
     },
     setColour: (state, action: PayloadAction<ValidColours>) => {
       state.colour = action.payload;
@@ -172,6 +176,14 @@ export const clusterViewSlice = createSlice({
       const oldXLog = state.xLog;
       state.xLog = state.yLog;
       state.yLog = oldXLog;
+
+      // swaping the slider info
+      const sliderXMaxTemp = state.sliderXMax
+      const sliderXMinTemp = state.sliderXMin
+      state.sliderXMax=state.sliderYMax
+      state.sliderXMin=state.sliderYMin
+      state.sliderYMax=sliderXMaxTemp
+      state.sliderYMin=sliderXMinTemp
     },
     setFrequency(state, action: PayloadAction<FrequencyConfig>) {
       state.frequencyConfig = action.payload;
@@ -179,6 +191,14 @@ export const clusterViewSlice = createSlice({
     removeJustChangedSize(state) {
       state.justChangedSize = false;
     },
+    setXSlider(state,action:PayloadAction<[number,number]>) {
+      state.sliderXMin = action.payload[0]
+      state.sliderXMax = action.payload[1]
+    },
+    setYSlider(state,action:PayloadAction<[number,number]>) {
+      state.sliderYMin = action.payload[0]
+      state.sliderYMax = action.payload[1]
+    }
   },
 });
 
@@ -197,6 +217,8 @@ export const {
   swap,
   setFrequency,
   removeJustChangedSize,
+  setXSlider,
+  setYSlider
 } = clusterViewSlice.actions;
 
 // export the selectors
@@ -281,7 +303,7 @@ export function selectColourDomain(state: RootState): {
   transactionNumber: string;
 }[] {
   const colour = state.clusterView.colour;
-  const transactionDataArr = selectTransactionDataArr(state);
+  const transactionDataArr = selectClusterViewFilteredTransactionDataArr(state);
   const clusterDataArr = selectClusterDataArr(state);
   const clusterDataMap = getClusterDataMapFromArr(clusterDataArr);
   switch (colour) {
@@ -345,9 +367,9 @@ function selectClusterViewFilteredTransactionDataArr(state: RootState) {
     const xData = transactionData[x];
     const yData = transactionData[y];
     const xMinTrue = sliderXMin === "min" || xData >= sliderXMin;
-    const xMaxTrue = sliderXMax === "max" || xData >= sliderXMax;
+    const xMaxTrue = sliderXMax === "max" || xData <= sliderXMax;
     const yMinTrue = sliderYMin === "min" || yData >= sliderYMin;
-    const yMaxTrue = sliderYMax === "max" || yData >= sliderYMax;
+    const yMaxTrue = sliderYMax === "max" || yData <= sliderYMax;
     if (xMinTrue && xMaxTrue && yMinTrue && yMaxTrue) {
       clusterViewFilteredTransactionDataArr.push(transactionData);
     }
@@ -382,6 +404,15 @@ export const selectMarginTop= (state:RootState) => state.clusterView.isExpanded 
 export const selectMarginBottom = (state:RootState) => state.clusterView.isExpanded ? marginExpanded.bottom: marginFolded.bottom
 
 export const selectShouldShowClusterViewBrusher = (state:RootState) => state.interactivity.currentSelector === 'clusterView'
+
+export const selectFilteredDomain = (state:RootState)=>{
+  return {
+    filteredXDomainMin: state.clusterView.sliderXMin,
+    filteredXDomainMax:state.clusterView.sliderXMax,
+    filteredYDomainMin:state.clusterView.sliderYMin,
+    filteredYDomainMax:state.clusterView.sliderYMax
+  }
+}
 
 export default clusterViewSlice.reducer;
 
