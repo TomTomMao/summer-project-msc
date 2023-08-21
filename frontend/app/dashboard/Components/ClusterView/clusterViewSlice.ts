@@ -13,8 +13,8 @@ import {
 } from "../../utilities/createMemorisedFunction";
 import { TransactionData } from "../../utilities/DataObject";
 
-const marginExpanded = {left: 60, top: 20, right: 10, bottom: 20}
-const marginFolded = {left: 60, top: 20, right: 10, bottom: 20}
+const marginExpanded = {left: 70, top: 20, right: 10, bottom: 30}
+const marginFolded = {left: 70, top: 20, right: 10, bottom: 30}
 
 export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance";
 export type ValidClusterMetrics =

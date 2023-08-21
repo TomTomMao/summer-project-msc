@@ -38,6 +38,7 @@ export default function ClusterView(props: ClusterViewProps) {
     const marginBottom = useAppSelector(clusterViewSlice.selectMarginBottom)
     const width = containerWidth - marginLeft - marginRight
     const height = containerHeight - marginTop - marginBottom
+    const isExpand = useAppSelector(clusterViewSlice.selectIsExpand)
 
     // dataset, they should be the same lenght, they are filtered
     const x = useAppSelector(clusterViewSlice.selectXdataMemorised)
@@ -199,7 +200,7 @@ export default function ClusterView(props: ClusterViewProps) {
     console.log('xslider data', sliderRange, xDomainMin, xDomainMax)
     return (
         <div style={{ position: 'relative', width: containerWidth, height: containerHeight+20 }} className="clusterView">
-            <div style={{ position: 'absolute', top: marginTop, height: height, zIndex: 5 }}>
+            <div className="leftSliderContainer" style={{ position: 'absolute', top: marginTop, height: height, zIndex: 5, left:5 }}>
                 <Slider
                     key={`yLabel${sliderRange.yMin} ${sliderRange.yMax}`}
                     aria-label="Custom marks"
@@ -207,7 +208,7 @@ export default function ClusterView(props: ClusterViewProps) {
                     max={sliderRange.yMax}
                     step={0.0001}
                     defaultValue={[yDomainMin, yDomainMax]}
-                    valueLabelDisplay="auto"
+                    valueLabelDisplay={isExpand ? "auto" : 'off'}
                     orientation="vertical"
                     onChangeCommitted={(event, value) => {
                         if (typeof value === 'number') {

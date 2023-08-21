@@ -15,11 +15,8 @@ import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice
 import * as scatterPlotSlice from "./components/ScatterPlot/scatterPlotSlice";
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 
-import dynamic from 'next/dynamic'//no ssr 
 import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel";
-import useClusterDataArr from "./hooks/useClusterData";
-import { usePrepareClusterViewData } from "./hooks/usePrepareClusterViewData";
-import { usePrepareClusterViewLayout } from "./hooks/usePrepareClusterViewLayout";
+
 
 import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";
 import { useTransactionDataArr } from "./hooks/useTransactionData";
@@ -30,12 +27,6 @@ import { TableViewCollection } from "./components/TableView/TableViewCollection"
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "./components/ColourLegend/ColourLegends";
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
 import ClusterView from "./components/ClusterView/ClusterView";
-
-// used for fixing the plotly scatter plot 'self not found' error
-const ClusterView2 = dynamic(
-    () => import("./components/ClusterView/ClusterView2"),
-    { ssr: false }
-)
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -50,13 +41,6 @@ export default function App() {
 
     // set the state store
     const dispatch = useAppDispatch()
-    const handleSelectIndex = (indexes: number[]) => {
-        if (transactionDataArr === null) {
-            throw new Error("transactionDataArr is null");
-        }
-        // dispatch(interactivitySlice.setSelectedTransactionIndexArr(indexes))
-    }
-
     const handleClearBrush = () => {
         dispatch(interactivitySlice.clearBrush())
     }
