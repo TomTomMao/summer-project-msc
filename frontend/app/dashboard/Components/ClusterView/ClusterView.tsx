@@ -8,7 +8,8 @@ import { AxisBottom, AxisLeft } from "../Axis";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { GRAY1 } from "../../utilities/consts";
 import { Circles } from "./CirclesGL";
-import { Button, Slider } from "@mui/material";
+import { Button, IconButton, Slider } from "@mui/material";
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz'; // reference https://mui.com/material-ui/material-icons/?query=swap
 const BRUSH_MODE = 'end'
 export const POINT_SIZE = 2
 export interface ClusterViewProps {
@@ -190,11 +191,18 @@ export default function ClusterView(props: ClusterViewProps) {
             }
         }
     }, [containerHeight, containerWidth, xScale, yScale])
-    const onChangeXDomain = (xMin: number, xMax: number) => {
+    const handleChangeXDomain = (xMin: number, xMax: number) => {
         dispatch(clusterViewSlice.setXSlider([xMin, xMax]))
     }
-    const onChangeYDomain = (yMin: number, yMax: number) => {
+    const handleChangeYDomain = (yMin: number, yMax: number) => {
         dispatch(clusterViewSlice.setYSlider([yMin, yMax]))
+    }
+    const handleSwap = () => {
+        if (lastBrushedValueExtent !== null) {
+            const nextBrushedValueExtent = { yMax: lastBrushedValueExtent.xMin, yMin:lastBrushedValueExtent.xMax, xMin: lastBrushedValueExtent.yMax, xMax: lastBrushedValueExtent.yMin }
+            setLastBrushedValueExtent(nextBrushedValueExtent)
+        }
+        dispatch(clusterViewSlice.swap())
     }
     console.log('yslider data', sliderRange, yDomainMin, yDomainMax)
     console.log('xslider data', sliderRange, xDomainMin, xDomainMax)
@@ -213,7 +221,7 @@ export default function ClusterView(props: ClusterViewProps) {
                     onChangeCommitted={(event, value) => {
                         if (typeof value === 'number') {
                             throw new Error("invalid value, it should be a list of number");
-                        }; onChangeYDomain(value[0], value[1])
+                        }; handleChangeYDomain(value[0], value[1])
                     }} />
             </div>
             <svg width={containerWidth} height={containerHeight} style={{ zIndex: 1 }}>
@@ -241,7 +249,7 @@ export default function ClusterView(props: ClusterViewProps) {
                     onChangeCommitted={(event, value) => {
                         if (typeof value === 'number') {
                             throw new Error("invalid value, it should be a list of number");
-                        }; onChangeXDomain(value[0], value[1])
+                        }; handleChangeXDomain(value[0], value[1])
                     }}
                 />
             </div>
@@ -265,9 +273,14 @@ export default function ClusterView(props: ClusterViewProps) {
                 left: marginLeft + width / 2,
                 transform: 'translate(-50%,0)'
             }}>{xLabel}</div>
-            {/* <div >
-                <Button variant="contained">swap</Button>
-            </div> */}
+            <div style={{
+                position:'absolute',
+                bottom:5,
+                left: 16,
+            }}>
+                {/* swap icon reference: https://mui.com/material-ui/material-icons/?query=swap */}
+                <IconButton size="medium" onClick={handleSwap}><SwapHorizIcon fontSize="small"/></IconButton>
+            </div>
         </div>
 
     )
