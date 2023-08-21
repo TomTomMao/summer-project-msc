@@ -214,7 +214,8 @@ export default function ClusterView(props: ClusterViewProps) {
                     aria-label="Custom marks"
                     min={sliderRange.yMin}
                     max={sliderRange.yMax}
-                    step={0.0001}
+                    step={(sliderRange.yMax-sliderRange.yMin)/1000}
+                    valueLabelFormat={value=>value.toFixed(2)}
                     defaultValue={[yDomainMin, yDomainMax]}
                     valueLabelDisplay={isExpand ? "auto" : 'off'}
                     orientation="vertical"
@@ -243,7 +244,8 @@ export default function ClusterView(props: ClusterViewProps) {
                     aria-label="Custom marks"
                     min={sliderRange.xMin}
                     max={sliderRange.xMax}
-                    step={0.0001}
+                    step={(sliderRange.xMax-sliderRange.xMin)/1000}
+                    valueLabelFormat={value=>value.toFixed(2)}
                     defaultValue={[xDomainMin, xDomainMax]}
                     valueLabelDisplay="auto"
                     onChangeCommitted={(event, value) => {
