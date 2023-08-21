@@ -199,8 +199,8 @@ export default function ClusterView(props: ClusterViewProps) {
     console.log('yslider data', sliderRange, yDomainMin, yDomainMax)
     console.log('xslider data', sliderRange, xDomainMin, xDomainMax)
     return (
-        <div style={{ position: 'relative', width: containerWidth, height: containerHeight+20 }} className="clusterView">
-            <div className="leftSliderContainer" style={{ position: 'absolute', top: marginTop, height: height, zIndex: 5, left:5 }}>
+        <div style={{ position: 'relative', width: containerWidth, height: containerHeight + 20 }} className="clusterView">
+            <div className="leftSliderContainer" style={{ position: 'absolute', top: marginTop, height: height, zIndex: 5, left: 5 }}>
                 <Slider
                     key={`yLabel${sliderRange.yMin} ${sliderRange.yMax}`}
                     aria-label="Custom marks"
@@ -213,7 +213,7 @@ export default function ClusterView(props: ClusterViewProps) {
                     onChangeCommitted={(event, value) => {
                         if (typeof value === 'number') {
                             throw new Error("invalid value, it should be a list of number");
-                        }; onChangeYDomain(value[0],value[1])
+                        }; onChangeYDomain(value[0], value[1])
                     }} />
             </div>
             <svg width={containerWidth} height={containerHeight} style={{ zIndex: 1 }}>
@@ -229,7 +229,7 @@ export default function ClusterView(props: ClusterViewProps) {
             <svg width={containerWidth} height={containerHeight} style={{ position: 'absolute', left: marginLeft, top: marginTop, zIndex: 3 }}>
                 <g ref={brushGRef}></g>
             </svg>
-            <div style={{ position: 'absolute', left: marginLeft, width: width, zIndex: 5, bottom: marginBottom-25 }}>
+            <div style={{ position: 'absolute', left: marginLeft, width: width, zIndex: 5, bottom: marginBottom - 40 }}>
                 <Slider
                     key={`xLabel${sliderRange.xMin} ${sliderRange.xMax}`}
                     aria-label="Custom marks"
@@ -245,6 +245,26 @@ export default function ClusterView(props: ClusterViewProps) {
                     }}
                 />
             </div>
+            <div style={{
+                width: 150,
+                height: 12,
+                textAlign: 'center',
+                position: 'absolute',
+                fontSize: '12px',
+                top: height / 2,
+                left: -47.5,
+                transform: 'rotate(-90deg)',
+            }}>{yLabel}</div>
+            {/* reference:  https://stackoverflow.com/questions/21638859/using-elements-own-not-parents-width-for-calculation-or-percentage-in-css-w */}
+            <div style={{
+                width: 150,
+                height: 12,
+                position: 'absolute',
+                fontSize: '12px',
+                bottom: 20,
+                left: marginLeft + width / 2,
+                transform: 'translate(-50%,0)'
+            }}>{xLabel}</div>
             {/* <div >
                 <Button variant="contained">swap</Button>
             </div> */}
