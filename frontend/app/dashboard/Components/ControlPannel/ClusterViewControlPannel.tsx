@@ -2,6 +2,8 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { CSSProperties, useState } from "react";
 import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
 import { Button } from "../Button";
+import { ValidAxisLabels } from "../Interactivity/interactivitySlice";
+import { ValidColours } from "../ColourChannel/colourChannelSlice";
 
 export default function ClusterViewControlPannel() {
     return (
@@ -22,19 +24,19 @@ function ClusterViewMappingControlPannel() {
     const dispatch = useAppDispatch()
 
     const handleChangeXLable = (newLable: string) => {
-        dispatch(clusterViewSlice.setXLable(newLable as clusterViewSlice.ValidAxisLabels))
+        dispatch(clusterViewSlice.setXLable(newLable as ValidAxisLabels))
     }
     const handleChangeYLable = (newLable: string) => {
-        dispatch(clusterViewSlice.setYLable(newLable as clusterViewSlice.ValidAxisLabels))
+        dispatch(clusterViewSlice.setYLable(newLable as ValidAxisLabels))
     }
     const handleChangeColour = (newColour: string) => {
-        dispatch(clusterViewSlice.setColour(newColour as clusterViewSlice.ValidColours))
+        dispatch(clusterViewSlice.setColour(newColour as ValidColours))
     }
     const handleChangeXScale = (newXScale: string) => {
-        dispatch(clusterViewSlice.setXScale(newXScale === 'log'))
+        dispatch(clusterViewSlice.setXLog(newXScale === 'log'))
     }
     const handleChangeYScale = (newXScale: string) => {
-        dispatch(clusterViewSlice.setYScale(newXScale === 'log'))
+        dispatch(clusterViewSlice.setYLog(newXScale === 'log'))
     }
     const handleSwap = () => {
         dispatch(clusterViewSlice.swap())

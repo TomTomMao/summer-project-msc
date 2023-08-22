@@ -19,7 +19,11 @@ export type ColourChannelState = {
     scaleFunction: ScaleOrdinal<string, string, never> | null;
   };
 }
-
+export type ColourDomainData = {
+  domain: string;
+  transactionNumber: string;
+}
+export type ValidColours = "category" | "cluster" | "frequencyUniqueKey";
 const initialState: ColourChannelState = {
   cluster: {
     scheme: "Warm",

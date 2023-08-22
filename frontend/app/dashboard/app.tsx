@@ -26,15 +26,17 @@ import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyCont
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "./components/ColourLegend/ColourLegends";
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
-import ClusterView from "./components/ClusterView/ClusterView";
+import { ClusterView } from "./components/ClusterView/ClusterView";
+import TransactionAmountView from "./components/ScatterPlot/TransactionAmountView";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
     const brushedTransactionNumberSet = useMemo(() => new Set(brushedTransactionNumberArr), [brushedTransactionNumberArr])
-    // useEffect(() => { console.log('brushedTransactionNumberArr updated', brushedTransactionNumberArr) }, [brushedTransactionNumberArr])
 
     useSyncTransactionDataAndClusterData(); // app is reponsible for checking the relative states in the redux store and update the transactionDataArr and Clus
-    const categoryColourScaleWithTransactionNumber = useCategoryColourScale()
+    const categoryColourScale = useCategoryColourScale()
+    const clusterIdColourScale = useClusterIdColourScale()
+    const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()
     const transactionDataArr = useTransactionDataArr();
     // cluster view's initial y axis's scale
     const [scatterPlotValueGetter, setScatterPlotValueGetter] = useState(temporalValueGetter);
@@ -87,9 +89,9 @@ export default function App() {
         })
         return setOfTheDay
     }, [detailDay, transactionDataArr, isSuperPositioned])
-    if (transactionDataArr.length===0) {
+    if (transactionDataArr.length === 0) {
         return <>loading...</>
-    } else if (categoryColourScaleWithTransactionNumber === null) {
+    } else if (categoryColourScale === null) {
         return <>initialising colour scale</>
     }
     else {
@@ -106,10 +108,13 @@ export default function App() {
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
-                            <ScatterPlot transactionDataArr={transactionDataArr} valueGetter={scatterPlotValueGetter}
+                            {/* <ScatterPlot transactionDataArr={transactionDataArr} valueGetter={scatterPlotValueGetter}
                                 brushedTransactionNumberSet={brushedTransactionNumberSet}
                                 setBrushedTransactionNumberSet={handleScatterPlotSetSelectTransactionNumberSet}
-                            />
+                            /> */}
+                            <TransactionAmountView
+                                colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
+                            ></TransactionAmountView>
                         </ExpandableContainer>
                     </div>
                     <div className="col-span-6">
@@ -127,7 +132,7 @@ export default function App() {
                                 <CalendarView3 transactionDataArr={transactionDataArr}
                                     initCurrentYear={2016}
                                     highLightedTransactionNumberSetByBrusher={brushedTransactionNumberSet}
-                                    colourScale={categoryColourScaleWithTransactionNumber}
+                                    colourScale={categoryColourScale}
                                     colourValueGetter={PUBLIC_VALUEGETTER.colour}
                                 ></CalendarView3>
                             </div>
@@ -152,8 +157,9 @@ export default function App() {
                                 </FolderableContainer>
                             </div>
                             <div style={{ height: '20px' }}></div>
-                            <ClusterView onSelectTransactionNumberArr={(selectedTransactionNumberArr) => dispatch(interactivitySlice.setClusterViewSelectedTransactionNumberArr(selectedTransactionNumberArr))}
-                                onSetThisSelector={() => dispatch(interactivitySlice.setCurrentSelector('clusterView'))}></ClusterView>
+                            <ClusterView
+                                colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
+                            ></ClusterView>
                         </ExpandableContainer>
                     </div>
                     <div className="col-span-6">
@@ -162,7 +168,7 @@ export default function App() {
                             handleClearBrush={handleClearBrush}
                             selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
                             handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
-                            colourScale={categoryColourScaleWithTransactionNumber}
+                            colourScale={categoryColourScale}
                             colourValueGetter={PUBLIC_VALUEGETTER.colour}
                         ></TableViewCollection>
                     </div>

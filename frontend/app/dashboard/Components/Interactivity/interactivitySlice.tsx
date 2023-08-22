@@ -21,6 +21,8 @@ interface InteractivityState {
     currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | ''
 }
 
+export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance";
+
 const initialState: InteractivityState = {
     // selectedTransactionNumber: [],
     transactionDataArr: [],
@@ -32,6 +34,7 @@ const initialState: InteractivityState = {
     selectedFrequencyUniqueKeyArr: [],
     currentSelector: ''
 };
+
 
 export const interactivitySlice = createSlice({
     name: "interactivity",

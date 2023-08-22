@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { GRAY1 } from "../../utilities/consts";
-import { POINT_SIZE } from "./ClusterView";
+import { POINT_SIZE } from "../ClusterView/ClusterView";
 
 /**
  * colourVisualData: a list of string in this format: 'RGB(XXX,XXX,XXX)'
