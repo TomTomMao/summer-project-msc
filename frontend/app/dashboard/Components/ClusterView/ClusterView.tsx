@@ -15,6 +15,11 @@ export interface ClusterViewProps {
     }
 }
 
+/**
+ * extract the config and data, pass them into a chart
+ * @param props 
+ * @returns 
+ */
 export function ClusterView(props: ClusterViewProps) {
     const dispatch = useAppDispatch()
     const handleSelectTransactionNumberArr = (selectedTransactionNumberArr: string[]) => dispatch(interactivitySlice.setClusterViewSelectedTransactionNumberArr(selectedTransactionNumberArr))

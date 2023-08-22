@@ -45,7 +45,9 @@ export function Circles({ xVisualData, yVisualData, colourVisualData, width, hei
                     colourIndexArrNOTGRAY1.push({ fill, indexes });
                 }
             });
-            const colourIndexArrStartGRAY1 = [...colourIndexArrGRAY1, ...colourIndexArrNOTGRAY1];
+            const sortedColourIndexArrNOTGRAY1 = colourIndexArrNOTGRAY1.sort((a, b) => a.fill > b.fill ? 1 : -1) // make the rendering order more stable
+            // console.log('sortedColourIndexArrNOTGRAY1:', sortedColourIndexArrNOTGRAY1)
+            const colourIndexArrStartGRAY1 = [...colourIndexArrGRAY1, ...sortedColourIndexArrNOTGRAY1];
             colourIndexArrStartGRAY1.forEach(({ indexes, fill }) => {
                 // reference: https://dirask.com/posts/JavaScript-draw-point-on-canvas-element-PpOBLD
                 context2.fillStyle = fill;

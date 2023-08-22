@@ -154,7 +154,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
     useEffect(() => {
         if (brush.current === null) {
             brush.current = d3.brush<SVGGElement>();
-            brush.current.on('brush', handleSetThisSelector);
+            brush.current.on('start', (e: d3.D3BrushEvent<SVGGElement>) => { e.sourceEvent !== undefined && handleSetThisSelector(); });
             brush.current.extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush));
         }
         if (brushGRef.current !== null) {
