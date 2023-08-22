@@ -106,11 +106,16 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
     }, [dataset, xLabel, yLabel]);
 
     const { shouldShowBrusher } = props;
+    // clear the brusher when need
     useEffect(() => {
-        if (brushGRef.current !== null) {
-            brushGRef.current.setAttribute('opacity', shouldShowBrusher ? '1' : '0');
+        if (brush.current !== null && brushGRef.current !== null) {
+            const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current);
+            brush.current.clear(brushG)
+            // brushGRef.current.setAttribute('opacity', shouldShowBrusher ? '1' : '0');
         } else {
         }
+
+
         setLastBrushedValueExtent(null);
     }, [shouldShowBrusher]); // hide the brusher
 
