@@ -37,8 +37,8 @@ interface ScatterPlotSlice {
 const initialState: ScatterPlotSlice = {
   containerWidth: 545.98,
   containerHeight: 350,
-  expandedContainerWidth: 1500,
-  expandedContainerHeight: 700,
+  expandedContainerWidth: 1400,
+  expandedContainerHeight: 750,
   isExpanded: false,
   xLog: false,
   yLog: true,

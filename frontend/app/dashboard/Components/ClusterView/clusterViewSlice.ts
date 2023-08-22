@@ -94,7 +94,7 @@ interface ClusterViewState {
 const initialState: ClusterViewState = {
   containerWidth: 545.98,
   containerHeight: 350,
-  expandedContainerWidth: 1500,
+  expandedContainerWidth: 1400,
   expandedContainerHeight: 750,
   isExpanded: false,
   xLog: false,
