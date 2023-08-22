@@ -14,7 +14,7 @@ export function CategoryColourLegend() {
     const toggleActionCreator = interactivitySlice.toggleCategory
 
     const highLightedDomainSet = useMemo(() => new Set(highLightedDomainArr), [highLightedDomainArr])
-    const toggleSelect = (domainValue: string) => dispatch(toggleActionCreator(domainValue))
+    const handleToggleSelect = (domainValue: string) => dispatch(toggleActionCreator(domainValue))
 
     const colourScale = useCategoryColourScale()
 
@@ -26,27 +26,7 @@ export function CategoryColourLegend() {
         }
     })
     return (
-        <div style={{ width: '130px', overflowX: 'scroll' }}>
-            Category
-            {colourMappingArr.map(colourMapping => {
-                return (
-                    <div onClick={() => toggleSelect(colourMapping.domain)} key={colourMapping.domain} style={{ width: '180px', fontSize: '10px', display: "flex", height: '1.5em' }}>
-                        <div style={{ position: 'absolute', backgroundColor: 'white', margin: 0, padding: 0, width: '1.5em', height: '1.5em' }}>
-                            <div style={{
-                                backgroundColor: colourMapping.highLighted ? colourMapping.value : GRAY1,
-                                width: '1em', height: '1em',
-                                display: 'block',
-                                // opacity: colourMapping.highLighted ? 1 : 0.3,
-                                marginTop: '2px',
-                                left: '0.4em'
-                            }}></div>
-                        </div>
-                        <div className="ml-4">
-                            {colourMapping.domain}
-                        </div>
-                    </div>)
-            })}
-        </div>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect}>category</LegendList>
     )
 }
 
@@ -58,7 +38,7 @@ export function FrequencyUniqueKeyColourLegend() {
     const toggleActionCreator = interactivitySlice.toggleFrequencyUniqueKey
 
     const highLightedDomainSet = useMemo(() => new Set(highLightedDomainArr), [highLightedDomainArr])
-    const toggleSelect = (domainValue: string) => dispatch(toggleActionCreator(domainValue))
+    const handleToggleSelect = (domainValue: string) => dispatch(toggleActionCreator(domainValue))
 
     const colourScale = useFrequencyUniqueKeyColourScale()
 
@@ -70,27 +50,7 @@ export function FrequencyUniqueKeyColourLegend() {
         }
     })
     return (
-        <div style={{ width: '130px', overflowX: 'scroll' }}>
-            Frequency UniqueKey
-            {colourMappingArr.map(colourMapping => {
-                return (
-                    <div onClick={() => toggleSelect(colourMapping.domain)} key={colourMapping.domain} style={{ width: '180px', fontSize: '10px', display: "flex", height: '1.5em' }}>
-                        <div style={{ position: 'absolute', backgroundColor: 'white', margin: 0, padding: 0, width: '1.5em', height: '1.5em' }}>
-                            <div style={{
-                                backgroundColor: colourMapping.highLighted ? colourMapping.value : GRAY1,
-                                width: '1em', height: '1em',
-                                display: 'block',
-                                // opacity: colourMapping.highLighted ? 1 : 0.3,
-                                marginTop: '2px',
-                                left: '0.4em'
-                            }}></div>
-                        </div>
-                        <div className="ml-4">
-                            {colourMapping.domain}
-                        </div>
-                    </div>)
-            })}
-        </div>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect}>frequencyUniqueKey</LegendList>
     )
 }
 export function ClusterIdColourLegend() {
@@ -101,7 +61,7 @@ export function ClusterIdColourLegend() {
     const toggleActionCreator = interactivitySlice.toggleClusterId
 
     const highLightedDomainSet = useMemo(() => new Set(highLightedDomainArr), [highLightedDomainArr])
-    const toggleSelect = (domainValue: string) => dispatch(toggleActionCreator(domainValue))
+    const handleToggleSelect = (domainValue: string) => dispatch(toggleActionCreator(domainValue))
 
     const colourScale = useClusterIdColourScale()
 
@@ -113,26 +73,40 @@ export function ClusterIdColourLegend() {
         }
     })
     return (
-        <div style={{ width: '130px', overflowX: 'scroll' }}>
-            Cluster Id
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect}>ClusterIdColourLegend</LegendList>
+    )
+}
+
+function LegendList({ colourMappingArr, onToggleSelect, children }: {
+    colourMappingArr: {
+        domain: string;
+        value: string;
+        highLighted: boolean;
+    }[],
+    onToggleSelect: (domain: string) => void,
+    children: React.ReactNode
+}) {
+    return (
+        <>
+            {/* {children} */}
             {colourMappingArr.map(colourMapping => {
                 return (
-                    <div onClick={() => toggleSelect(colourMapping.domain)} key={colourMapping.domain} style={{ width: '180px', fontSize: '10px', display: "flex", height: '1.5em' }}>
-                        <div style={{ position: 'absolute', backgroundColor: 'white', margin: 0, padding: 0, width: '1.5em', height: '1.5em' }}>
+                    <div onClick={() => onToggleSelect(colourMapping.domain)} key={colourMapping.domain} style={{ fontSize: '8px', display: "flex"}}>
+                        <div style={{ position: 'relative', backgroundColor: 'white', margin: 0, padding: 0, width: '8px', height: '8px' }}>
                             <div style={{
                                 backgroundColor: colourMapping.highLighted ? colourMapping.value : GRAY1,
-                                width: '1em', height: '1em',
+                                width: '8px', 
+                                height: '8px',
                                 display: 'block',
-                                // opacity: colourMapping.highLighted ? 1 : 0.3,
-                                marginTop: '2px',
-                                left: '0.4em'
+                                marginTop: '0.5px',
+                                left: '0.4em'   
                             }}></div>
                         </div>
-                        <div className="ml-4">
-                            {colourMapping.domain}
+                        <div style={{marginLeft:'2px'}}>
+                            {colourMapping.domain === '' ? 'unknown' : colourMapping.domain}
                         </div>
                     </div>)
             })}
-        </div>
+        </>
     )
 }

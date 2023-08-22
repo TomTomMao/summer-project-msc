@@ -11,7 +11,8 @@ import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { ScaleOrdinalWithTransactionNumber } from "../../hooks/useColourScales";
 import { ColourDomainData, ValidColours } from "../ColourChannel/colourChannelSlice";
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "../ColourLegend/ColourLegends";
-import colourLegendSlice from "../ColourLegend/colourLegendSlice";
+
+const COLOURLEGEND_WIDTH = 120
 
 export interface InteractiveScatterPlotProps {
     onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void,
@@ -43,7 +44,7 @@ export interface InteractiveScatterPlotProps {
     filteredYDomainMax: number | 'max',
     dataset: TransactionData[],
     shouldShowBrusher: boolean,
-    className:string
+    className: string
 }
 
 export default function InteractiveScatterPlot(props: InteractiveScatterPlotProps) {
@@ -104,7 +105,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
         return { xMin, xMax, yMin, yMax };
     }, [dataset, xLabel, yLabel]);
 
-    const {shouldShowBrusher} = props;
+    const { shouldShowBrusher } = props;
     useEffect(() => {
         if (brushGRef.current !== null) {
             brushGRef.current.setAttribute('opacity', shouldShowBrusher ? '1' : '0');
@@ -223,7 +224,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
     }
 
     return (
-        <div style={{ position: 'relative', width: containerWidth, height: containerHeight + 20 }} className={props.className}>
+        <div style={{ position: 'relative', width: containerWidth + COLOURLEGEND_WIDTH, height: containerHeight + 20 }} className={props.className}>
             <div className="leftSliderContainer" style={{ position: 'absolute', top: marginTop, height: height, zIndex: 5, left: 5 }}>
                 <Slider
                     key={`yLabel${sliderRange.yMin} ${sliderRange.yMax}`}
@@ -298,8 +299,19 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                 {/* swap icon reference: https://mui.com/material-ui/material-icons/?query=swap */}
                 <IconButton size="medium" onClick={handleSwap}><SwapHorizIcon fontSize="small" /></IconButton>
             </div>
-            <div>
-                {colourLegend}
+            <div style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                height: containerHeight,
+                zIndex: 4
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: containerHeight, width: COLOURLEGEND_WIDTH }}>
+                    <div style={{height: containerHeight, width: COLOURLEGEND_WIDTH, overflowY:'auto'}}>
+                        {colourLegend}
+                    </div>
+
+                </div>
             </div>
         </div>
 
