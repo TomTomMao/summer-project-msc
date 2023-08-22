@@ -163,9 +163,20 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
         console.log('xDomainMin,xDomainMax,yDomainMin,yDomainMax', xDomainMin, xDomainMax, yDomainMin, yDomainMax);
         throw new Error('undefined domain value exists');
     }
+
+    // These effect is used for fix the bug: initially, when use sliding on a axis, another axis's domain will auto matically become the min and max value of the filtered dataset; todo: try to put it in to the redux store (better code structure but potentially slower)
+    useEffect(() => {
+        if (xDomainMin === undefined || xDomainMax === undefined || yDomainMin === undefined || yDomainMax === undefined) {
+            return
+        }
+        if (filteredXDomainMin === 'min' || filteredXDomainMax === 'max') {
+            handleChangeXDomain(filteredXDomainMin === 'min' ? xDomainMin : filteredXDomainMin, filteredXDomainMax === 'max' ? xDomainMax : filteredXDomainMax)
+        }
+        if (filteredYDomainMin === 'min' || filteredYDomainMax === 'max') {
+            handleChangeYDomain(filteredYDomainMin === 'min' ? yDomainMin : filteredYDomainMin, filteredYDomainMax === 'max' ? yDomainMax : filteredYDomainMax)
+        }
+    }, [filteredXDomainMax, filteredYDomainMin, filteredXDomainMax, filteredYDomainMax,])
     // scales
-    // const xScale = useXYScale([xDomainMin, xDomainMax], [(xRangeMax - xRangeMin) * 0.005, xRangeMax * 0.99], xLog, x)
-    // const yScale = useXYScale([yDomainMin, yDomainMax], [yRangeMin * 0.99, (yRangeMin - yRangeMax) * 0.005], yLog, y)
     const xScale = useXYScale([filteredXDomainMin === 'min' ? xDomainMin : filteredXDomainMin, filteredXDomainMax === 'max' ? xDomainMax : filteredXDomainMax], [(xRangeMax - xRangeMin) * 0.005, xRangeMax * 0.99], xLog, xArr);
     const yScale = useXYScale([filteredYDomainMin === 'min' ? yDomainMin : filteredYDomainMin, filteredYDomainMax === 'max' ? yDomainMax : filteredYDomainMax], [yRangeMin * 0.99, (yRangeMin - yRangeMax) * 0.005], yLog, yArr);
 
@@ -307,7 +318,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                 zIndex: 4
             }}>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: containerHeight, width: COLOURLEGEND_WIDTH }}>
-                    <div style={{maxHeight: containerHeight, width: COLOURLEGEND_WIDTH, overflowY:'auto'}}>
+                    <div style={{ maxHeight: containerHeight, width: COLOURLEGEND_WIDTH, overflowY: 'auto' }}>
                         {colourLegend}
                     </div>
                 </div>
