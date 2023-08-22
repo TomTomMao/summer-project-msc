@@ -67,6 +67,7 @@ export function ClusterView(props: ClusterViewProps) {
             onSwap={handleSwap}
             xLabel={xLabel}
             yLabel={yLabel}
+            colourLabel={colourLabel}
             colourScale={colourScale}
             containerHeight={containerHeight}
             containerWidth={containerWidth}

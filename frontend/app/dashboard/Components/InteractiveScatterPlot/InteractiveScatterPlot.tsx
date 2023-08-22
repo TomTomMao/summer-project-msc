@@ -9,7 +9,9 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { BRUSH_MODE } from "../ClusterView/ClusterView";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { ScaleOrdinalWithTransactionNumber } from "../../hooks/useColourScales";
-import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
+import { ColourDomainData, ValidColours } from "../ColourChannel/colourChannelSlice";
+import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "../ColourLegend/ColourLegends";
+import colourLegendSlice from "../ColourLegend/colourLegendSlice";
 
 export interface InteractiveScatterPlotProps {
     onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void,
@@ -19,6 +21,7 @@ export interface InteractiveScatterPlotProps {
     onSwap: () => void,
     xLabel: interactivitySlice.ValidAxisLabels,
     yLabel: interactivitySlice.ValidAxisLabels,
+    colourLabel: ValidColours
     colourScale: ScaleOrdinalWithTransactionNumber,
     containerHeight: number,
     containerWidth: number,
@@ -203,6 +206,22 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
         props.onSwap();
     };
 
+    let colourLegend: JSX.Element | null = null;
+    switch (props.colourLabel) {
+        case 'category':
+            colourLegend = <CategoryColourLegend></CategoryColourLegend>
+            break;
+        case 'cluster':
+            colourLegend = <ClusterIdColourLegend></ClusterIdColourLegend>
+            break;
+        case 'frequencyUniqueKey':
+            colourLegend = <FrequencyUniqueKeyColourLegend></FrequencyUniqueKeyColourLegend>
+            break;
+        default:
+            const _exhaustiveCheck: never = props.colourLabel
+            throw new Error(`exhaustive type error`);
+    }
+
     return (
         <div style={{ position: 'relative', width: containerWidth, height: containerHeight + 20 }} className={props.className}>
             <div className="leftSliderContainer" style={{ position: 'absolute', top: marginTop, height: height, zIndex: 5, left: 5 }}>
@@ -278,6 +297,9 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
             }}>
                 {/* swap icon reference: https://mui.com/material-ui/material-icons/?query=swap */}
                 <IconButton size="medium" onClick={handleSwap}><SwapHorizIcon fontSize="small" /></IconButton>
+            </div>
+            <div>
+                {colourLegend}
             </div>
         </div>
 

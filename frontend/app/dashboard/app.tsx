@@ -179,9 +179,6 @@ export default function App() {
                         ></TableViewCollection>
                     </div>
                 </div>
-                <CategoryColourLegend></CategoryColourLegend>
-                <ClusterIdColourLegend></ClusterIdColourLegend>
-                <FrequencyUniqueKeyColourLegend></FrequencyUniqueKeyColourLegend>
             </div>
         )
     }

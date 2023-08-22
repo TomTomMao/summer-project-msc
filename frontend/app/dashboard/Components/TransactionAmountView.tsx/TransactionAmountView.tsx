@@ -30,7 +30,7 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
     const xLabel = useAppSelector(scatterPlotSlice.selectXAxisLabel)
     const yLabel = useAppSelector(scatterPlotSlice.selectYAxisLabel)
     const { categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale } = props.colourScales
-    const colourLabel = useAppSelector(scatterPlotSlice.selectColourDomain)
+    const colourLabel = useAppSelector(scatterPlotSlice.selectColourLabel)
     const colourScale = categoryColourScale
 
     // layout
@@ -66,6 +66,7 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
             onSwap={handleSwap}
             xLabel={xLabel}
             yLabel={yLabel}
+            colourLabel={colourLabel}
             colourScale={colourScale}
             containerHeight={containerHeight}
             containerWidth={containerWidth}
