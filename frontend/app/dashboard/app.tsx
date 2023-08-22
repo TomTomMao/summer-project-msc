@@ -25,6 +25,7 @@ import { TableViewCollection } from "./components/TableView/TableViewCollection"
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
 import { ClusterView } from "./components/ClusterView/ClusterView";
 import TransactionAmountView from "./components/TransactionAmountView.tsx/TransactionAmountView";
+import * as colourChannelSlice from "./components/ColourChannel/colourChannelSlice";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -35,7 +36,14 @@ export default function App() {
     const clusterIdColourScale = useClusterIdColourScale()
     const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()
     const transactionDataArr = useTransactionDataArr();
-    
+
+    //**table's colour scale type */
+    const colourLabelForTable = useAppSelector(interactivitySlice.selectCurrentSelectorColourScaleType)
+    useEffect(() => { console.log('flag colour colourLabelForTable updated:', colourLabelForTable) }, [colourLabelForTable])
+    const tableColourScale = colourLabelForTable === 'category' ? categoryColourScale : (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
+    useEffect(() => { console.log('flag colour tableColourScale updated', tableColourScale) }, [tableColourScale])
+    const tableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectTableViewColourDomainData)
+
     // set the state store
     const dispatch = useAppDispatch()
     const handleClearBrush = () => {
@@ -142,8 +150,8 @@ export default function App() {
                         >
                             <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 6 }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div style={{ maxHeight:'300px', backgroundColor: 'RGB(220,220,220)',overflowY:'auto' }}>
-                                        <div style={{ margin: '2px'}}>
+                                    <div style={{ maxHeight: '300px', backgroundColor: 'RGB(220,220,220)', overflowY: 'auto' }}>
+                                        <div style={{ margin: '2px' }}>
                                             <ClusterViewControlPannel></ClusterViewControlPannel>
                                         </div>
                                     </div>
@@ -161,9 +169,7 @@ export default function App() {
                             handleClearBrush={handleClearBrush}
                             selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
                             handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
-                            colourScale={categoryColourScale}
-                            colourValueGetter={PUBLIC_VALUEGETTER.colour}
-                        ></TableViewCollection>
+                            colourScale={tableColourScale} colourDomainData={tableViewColourDomainDataArr}></TableViewCollection>
                     </div>
                 </div>
             </div>

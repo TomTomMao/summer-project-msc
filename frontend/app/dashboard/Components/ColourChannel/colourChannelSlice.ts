@@ -2,8 +2,18 @@
 import { RootState } from "@/app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ScaleOrdinal } from "d3";
+import * as interactivitySlice from "../Interactivity/interactivitySlice";
+import { getClusterDataMapFromArr } from "../../hooks/useClusterData";
+import { ClusterData } from "../../utilities/clusterDataObject";
 
-export type ColourScheme = "PuOr" | "Spectral" | "PiYG" | 'Rainbow' | 'Sinebow' | 'Warm'| 'Cool'  // colour scale are from: reference: https://github.com/d3/d3-scale-chromatic
+export type ColourScheme =
+  | "PuOr"
+  | "Spectral"
+  | "PiYG"
+  | "Rainbow"
+  | "Sinebow"
+  | "Warm"
+  | "Cool"; // colour scale are from: reference: https://github.com/d3/d3-scale-chromatic
 
 export type ColourChannelState = {
   cluster: {
@@ -18,11 +28,11 @@ export type ColourChannelState = {
     scheme: ColourScheme;
     scaleFunction: ScaleOrdinal<string, string, never> | null;
   };
-}
+};
 export type ColourDomainData = {
   domain: string;
   transactionNumber: string;
-}
+};
 export type ValidColours = "category" | "cluster" | "frequencyUniqueKey";
 const initialState: ColourChannelState = {
   cluster: {
@@ -152,7 +162,7 @@ function outerSelectCategoryColourDomain() {
 export const selectCategoryColourDomain = outerSelectCategoryColourDomain();
 
 /**
- * 
+ *
  * @returns a memorised selector
  */
 function outerSelectFrequencyUniqueKeyColourDomain() {
@@ -206,5 +216,35 @@ export const selectCategoryColourScheme = (state: RootState) =>
   state.colourChannel.category.scheme;
 export const selectFrequencyUniqueKeyColourScheme = (state: RootState) =>
   state.colourChannel.frequencyUniqueKey.scheme;
+
+/** based on the current selector, select the colourDomain data with transactionNumber and domain value for its colour domain*/
+export const selectTableViewColourDomainData = (state: RootState) => {
+  const colour = interactivitySlice.selectCurrentSelectorColourScaleType(state);;
+  const transactionDataArr = interactivitySlice.selectTransactionDataArr(state);
+  const clusterDataArr = interactivitySlice.selectClusterDataArr(state);
+  const clusterDataMap = getClusterDataMapFromArr(clusterDataArr);
+  switch (colour) {
+    case "category":
+      return transactionDataArr.map((d) => ({
+        domain: d.category,
+        transactionNumber: d.transactionNumber,
+      }));
+    case "frequencyUniqueKey":
+      return transactionDataArr.map((d) => ({
+        domain: d.frequencyUniqueKey,
+        transactionNumber: d.transactionNumber,
+      }));
+    case "cluster":
+      return transactionDataArr.map((d) => ({
+        domain: clusterDataMap.get(
+          d.transactionNumber
+        ) as ClusterData["clusterId"],
+        transactionNumber: d.transactionNumber,
+      }));
+    default:
+      const _exhaustiveCheck: never = colour; // incase add new key, this place will automatically highlighted.
+      throw new Error("This should not happen");
+  }
+};
 
 export default colourChannelSlice.reducer;

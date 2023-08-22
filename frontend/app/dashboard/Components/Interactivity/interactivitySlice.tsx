@@ -5,6 +5,8 @@ import { TransactionData } from "../../utilities/DataObject";
 import { ClusterData } from "../../utilities/clusterDataObject";
 import * as colourChannelSlice from "../ColourChannel/colourChannelSlice";
 import { createMemorisedFunction, comparingArray, comparingSet } from "../../utilities/createMemorisedFunction";
+import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
+import * as scatterPlotSlice from "../TransactionAmountView.tsx/scatterPlotSlice";
 
 /**
  * key is the domain value for the colour channel
@@ -224,5 +226,22 @@ export const selectSelectedTransactionNumberArrMemorised: (state: RootState) => 
     = createMemorisedFunction(selectSelectedTransactionNumberArr, comparingArray)
 
 export const selectCurrentSelector = (state: RootState) => state.interactivity.currentSelector
+
+export const selectCurrentSelectorColourScaleType = (state: RootState): colourChannelSlice.ValidColours => {
+    const currentSelector = selectCurrentSelector(state)
+    switch (currentSelector) {
+        case 'category':
+            return 'category'
+        case "": return 'category'
+        case "frequencyUniqueKey": return 'frequencyUniqueKey'
+        case "clusterId": return 'cluster'
+        case "scatterPlot": return scatterPlotSlice.selectColourLabel(state)
+        case "clusterView": return clusterViewSlice.selectColourLabel(state)
+        default:
+            const _exausthiveChecking: never = currentSelector
+            throw new Error("check exhastive checking");
+
+    }
+}
 
 export default interactivitySlice.reducer;

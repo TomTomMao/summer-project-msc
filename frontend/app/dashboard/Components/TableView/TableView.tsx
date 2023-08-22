@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObject";
 import { PublicScale, PublicValueGetter } from "../../utilities/types";
+import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
 
 export interface DescriptionAndIsCredit {
     transactionDescription: string;
@@ -13,23 +14,39 @@ type Props = {
     transactionNumberSet: Set<TransactionData['transactionNumber']>;
     handleClearSelect: (() => void)
     colourScale: PublicScale['colourScale']
-    colourValueGetter: PublicValueGetter['colour']
+    colourDomainData: ColourDomainData[]
 }
 /**
  * show the transactions that has the number in the transactionNumberSet
+ * 
+ * transactionNumberSet: transactionNumber that going to show
+ * 
+ * transactionDataArr: the transactionDataArr to loop thorugh
  */
-export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect, colourScale, colourValueGetter }:
+export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect, colourScale, colourDomainData }:
     Props) {
     // when the component mount or the filteredDescriptionAndIsCreditArr Changes, change it. the time complexity is transactionDataArr.length * filteredDescriptionAndIsCreditArr; can be improved in the future.[performance improvement]
 
     const [sortingConfig, dispatch] = useReducer(sortingConfigReducer, initialSortingConfig)
     const sortingKey = sortingConfig.sortingKey;
     const isDesc = sortingConfig.isDesc
-    const filteredTransactionDataArr = transactionDataArr.filter(transactionData => transactionNumberSet.has(transactionData.transactionNumber)).sort(TransactionData.curryCompare(sortingKey, isDesc))
+    const filteredTransactionDataArr = transactionDataArr.filter(transactionData => transactionNumberSet.has(transactionData.transactionNumber))
+    const sortedFilteredTransactionDataArr = useMemo(() => filteredTransactionDataArr.sort(TransactionData.curryCompare(sortingKey, isDesc)), [sortingConfig, filteredTransactionDataArr])
+    const colourForTransactionNumberMap = useMemo(() => {
+        // create a dictionary map the transactionNumber to colour string
+        /**key: transactionNumber, value: 'RGB(XXX,XXX,XXX)' */
+        const transactionNumberMappingColour = new Map<TransactionData['transactionNumber'], ReturnType<Props['colourScale']['getColour']>>()
+        colourDomainData.forEach(({ domain, transactionNumber }) => {
+            if (transactionNumberSet.has(transactionNumber)) {
+                transactionNumberMappingColour.set(transactionNumber, colourScale.getColour(domain))
+            }
+        })
+        return transactionNumberMappingColour
+    }, [colourDomainData, transactionNumberSet, colourScale])
     const transactionRows = useMemo(() => {
         return (
-            filteredTransactionDataArr.map(transactionData => {
-                const colour = colourScale.getColour(colourValueGetter(transactionData));
+            sortedFilteredTransactionDataArr.map(transactionData => {
+                const colour = colourForTransactionNumberMap.get(transactionData.transactionNumber);
                 return (
                     <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
                         <td>{transactionData.transactionNumber}</td>
@@ -47,7 +64,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                     </tr>)
             })
         )
-    }, [transactionDataArr, transactionNumberSet, sortingConfig])
+    }, [sortedFilteredTransactionDataArr, colourForTransactionNumberMap])
     function handleClickColumnName(columnName: TransactionDataAttrs) {
         if (columnName === sortingKey) {
             handleToggleOrder()
@@ -68,18 +85,18 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
             <table className="infoTable">
                 <thead>
                     <tr>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('transactionNumber')}>id {sortingKey === 'transactionNumber' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('balance')}>balance {sortingKey === 'balance' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('category')}>category {sortingKey === 'category' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('creditAmount')}>credit {sortingKey === 'creditAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('debitAmount')}>debit {sortingKey === 'debitAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('locationCity')}>City {sortingKey === 'locationCity' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('locationCountry')}>Country {sortingKey === 'locationCountry' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('transactionDescription')}>Description {sortingKey === 'transactionDescription' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('transactionType')}>Type {sortingKey === 'transactionType' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('date')}>date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('frequency')}>frequency {sortingKey === 'frequency' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{width:'100%'}} onClick={() => handleClickColumnName('frequencyUniqueKey')}>frequencyUniqueKey {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('transactionNumber')}>id {sortingKey === 'transactionNumber' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('balance')}>balance {sortingKey === 'balance' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('category')}>category {sortingKey === 'category' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('creditAmount')}>credit {sortingKey === 'creditAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('debitAmount')}>debit {sortingKey === 'debitAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('locationCity')}>City {sortingKey === 'locationCity' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('locationCountry')}>Country {sortingKey === 'locationCountry' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('transactionDescription')}>Description {sortingKey === 'transactionDescription' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('transactionType')}>Type {sortingKey === 'transactionType' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('date')}>date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('frequency')}>frequency {sortingKey === 'frequency' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('frequencyUniqueKey')}>frequencyUniqueKey {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                     </tr>
                 </thead>
                 <tbody>

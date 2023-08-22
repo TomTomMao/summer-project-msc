@@ -3,6 +3,7 @@ import { TransactionData } from "../../utilities/DataObject"
 import { PublicScale, PublicValueGetter } from "../../utilities/types"
 import TableView from "./TableView"
 import FolderableContainer from "../Containers/FolderableContainer"
+import { ColourDomainData } from "../ColourChannel/colourChannelSlice"
 
 interface TableViewCollectionProps {
     transactionDataArr: TransactionData[], // give it to the tables
@@ -11,7 +12,7 @@ interface TableViewCollectionProps {
     selectedGlyphTransactionNumberSet: Set<TransactionData['transactionNumber']>, // for glyphTable
     handleClearGlyph: () => void,
     colourScale: PublicScale['colourScale'], // give it to the tables
-    colourValueGetter: PublicValueGetter['colour'], // give it to the tables
+    colourDomainData: ColourDomainData[], // give it to the tables
 }
 
 export function TableViewCollection(props: TableViewCollectionProps) {
@@ -22,7 +23,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
         selectedGlyphTransactionNumberSet,
         handleClearGlyph,
         colourScale,
-        colourValueGetter } = props
+        colourDomainData } = props
 
     const handleChangeCurrentTable = (e: { target: { value: string | ((prevState: "brushedTable" | "glyphTable") => "brushedTable" | "glyphTable") } }) => {
         setCurrentTable(e.target.value as 'brushedTable' | 'glyphTable')
@@ -46,14 +47,14 @@ export function TableViewCollection(props: TableViewCollectionProps) {
                     transactionNumberSet={brushedTransactionNumberSet}
                     handleClearSelect={handleClearBrush}
                     colourScale={colourScale}
-                    colourValueGetter={colourValueGetter}
+                    colourDomainData={colourDomainData}
                 ></TableView>}
                 {currentTable === 'glyphTable' && <TableView
                     transactionDataArr={transactionDataArr}
                     transactionNumberSet={selectedGlyphTransactionNumberSet}
                     handleClearSelect={handleClearGlyph}
                     colourScale={colourScale}
-                    colourValueGetter={colourValueGetter}
+                    colourDomainData={colourDomainData}
                 ></TableView>}
             </FolderableContainer>
         </div>
