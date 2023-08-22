@@ -161,6 +161,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
             const brushG = d3.select<SVGGElement, SVGGElement>(brushGRef.current);
             brush.current.extent([[0, 0], [width, height]]).on(BRUSH_MODE, (handleBrush));
             brush.current(brushG);
+            brushG.select('.selection').attr('stroke','blue') // make the brusher's border become blue
         }
     }, [width, height, xLog, yLog, xLabel, yLabel, xArr, yArr, filteredXDomainMin, filteredXDomainMax, filteredYDomainMin, filteredYDomainMax]);
 
