@@ -35,8 +35,8 @@ interface ScatterPlotSlice {
   y: ValidAxisLabels;
 }
 const initialState: ScatterPlotSlice = {
-  containerWidth: 500,
-  containerHeight: 400,
+  containerWidth: 545.98,
+  containerHeight: 350,
   expandedContainerWidth: 1500,
   expandedContainerHeight: 700,
   isExpanded: false,

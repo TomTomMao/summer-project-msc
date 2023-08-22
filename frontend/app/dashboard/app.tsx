@@ -4,7 +4,6 @@ import { TransactionData } from "./utilities/DataObject";
 import CalendarView3 from "./components/CalendarView3/CalendarView3";
 
 import { temporalValueGetter } from "./utilities/consts/valueGetter";
-import { ScatterPlot } from "./components/ScatterPlot/ScatterPlot";
 
 import CalendarViewControlPannel from "./components/ControlPannel/CalendarViewControlPannel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
@@ -12,7 +11,7 @@ import { PUBLIC_VALUEGETTER } from "./utilities/consts";
 import ExpandableContainer from "./components/Containers/ExpandableContainer";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
-import * as scatterPlotSlice from "./components/ScatterPlot/scatterPlotSlice";
+import * as scatterPlotSlice from "./components/TransactionAmountView.tsx/scatterPlotSlice";
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 
 import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel";
@@ -27,7 +26,7 @@ import { TableViewCollection } from "./components/TableView/TableViewCollection"
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "./components/ColourLegend/ColourLegends";
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
 import { ClusterView } from "./components/ClusterView/ClusterView";
-import TransactionAmountView from "./components/ScatterPlot/TransactionAmountView";
+import TransactionAmountView from "./components/TransactionAmountView.tsx/TransactionAmountView";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -108,10 +107,17 @@ export default function App() {
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
-                            {/* <ScatterPlot transactionDataArr={transactionDataArr} valueGetter={scatterPlotValueGetter}
-                                brushedTransactionNumberSet={brushedTransactionNumberSet}
-                                setBrushedTransactionNumberSet={handleScatterPlotSetSelectTransactionNumberSet}
-                            /> */}
+                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 4 }}>
+                                <FolderableContainer label="ControlPannel" initIsFolded={true}>
+                                    <div style={{ height: '450px', backgroundColor: 'RGB(197,197,197)' }}>
+                                        <div style={{ margin: '2px' }}>
+                                            <ClusterViewControlPannel></ClusterViewControlPannel>
+                                            <FrequencyControlPannel />
+                                        </div>
+                                    </div>
+                                </FolderableContainer>
+                            </div>
+                            <div style={{ height: '20px' }}></div>
                             <TransactionAmountView
                                 colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
                             ></TransactionAmountView>
@@ -173,7 +179,6 @@ export default function App() {
                         ></TableViewCollection>
                     </div>
                 </div>
-
                 <CategoryColourLegend></CategoryColourLegend>
                 <ClusterIdColourLegend></ClusterIdColourLegend>
                 <FrequencyUniqueKeyColourLegend></FrequencyUniqueKeyColourLegend>

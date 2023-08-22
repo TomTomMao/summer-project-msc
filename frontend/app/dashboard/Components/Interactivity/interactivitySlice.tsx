@@ -21,7 +21,7 @@ interface InteractivityState {
     currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | ''
 }
 
-export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance";
+export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance" | 'frequency';
 
 const initialState: InteractivityState = {
     // selectedTransactionNumber: [],

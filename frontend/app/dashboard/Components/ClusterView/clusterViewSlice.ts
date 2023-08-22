@@ -106,7 +106,7 @@ const initialState: ClusterViewState = {
   clusterConfig: {
     numberOfCluster: 5,
     metric1: "transactionAmount",
-    metric2: "category",
+    metric2: "frequency",
   },
 
   frequencyConfig: {
@@ -118,9 +118,9 @@ const initialState: ClusterViewState = {
   },
 
   clusterData: [],
-  colour: "cluster",
+  colour: "category",
   x: "dayOfYear",
-  y: "transactionAmount",
+  y: "frequency",
 
   justChangedSize: false,
   sliderXMin: "min",

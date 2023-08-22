@@ -40,6 +40,7 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
     const marginRight = useAppSelector(scatterPlotSlice.selectMarginRight)
     const marginTop = useAppSelector(scatterPlotSlice.selectMarginTop)
     const marginBottom = useAppSelector(scatterPlotSlice.selectMarginBottom)
+    // console.log('margins', marginLeft, marginRight, marginTop, marginBottom)
     const isExpand = useAppSelector(scatterPlotSlice.selectIsExpand)
 
     // dataset, they should be the same length, they are filtered
