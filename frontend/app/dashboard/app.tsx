@@ -21,13 +21,10 @@ import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionData
 import { useTransactionDataArr } from "./hooks/useTransactionData";
 import { useClusterIdColourScale, useCategoryColourScale, useFrequencyUniqueKeyColourScale } from "./hooks/useColourScales";
 
-import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyControlPannel";
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
-import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "./components/ColourLegend/ColourLegends";
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
-import { ClusterView, ClusterViewWithEveryThing } from "./components/ClusterView/ClusterView";
+import { ClusterView } from "./components/ClusterView/ClusterView";
 import TransactionAmountView from "./components/TransactionAmountView.tsx/TransactionAmountView";
-import { Button } from "@mui/material";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -38,17 +35,13 @@ export default function App() {
     const clusterIdColourScale = useClusterIdColourScale()
     const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()
     const transactionDataArr = useTransactionDataArr();
-    // cluster view's initial y axis's scale
-    const [scatterPlotValueGetter, setScatterPlotValueGetter] = useState(temporalValueGetter);
-
+    
     // set the state store
     const dispatch = useAppDispatch()
     const handleClearBrush = () => {
         dispatch(interactivitySlice.clearBrush())
     }
-    const handleScatterPlotSetSelectTransactionNumberSet = (brushedTransactionNumberSet: Set<TransactionData['transactionNumber']>) => {
-        dispatch(interactivitySlice.setScatterPlotSelectedTransactionNumberArr(Array.from(brushedTransactionNumberSet)))
-    }
+
     // expanding handler
     /**
      * tell the components which are wrapped inside the expandablecontainer it is expanded or folded
@@ -147,7 +140,7 @@ export default function App() {
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
-                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 4 }}>
+                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 6 }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
                                     <div style={{ maxHeight:'300px', backgroundColor: 'RGB(220,220,220)',overflowY:'auto' }}>
                                         <div style={{ margin: '2px'}}>

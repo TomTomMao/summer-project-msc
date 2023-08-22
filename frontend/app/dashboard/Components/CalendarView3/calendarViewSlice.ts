@@ -132,4 +132,5 @@ export const selectCurrentContainerWidth = function (state: RootState) {
   }
 };
 
+
 export default calendarViewSlice.reducer;

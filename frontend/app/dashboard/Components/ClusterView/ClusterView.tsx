@@ -3,8 +3,6 @@ import { ScaleOrdinalWithTransactionNumber } from "../../hooks/useColourScales";
 import * as clusterViewSlice from "./clusterViewSlice";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import InteractiveScatterPlot from "../InteractiveScatterPlot/InteractiveScatterPlot";
-import { Button } from "@mui/material";
-import { useExpandableContainer } from "../Containers/ExpandableContainer";
 export const BRUSH_MODE = 'end'
 export const POINT_SIZE = 2
 
@@ -93,28 +91,5 @@ export function ClusterView(props: ClusterViewProps) {
             shouldShowBrusher={shouldShowBrusher}
             className={'clusterView'}
         ></InteractiveScatterPlot>
-    )
-}
-
-export function ClusterViewWithEveryThing(props: ClusterViewProps) {
-    const dispatch = useAppDispatch()
-    const handleExpand = (nextIsExpand: boolean) => {
-        nextIsExpand ? dispatch(clusterViewSlice.expand()) : dispatch(clusterViewSlice.fold())
-    }
-    const { expandButton, ExpandableContainer } = useExpandableContainer({ onSetExpand: handleExpand })
-    const content = (
-        <div>
-            <div>
-                {expandButton}
-            </div>
-            <div>
-                <ClusterView
-                    
-                    colourScales={props.colourScales}
-                ></ClusterView>
-            </div>
-        </div>)
-    return (
-        <ExpandableContainer>{content}</ExpandableContainer>
     )
 }

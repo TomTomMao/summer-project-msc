@@ -30,36 +30,3 @@ export default function ExpandableContainer(expandableContainerProps: Expandable
         </div>
     )
 }
-
-type UseExpandableContainerProps = {
-    onSetExpand: (nextIsExpand: boolean) => void;
-};
-
-export function useExpandableContainer(useExpandableContainerProps: UseExpandableContainerProps): {
-    expandButton: React.JSX.Element, ExpandableContainer: ({ children }: {
-        children: JSX.Element;
-    }) => React.JSX.Element
-} {
-    const { onSetExpand } = useExpandableContainerProps
-    const [isExpand, setIsExpand] = useState(false)
-    function handleSetExpand(nextIsExpand: boolean) {
-        setIsExpand(nextIsExpand);
-        onSetExpand(nextIsExpand)
-    }
-    const expandButton = <Button size="small" variant="outlined" onClick={() => handleSetExpand(!isExpand)}>{isExpand ? '_' : '+'}</Button>
-    const ExpandableContainer = ({ children }: { children: JSX.Element }) => <div style={isExpand ? expandedStyle : initStyle}>{children}</div>
-    return { expandButton, ExpandableContainer }
-}
-
-const initStyle: React.CSSProperties = {
-    position: 'relative',
-}
-const expandedStyle: React.CSSProperties = {
-    position: 'fixed',
-    left: '50%',
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
-    zIndex: 999,
-    border: '1px black solid',
-    backgroundColor: 'white'
-}
