@@ -307,10 +307,9 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                 zIndex: 4
             }}>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: containerHeight, width: COLOURLEGEND_WIDTH }}>
-                    <div style={{height: containerHeight, width: COLOURLEGEND_WIDTH, overflowY:'auto'}}>
+                    <div style={{maxHeight: containerHeight, width: COLOURLEGEND_WIDTH, overflowY:'auto'}}>
                         {colourLegend}
                     </div>
-
                 </div>
             </div>
         </div>

@@ -25,8 +25,9 @@ import { FrequencyControlPannel } from "./components/ControlPannel/FrequencyCont
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "./components/ColourLegend/ColourLegends";
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
-import { ClusterView } from "./components/ClusterView/ClusterView";
+import { ClusterView, ClusterViewWithEveryThing } from "./components/ClusterView/ClusterView";
 import TransactionAmountView from "./components/TransactionAmountView.tsx/TransactionAmountView";
+import { Button } from "@mui/material";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -96,13 +97,8 @@ export default function App() {
     else {
         return (
             <div>
-                {/* <div className="floatDiv" style={{ right: '6px', backgroundColor: '#EEEEEE', zIndex: 999 }}>
-                    <FolderableContainer label="colour legends" initIsFolded={false}>
-                        <CategoryColourLegend></CategoryColourLegend>
-                    </FolderableContainer>
-                </div> */}
                 <div className="grid grid-cols-12">
-                    <div className="col-span-6">
+                    <div className="col-span-5">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'scatter plot') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
@@ -123,7 +119,7 @@ export default function App() {
                             ></TransactionAmountView>
                         </ExpandableContainer>
                     </div>
-                    <div className="col-span-6">
+                    <div className="col-span-7">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'calendar view') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
@@ -147,8 +143,11 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-12">
-                    <div className="col-span-6">
-                        <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
+                    <div className="col-span-5">
+                        <ClusterViewWithEveryThing
+                            colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
+                        ></ClusterViewWithEveryThing>
+                        {/* <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
@@ -166,9 +165,9 @@ export default function App() {
                             <ClusterView
                                 colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
                             ></ClusterView>
-                        </ExpandableContainer>
+                        </ExpandableContainer> */}
                     </div>
-                    <div className="col-span-6">
+                    <div className="col-span-7">
                         <TableViewCollection transactionDataArr={transactionDataArr}
                             brushedTransactionNumberSet={brushedTransactionNumberSet}
                             handleClearBrush={handleClearBrush}
@@ -180,6 +179,7 @@ export default function App() {
                     </div>
                 </div>
             </div>
+
         )
     }
 

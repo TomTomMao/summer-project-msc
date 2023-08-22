@@ -3,6 +3,7 @@ import { ScaleOrdinalWithTransactionNumber } from "../../hooks/useColourScales";
 import * as clusterViewSlice from "./clusterViewSlice";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import InteractiveScatterPlot from "../InteractiveScatterPlot/InteractiveScatterPlot";
+import { Button } from "@mui/material";
 export const BRUSH_MODE = 'end'
 export const POINT_SIZE = 2
 
@@ -91,5 +92,22 @@ export function ClusterView(props: ClusterViewProps) {
             shouldShowBrusher={shouldShowBrusher}
             className={'clusterView'}
         ></InteractiveScatterPlot>
+    )
+}
+
+export function ClusterViewWithEveryThing(props:ClusterViewProps) {
+    
+    return (
+        
+        <div>
+            <div>
+                <Button size={'small'}>expand</Button>
+            </div>
+            <div>
+                <ClusterView
+                    colourScales={props.colourScales }
+                ></ClusterView>
+            </div>
+        </div>
     )
 }

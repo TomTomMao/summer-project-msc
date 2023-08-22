@@ -118,7 +118,7 @@ const initialState: ClusterViewState = {
   },
 
   clusterData: [],
-  colour: "category",
+  colour: "cluster",
   x: "dayOfYear",
   y: "frequency",
 

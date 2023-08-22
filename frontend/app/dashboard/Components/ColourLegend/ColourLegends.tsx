@@ -98,7 +98,7 @@ function LegendList({ colourMappingArr, onToggleSelect, children }: {
                                 width: '8px', 
                                 height: '8px',
                                 display: 'block',
-                                marginTop: '0.5px',
+                                marginTop: '1.6px',
                                 left: '0.4em'   
                             }}></div>
                         </div>
