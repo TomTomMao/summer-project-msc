@@ -19,7 +19,7 @@ export default function ClusterViewControlPannel() {
                         <ClusterAlgorithmControlPannel></ClusterAlgorithmControlPannel>
                     </FolderableContainerInTable>
                     <FolderableContainerInTable label={"clustering option for create group of transaction to calculate frequency"} initIsFolded={false} colSpan={4}>
-                    <FrequencyControlPannel></FrequencyControlPannel>
+                        <FrequencyControlPannel></FrequencyControlPannel>
                     </FolderableContainerInTable>
                 </tbody>
             </table>
@@ -102,7 +102,10 @@ function ClusterViewMappingControlPannel() {
                     </select>
                 </td>
                 <td></td>
-                <td style={{ float: 'right' }}><button onClick={handleSwap}>swap axis</button></td>
+                <td style={{ float: 'right' }}>
+                    {/* removed this button, and put it into the chart component because it is complex to check the swapping information in the chart component (InteractiveScatterPlot) */}
+                    {/* <button onClick={handleSwap}>swap axis</button> */}
+                </td>
             </tr>
             <TableHrRow colSpan={4}></TableHrRow>
         </>
