@@ -109,6 +109,7 @@ export function ClusterViewWithEveryThing(props: ClusterViewProps) {
             </div>
             <div>
                 <ClusterView
+                    
                     colourScales={props.colourScales}
                 ></ClusterView>
             </div>

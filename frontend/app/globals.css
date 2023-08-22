@@ -81,3 +81,9 @@
 .clusterView{
     background-color: white;
 }
+
+
+/* clusterview controlpannel */
+table td select, .clusterViewControlPannel td input {
+    width: 100%
+}

@@ -4,12 +4,25 @@ import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
 import { Button } from "../Button";
 import { ValidAxisLabels } from "../Interactivity/interactivitySlice";
 import { ValidColours } from "../ColourChannel/colourChannelSlice";
+import { FrequencyControlPannel } from "./FrequencyControlPannel";
+import { MiddlewareArray } from "@reduxjs/toolkit";
+import { FolderableContainerInTable } from "../Containers/FolderableContainer";
 
 export default function ClusterViewControlPannel() {
     return (
         <>
-            <div><ClusterViewMappingControlPannel></ClusterViewMappingControlPannel></div>
-            <div><ClusterAlgorithmControlPannel></ClusterAlgorithmControlPannel></div>
+            <table className="clusterViewControlPannel">
+                <thead></thead>
+                <tbody>
+                    <ClusterViewMappingControlPannel></ClusterViewMappingControlPannel>
+                    <FolderableContainerInTable label={"clustering option for trasactions"} initIsFolded={false} colSpan={4}>
+                        <ClusterAlgorithmControlPannel></ClusterAlgorithmControlPannel>
+                    </FolderableContainerInTable>
+                    <FolderableContainerInTable label={"clustering option for create group of transaction to calculate frequency"} initIsFolded={false} colSpan={4}>
+                    <FrequencyControlPannel></FrequencyControlPannel>
+                    </FolderableContainerInTable>
+                </tbody>
+            </table>
         </>
     )
 }
@@ -43,65 +56,55 @@ function ClusterViewMappingControlPannel() {
     }
     return (
         <>
-            <table>
-                <thead></thead>
-                <tbody>
-                    <tr>
-                        <td>xLabel</td>
-                        <td>
-                            <select name="" id="" value={xLable} onChange={e => handleChangeXLable(e.target.value)}>
-                                <option value="transactionAmount">transaction amount</option>
-                                <option value="frequency">frequency</option>
-                                <option value="dayOfYear">dayOfYear</option>
-                                <option value="balance">balance</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>yLabel</td>
-                        <td>
-                            <select name="" id="" value={yLable} onChange={e => handleChangeYLable(e.target.value)}>
-                                <option value="transactionAmount">transaction amount</option>
-                                <option value="frequency">frequency</option>
-                                <option value="dayOfYear">dayOfYear</option>
-                                <option value="balance">balance</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>colour</td>
-                        <td>
-                            <select name="" id="" value={colour} onChange={e => handleChangeColour(e.target.value)}>
-                                <option value="cluster">cluster</option>
-                                <option value="category">category</option>
-                                <option value="frequencyUniqueKey">frequencyUniqueKey</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>xScale</td>
-                        <td>
-                            <select name="" id="" value={xScale} onChange={e => handleChangeXScale(e.target.value)}>
-                                <option value="log">log</option>
-                                <option value="linear">linear</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>yScale</td>
-                        <td>
-
-                            <select name="" id="" value={yScale} onChange={e => handleChangeYScale(e.target.value)}>
-                                <option value="log">log</option>
-                                <option value="linear">linear</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><button onClick={handleSwap}>swap</button></td>
-                    </tr>
-                </tbody>
-            </table>
+            <tr>
+                <td style={{ float: 'right' }} >x scale:</td>
+                <td>
+                    <select name="" id="" value={xScale} onChange={e => handleChangeXScale(e.target.value)}>
+                        <option value="log">log</option>
+                        <option value="linear">linear</option>
+                    </select>
+                </td>
+                <td style={{ float: 'right' }}>x label:</td>
+                <td>
+                    <select name="" id="" value={xLable} onChange={e => handleChangeXLable(e.target.value)}>
+                        <option value="transactionAmount">transaction amount</option>
+                        <option value="frequency">frequency</option>
+                        <option value="dayOfYear">dayOfYear</option>
+                        <option value="balance">balance</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style={{ float: 'right' }}>y scale:</td>
+                <td>
+                    <select name="" id="" value={yScale} onChange={e => handleChangeYScale(e.target.value)}>
+                        <option value="log">log</option>
+                        <option value="linear">linear</option>
+                    </select>
+                </td>
+                <td style={{ float: 'right' }}>y label:</td>
+                <td>
+                    <select name="" id="" value={yLable} onChange={e => handleChangeYLable(e.target.value)}>
+                        <option value="transactionAmount">transaction amount</option>
+                        <option value="frequency">frequency</option>
+                        <option value="dayOfYear">dayOfYear</option>
+                        <option value="balance">balance</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style={{ float: 'right' }}>colour:</td>
+                <td>
+                    <select name="" id="" value={colour} onChange={e => handleChangeColour(e.target.value)}>
+                        <option value="cluster">cluster</option>
+                        <option value="category">category</option>
+                        <option value="frequencyUniqueKey">frequencyUniqueKey</option>
+                    </select>
+                </td>
+                <td></td>
+                <td style={{ float: 'right' }}><button onClick={handleSwap}>swap axis</button></td>
+            </tr>
+            <TableHrRow colSpan={4}></TableHrRow>
         </>
     )
 }
@@ -126,50 +129,48 @@ function ClusterAlgorithmControlPannel() {
 
     return (
         <>
-            <table>
-                <thead>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>clustering options</td>
-                    </tr>
-                    <tr>
-                        <td>cluster</td>
-                        <td><input type="number" value={numberOfCluster} onChange={e => setNumberOfCluster(parseInt(e.target.value))} /></td>
-                    </tr>
-                    <tr>
-                        <td>metric1</td>
-                        <td>
-                            <select name="" id="" value={metric1} onChange={e => setMetric1(e.target.value as "transactionAmount" | "category" | "frequency")}>
-                                <option value='transactionAmount'>transactionAmount</option>
-                                <option value='frequency'>frequency</option>
-                                <option value='category'>category</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>metric2</td>
-                        <td>
-                            <select name="" id="" value={metric2} onChange={e => setMetric2(e.target.value as "transactionAmount" | "category" | "frequency")}>
-                                <option value='transactionAmount'>transactionAmount</option>
-                                <option value='frequency'>frequency</option>
-                                <option value='category'>category</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <Button onClick={resetTable} available={isChanged}>reset</Button>
-                        </td>
-                        <td>
-                            <Button onClick={saveTable} available={isChanged}>update</Button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <tr>
+                <td colSpan={2}>target number of cluster:</td>
+                <td colSpan={2}><input type="number" value={numberOfCluster} onChange={e => setNumberOfCluster(parseInt(e.target.value))} /></td>
 
+            </tr>
+            <tr>
+                <td colSpan={2}>clustering metric1:</td>
+                <td colSpan={2}>
+                    <select name="" id="" value={metric1} onChange={e => setMetric1(e.target.value as "transactionAmount" | "category" | "frequency")}>
+                        <option value='transactionAmount'>transactionAmount</option>
+                        <option value='frequency'>frequency</option>
+                        <option value='category'>category</option>
+                    </select>
+                </td>
+
+            </tr>
+            <tr>
+                <td colSpan={2}>clustering metric2:</td>
+                <td colSpan={2}>
+                    <select name="" id="" value={metric2} onChange={e => setMetric2(e.target.value as "transactionAmount" | "category" | "frequency")}>
+                        <option value='transactionAmount'>transactionAmount</option>
+                        <option value='frequency'>frequency</option>
+                        <option value='category'>category</option>
+                    </select>
+                </td>
+
+            </tr>
+            <tr>
+                <td colSpan={2}>
+                </td>
+                <td colSpan={2} style={{}}>
+                    <div style={{ float: 'right' }}>
+                        <Button onClick={resetTable} available={isChanged}>reset</Button>
+                        <Button onClick={saveTable} available={isChanged}>update</Button>
+                    </div>
+                </td>
+            </tr>
+            <TableHrRow colSpan={4}></TableHrRow>
         </>
     )
 }
 
-
+function TableHrRow({ colSpan }: { colSpan: number }) {
+    return <tr><td colSpan={4}><hr /></td></tr>
+}

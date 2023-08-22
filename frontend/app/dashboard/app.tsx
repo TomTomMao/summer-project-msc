@@ -105,10 +105,9 @@ export default function App() {
                         >
                             <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 4 }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div style={{ height: '450px', backgroundColor: 'RGB(197,197,197)' }}>
+                                    <div style={{ height: '450px', backgroundColor: 'RGB(220,220,220)' }}>
                                         <div style={{ margin: '2px' }}>
                                             <ClusterViewControlPannel></ClusterViewControlPannel>
-                                            <FrequencyControlPannel />
                                         </div>
                                     </div>
                                 </FolderableContainer>
@@ -144,19 +143,15 @@ export default function App() {
 
                 <div className="grid grid-cols-12">
                     <div className="col-span-5">
-                        <ClusterViewWithEveryThing
-                            colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
-                        ></ClusterViewWithEveryThing>
-                        {/* <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
+                        <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
                             <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 4 }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div style={{ height: '450px', backgroundColor: 'RGB(197,197,197)' }}>
-                                        <div style={{ margin: '2px' }}>
+                                    <div style={{ maxHeight:'300px', backgroundColor: 'RGB(220,220,220)',overflowY:'auto' }}>
+                                        <div style={{ margin: '2px'}}>
                                             <ClusterViewControlPannel></ClusterViewControlPannel>
-                                            <FrequencyControlPannel />
                                         </div>
                                     </div>
                                 </FolderableContainer>
@@ -165,7 +160,7 @@ export default function App() {
                             <ClusterView
                                 colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
                             ></ClusterView>
-                        </ExpandableContainer> */}
+                        </ExpandableContainer>
                     </div>
                     <div className="col-span-7">
                         <TableViewCollection transactionDataArr={transactionDataArr}
