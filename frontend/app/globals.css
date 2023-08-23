@@ -105,11 +105,7 @@ input {
     /* border: 1px solid #000; */
 }
 
-.tableView tbody {
-    display: block;
-    max-height: 87vh;
-    overflow-y: scroll;
-}
+.tableView tbody {}
 
 .tableView thead,
 .tableView tbody tr {
@@ -119,10 +115,15 @@ input {
 }
 
 .tableView thead {
-    width: calc(100% - 16.5px); 
+    width: calc(100% - 16.5px);
 }
+
 .tableView table {
-    width:100%;
-} 
+    width: 100%;
+}
+
+.tableView tbody .help {
+    cursor: help;
+}
 
 /* https://labotrees.com/web-technologies/how-to-set-tbody-height-with-overflow-scroll/#:~:text=To%20do%20this%2C,the%20behavior%20of%20a%20table. */

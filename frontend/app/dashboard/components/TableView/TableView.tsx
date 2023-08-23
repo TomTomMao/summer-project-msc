@@ -54,24 +54,34 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
     const startIndex = (currentPageNumber - 1) * numberOfRowPerPage
     const endIndex = startIndex + numberOfRowPerPage >= numberOfRow ? numberOfRow - 1 : startIndex + numberOfRowPerPage - 1// >= because it is index
     const currentPageTransactionDataArr = sortedFilteredTransactionDataArr.slice(startIndex, endIndex + 1) // +1 because end is exclusive 
+
+    // focus on the table head
+    useEffect(() => {
+        const tableViewDiv = document.getElementById('tableView')
+        tableViewDiv !== null && tableViewDiv.scrollIntoView({
+            block: "start", // reference Ilario Engler's answer https://stackoverflow.com/questions/12102118/scrollintoview-animation
+            behavior: "smooth"
+        })
+    }, [numberOfRowPerPage])
+
     const transactionRows = useMemo(() => {
         return (
             currentPageTransactionDataArr.map(transactionData => {
                 const colour = colourForTransactionNumberMap.get(transactionData.transactionNumber);
                 return (
                     <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
-                        <td style={{ width: '50%', height: '4em' }}>{transactionData.transactionNumber}</td>
-                        <td style={{ width: '70%', height: '4em' }}>{transactionData.balance}</td>
-                        <td style={{ width: '100%', height: '4em' }}>{transactionData.category}</td>
-                        <td style={{ width: '70%', height: '4em' }}>{transactionData.creditAmount}</td>
-                        <td style={{ width: '70%', height: '4em' }}>{transactionData.debitAmount}</td>
-                        <td style={{ width: '70%', height: '4em' }}>{transactionData.locationCity}</td>
-                        <td style={{ width: '100%', height: '4em' }}>{transactionData.locationCountry}</td>
-                        <td title={transactionData.transactionDescription} style={{ width: '150%', height: '4em' }}>{transactionData.transactionDescription}</td>
-                        <td style={{ width: '50%', height: '4em' }}>{transactionData.transactionType}</td>
-                        <td style={{ width: '100%', height: '4em' }}>{transactionData.date?.toDateString()}</td>
-                        <td style={{ width: '100%', height: '4em' }}>{transactionData.frequency}</td>
-                        <td style={{ width: '100%', height: '4em' }}>{transactionData.frequencyUniqueKey}</td>
+                        <td className="help" title={transactionData.transactionNumber} style={{ width: '50%', height: '4em' }}>{transactionData.transactionNumber}</td>
+                        <td className="help" title={String(transactionData.balance)} style={{ width: '70%', height: '4em' }}>{transactionData.balance}</td>
+                        <td className="help" title={transactionData.category} style={{ width: '100%', height: '4em' }}>{transactionData.category}</td>
+                        <td className="help" title={String(transactionData.creditAmount)} style={{ width: '70%', height: '4em' }}>{transactionData.creditAmount}</td>
+                        <td className="help" title={String(transactionData.debitAmount)} style={{ width: '70%', height: '4em' }}>{transactionData.debitAmount}</td>
+                        <td className="help" title={transactionData.locationCity} style={{ width: '70%', height: '4em' }}>{transactionData.locationCity}</td>
+                        <td className="help" title={transactionData.locationCountry} style={{ width: '100%', height: '4em' }}>{transactionData.locationCountry}</td>
+                        <td className="help" title={transactionData.transactionDescription} style={{ width: '150%', height: '4em' }}>{transactionData.transactionDescription}</td>
+                        <td className="help" title={transactionData.transactionType} style={{ width: '50%', height: '4em' }}>{transactionData.transactionType}</td>
+                        <td className="help" title={transactionData.date?.toDateString()} style={{ width: '100%', height: '4em' }}>{transactionData.date?.toDateString()}</td>
+                        <td className="help" title={String(transactionData.frequency)} style={{ width: '100%', height: '4em' }}>{(transactionData.frequency.toFixed(2))}</td>
+                        <td className="help" title={transactionData.frequencyUniqueKey} style={{ width: '100%', height: '4em' }}>{transactionData.frequencyUniqueKey}</td>
                     </tr>)
             })
         )
@@ -102,6 +112,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                 numberOfRowPerPage: 'all'
             })
         }
+        dispatch({ type: 'change page', nextPage: 1 })
     }
     function handleChangePage(nextPage: number) {
         if (nextPage <= maxPageNumber) {
@@ -114,7 +125,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
             <div>{children}</div>
             {numberOfRow > 0 && <>
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <label style={{ paddingTop: '2px' }} htmlFor=""> show: </label>
+                    <label style={{ paddingTop: '2px', height: '22px', paddingRight: '5px' }} htmlFor=""> show </label>
                     <select name="" id="" value={numberOfRowPerPage === numberOfRow ? 'all' : numberOfRowPerPage} onChange={(event) => handleChangeNumberOfRowsPerPage(event)}>
                         <option value={DEFAULT_NUMBER_OF_ROW_PER_PAGE}>{DEFAULT_NUMBER_OF_ROW_PER_PAGE}</option>
                         <option value="17">17</option>
@@ -123,11 +134,12 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                         <option value="200">200</option>
                         <option value="all">{numberOfRow}</option>
                     </select>
-                    <span style={{ paddingTop: '2px' }}>rows</span>
+                    <span style={{ paddingTop: '2px', paddingRight: '8px', paddingLeft: '5px' }}>rows</span>
 
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        {startIndex + 1}-{endIndex + 1} of {numberOfRow}
-                        <input type="number" name="" id="" value={currentPageNumber} min={1} max={maxPageNumber} onChange={(e) => handleChangePage(parseInt(e.target.value))} />
+                        <label htmlFor="" style={{ paddingTop: '2px' }}>{startIndex + 1}-{endIndex + 1} of {numberOfRow} current page:</label>
+                        {/* input height is mannualy set to be the same as the clear all button */}
+                        <input style={{ height: '22px', position: 'relative', top: '2.7px' }} type="number" name="" id="" value={currentPageNumber} min={1} max={maxPageNumber} onChange={(e) => handleChangePage(parseInt(e.target.value))} />
                     </div>
                     <div>
                         <button onClick={handleClearSelect}>clear all</button>
@@ -152,7 +164,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                     <td style={{ width: '100%', height: '4em' }}><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('frequencyUniqueKey')}>description group {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                 </tr>
             </thead>
-            <tbody>
+            <tbody style={({ height: numberOfRowPerPage > DEFAULT_NUMBER_OF_ROW_PER_PAGE ? '87vh' : '', display: 'block', overflowY: 'scroll' })}>
                 {transactionRows}
             </tbody>
         </table>

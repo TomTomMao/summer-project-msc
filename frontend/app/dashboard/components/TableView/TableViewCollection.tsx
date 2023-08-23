@@ -28,7 +28,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
     return (
         <div style={{
             margin: 'auto auto'
-        }} className="tableView">
+        }} className="tableView" id='tableView'>
             {currentTable === 'brushedTable' && <TableView
                 transactionDataArr={transactionDataArr}
                 transactionNumberSet={brushedTransactionNumberSet}
