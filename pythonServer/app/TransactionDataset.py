@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import sklearn.preprocessing
 from sklearn.cluster import KMeans
 from typing import Literal, Union
 from enum import Enum
@@ -289,11 +290,13 @@ class TransactionDataset:
     def getColumn(self, columnName, toNumerical=False) -> pd.Series:
         '''
             assume the columnName exist
-            if the column is categorical and toNumerical==True, return a list of number represents the category of the columnName
+            if the column is categorical and toNumerical==True, return a list of number represents the category of the columnName,
             otherwise return a list of value of the columnName
         '''
         assert columnName in self.dataframe.columns, f"{columnName} doesn't exist"
-        if toNumerical:
+        # referenced danthelion's answer for checking numericals: https://stackoverflow.com/questions/19900202/how-to-determine-whether-a-column-variable-is-numeric-or-not-in-pandas-numpy
+        isColumnCategorical = pd.api.types.is_numeric_dtype(self.dataframe[columnName]) == False
+        if toNumerical and isColumnCategorical:
             return self.__getNumericalDataFromCategoricalData(columnName)
         else:
             return self.dataframe[columnName]
@@ -318,8 +321,13 @@ class TransactionDataset:
         # get the numerical value of two columns
         x1 = self.getColumn(metric1, toNumerical=True).to_numpy()
         x2 = self.getColumn(metric2, toNumerical=True).to_numpy()
-        # print(metric1, metric2)
-        X = np.dstack((x1, x2))[0]
+        
+        # reference for normalise the data: https://scikit-learn.org/stable/modules/preprocessing.html#normalization
+        # normalise the data so that one of the dimension won't dominant the clustering algorithm
+        x1Norm = sklearn.preprocessing.normalize([x1]) 
+        x2Norm = sklearn.preprocessing.normalize([x2])
+
+        X = np.dstack((x1Norm, x2Norm))[0] # type: ignore
         # run kmean
         # reference: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
         kmeans = KMeans(n_clusters=numberOfCluster, random_state=0,
