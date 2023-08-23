@@ -26,6 +26,7 @@ import * as interactivitySlice from "./components/Interactivity/interactivitySli
 import { ClusterView } from "./components/ClusterView/ClusterView";
 import TransactionAmountView from "./components/TransactionAmountView.tsx/TransactionAmountView";
 import * as colourChannelSlice from "./components/ColourChannel/colourChannelSlice";
+import Popup from "./components/PopupWindow/Popup";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -42,7 +43,7 @@ export default function App() {
     useEffect(() => { console.log('flag colour colourLabelForTable updated:', colourLabelForTable) }, [colourLabelForTable])
     const tableColourScale = colourLabelForTable === 'category' ? categoryColourScale : (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
     useEffect(() => { console.log('flag colour tableColourScale updated', tableColourScale) }, [tableColourScale])
-    const tableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectTableViewColourDomainData)
+    const tableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectTableViewColourDomainDataMemorised)
 
     // set the state store
     const dispatch = useAppDispatch()
@@ -172,6 +173,7 @@ export default function App() {
                             colourScale={tableColourScale} colourDomainData={tableViewColourDomainDataArr}></TableViewCollection>
                     </div>
                 </div>
+                <Popup></Popup>
             </div>
 
         )

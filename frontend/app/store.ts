@@ -8,6 +8,7 @@ import pieDayViewReducer from "./dashboard/components/CalendarView3/DayViews/pie
 import scatterPlotReducer from "@/app/dashboard/components/TransactionAmountView.tsx/scatterPlotSlice";
 import interactivityReducer from "@/app/dashboard/components/Interactivity/interactivitySlice";
 import colourChannelReducer from "@/app/dashboard/components/ColourChannel/colourChannelSlice";
+import popUpReducer from "@/app/dashboard/components/PopupWindow/PopupSlice"
 export const store = configureStore({
   reducer: {
     barDayView: barDayViewReducer,
@@ -18,6 +19,7 @@ export const store = configureStore({
     scatterPlot: scatterPlotReducer,
     interactivity: interactivityReducer,
     colourChannel: colourChannelReducer,
+    popUp: popUpReducer
   },
 });
 

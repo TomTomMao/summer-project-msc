@@ -5,6 +5,10 @@ import { ScaleOrdinal } from "d3";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { getClusterDataMapFromArr } from "../../hooks/useClusterData";
 import { ClusterData } from "../../utilities/clusterDataObject";
+import {
+  createArrayComparator,
+  createMemorisedFunction,
+} from "../../utilities/createMemorisedFunction";
 
 export type ColourScheme =
   | "PuOr"
@@ -218,8 +222,10 @@ export const selectFrequencyUniqueKeyColourScheme = (state: RootState) =>
   state.colourChannel.frequencyUniqueKey.scheme;
 
 /** based on the current selector, select the colourDomain data with transactionNumber and domain value for its colour domain*/
-export const selectTableViewColourDomainData = (state: RootState) => {
-  const colour = interactivitySlice.selectCurrentSelectorColourScaleType(state);;
+const selectTableViewColourDomainData = (
+  state: RootState
+): ColourDomainData[] => {
+  const colour = interactivitySlice.selectCurrentSelectorColourScaleType(state);
   const transactionDataArr = interactivitySlice.selectTransactionDataArr(state);
   const clusterDataArr = interactivitySlice.selectClusterDataArr(state);
   const clusterDataMap = getClusterDataMapFromArr(clusterDataArr);
@@ -246,5 +252,20 @@ export const selectTableViewColourDomainData = (state: RootState) => {
       throw new Error("This should not happen");
   }
 };
+
+const compareColourDomainData = (
+  colourDomainData1: ColourDomainData,
+  colourDomainData2: ColourDomainData
+) => {
+  return (
+    colourDomainData1.domain === colourDomainData2.domain &&
+    colourDomainData1.transactionNumber === colourDomainData2.transactionNumber
+  );
+};
+const comparingColourDomainArr = createArrayComparator(compareColourDomainData);
+export const selectTableViewColourDomainDataMemorised = createMemorisedFunction(
+  selectTableViewColourDomainData,
+  comparingColourDomainArr
+);
 
 export default colourChannelSlice.reducer;

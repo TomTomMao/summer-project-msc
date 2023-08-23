@@ -33,6 +33,17 @@ export function comparingArray<Element>(arr1: Element[], arr2: Element[]) {
     }
     return true;
 }
+export function createArrayComparator<Element>(isElementEqualComparator: (element1: Element, element2: Element) => boolean = (a, b) => a === b) {
+    return function comparingArray(arr1: Element[], arr2: Element[]) {
+        if (arr1.length !== arr2.length) { return false; }
+        for (let i = 0; i < arr1.length; i++) {
+            if (isElementEqualComparator(arr1[i], arr2[i]) === false) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
 
 /**
  * 
@@ -41,6 +52,7 @@ export function comparingArray<Element>(arr1: Element[], arr2: Element[]) {
  * @returns true if two two sets share same elements
  * reference: Shah, A. M. (2015, June 30). Answer to ‘comparing ECMA6 sets for equality’. Stack Overflow. https://stackoverflow.com/a/31129384
  */
-export function comparingSet<Element>(set1: Set<Element>,set2: Set<Element>) {
+export function comparingSet<Element>(set1: Set<Element>, set2: Set<Element>) {
     return set1.size === set2.size && Array.from(set1.values()).every((x) => set2.has(x))
 }
+

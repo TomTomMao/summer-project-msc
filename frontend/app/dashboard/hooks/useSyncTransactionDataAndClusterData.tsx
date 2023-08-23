@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 import { TransactionData } from "../utilities/DataObject";
 import { ClusterData } from "../utilities/clusterDataObject";
+import * as popupSlice from "../components/PopupWindow/PopupSlice";
 /**
  * sycnchroise the transactionDataArr and clusterDataArr; this hook won't return any data; it just update the data in the state store
  * this 
@@ -44,18 +45,23 @@ export default function useSyncTransactionDataAndClusterData() {
                 per: 'month'
             }
         }
+        dispatch(popupSlice.showFetchingData())
         dataAgent.updateFrequencyInfo(frequencyUniqueKeyConfig, metric1, metric2, numberOfCluster)
-            .then(newTransactionDataArr => updateTransactionDataArr(newTransactionDataArr))
+            .then(newTransactionDataArr => { updateTransactionDataArr(newTransactionDataArr); dispatch(popupSlice.showFetchingDataDone()) })
+            .catch(() => dispatch(popupSlice.showFetchingDataFail()))
     }, [frequencyUniqueKey, distanceMeasure, linkageMethod, numberOfClusterForString])
 
     useEffect(() => {
+        dispatch(popupSlice.showFetchingData())
         dataAgent.getClusterData(numberOfCluster, metric1, metric2).then((fetchedClusterData: ClusterData[]) => {
             updateClusterDataArr(fetchedClusterData)
+            dispatch(popupSlice.showFetchingDataDone())
             // console.log('clusterdata updated: ', fetchedClusterData, numberOfCluster, metric1, metric2)
         }
         ).catch(error => {
             console.error(error)
             updateClusterDataArr([]);
+            dispatch(popupSlice.showFetchingDataFail())
         })
     }, [numberOfCluster, metric1, metric2, transactionDataArr])
 }
