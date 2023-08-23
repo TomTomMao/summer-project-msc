@@ -22,8 +22,8 @@ export const popupSlice = createSlice({
     initialState,
     reducers: {
         showFetchingData(state) { state.information = 'fetching data'; state.servertiy = 'info' },
-        showFetchingDataDone(state) { state.information = 'fetching data successed'; state.servertiy = 'success' },
-        showFetchingDataFail(state) { state.information = 'fetching data failed, please contact with Wentao: wentao.mao@outlook.com'; state.servertiy = 'error' },
+        showFetchingDataDone(state) { state.information = 'fetching data succeed'; state.servertiy = 'success' },
+        showFetchingDataFail(state) { state.information = 'fetching data failed, please contact Wentao: wentao.mao@outlook.com'; state.servertiy = 'error' },
         clearPopupWindow(state) { state.information = null }
     },
 });
