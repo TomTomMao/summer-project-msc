@@ -1,8 +1,9 @@
-import { ChangeEvent, useEffect, useMemo, useReducer, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useReducer } from "react";
 import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObject";
-import { PublicScale, PublicValueGetter } from "../../utilities/types";
+import { PublicScale } from "../../utilities/types";
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
-
+import { relative } from "path";
+const DEFAULT_NUMBER_OF_ROW_PER_PAGE = 8
 export interface DescriptionAndIsCredit {
     transactionDescription: string;
     isCredit: boolean;
@@ -14,7 +15,8 @@ type Props = {
     transactionNumberSet: Set<TransactionData['transactionNumber']>;
     handleClearSelect: (() => void)
     colourScale: PublicScale['colourScale']
-    colourDomainData: ColourDomainData[]
+    colourDomainData: ColourDomainData[],
+    children: React.ReactNode
 }
 /**
  * show the transactions that has the number in the transactionNumberSet
@@ -23,7 +25,7 @@ type Props = {
  * 
  * transactionDataArr: the transactionDataArr to loop thorugh
  */
-export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect, colourScale, colourDomainData }:
+export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect, colourScale, colourDomainData, children }:
     Props) {
     // when the component mount or the filteredDescriptionAndIsCreditArr Changes, change it. the time complexity is transactionDataArr.length * filteredDescriptionAndIsCreditArr; can be improved in the future.[performance improvement]
 
@@ -43,7 +45,6 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
         })
         return transactionNumberMappingColour
     }, [colourDomainData, transactionNumberSet, colourScale])
-
     // for the table paging feature
     const numberOfRow = sortedFilteredTransactionDataArr.length
     const numberOfRowPerPage = sortingConfig.numberOfRowPerPage === 'all' ? numberOfRow : sortingConfig.numberOfRowPerPage
@@ -58,18 +59,18 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                 const colour = colourForTransactionNumberMap.get(transactionData.transactionNumber);
                 return (
                     <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
-                        <td>{transactionData.transactionNumber}</td>
-                        <td>{transactionData.balance}</td>
-                        <td>{transactionData.category}</td>
-                        <td>{transactionData.creditAmount}</td>
-                        <td>{transactionData.debitAmount}</td>
-                        <td>{transactionData.locationCity}</td>
-                        <td>{transactionData.locationCountry}</td>
-                        <td>{transactionData.transactionDescription}</td>
-                        <td>{transactionData.transactionType}</td>
-                        <td>{transactionData.date?.toDateString()}</td>
-                        <td>{transactionData.frequency}</td>
-                        <td>{transactionData.frequencyUniqueKey}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.transactionNumber}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.balance}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.category}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.creditAmount}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.debitAmount}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.locationCity}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.locationCountry}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.transactionDescription}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.transactionType}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.date?.toDateString()}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.frequency}</td>
+                        <td style={{ width: '100%', height: '4em' }}>{transactionData.frequencyUniqueKey}</td>
                     </tr>)
             })
         )
@@ -101,43 +102,67 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
             })
         }
     }
-    return (
-        <div>
-
-            <table className="infoTable">
-                <thead>
-                    <tr>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('transactionNumber')}>id {sortingKey === 'transactionNumber' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('balance')}>balance {sortingKey === 'balance' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('category')}>category {sortingKey === 'category' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('creditAmount')}>credit {sortingKey === 'creditAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('debitAmount')}>debit {sortingKey === 'debitAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('locationCity')}>City {sortingKey === 'locationCity' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('locationCountry')}>Country {sortingKey === 'locationCountry' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('transactionDescription')}>Description {sortingKey === 'transactionDescription' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('transactionType')}>Type {sortingKey === 'transactionType' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('date')}>date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('frequency')}>frequency {sortingKey === 'frequency' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                        <td><button style={{ width: '100%' }} onClick={() => handleClickColumnName('frequencyUniqueKey')}>frequencyUniqueKey {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {transactionRows}
-                </tbody>
-            </table>
-            <div>
-                <div className="text-xs">number of results: {filteredTransactionDataArr.length}</div>
-                <button onClick={handleClearSelect}>clear all</button>
-                <label htmlFor=""> show: </label>
-                <select name="" id="" onChange={(event) => handleChangeNumberOfRowsPerPage(event)}>
-                    <option value="25">25</option>
+    return (<>
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", marginRight:'16.5px'}}>
+            <div>{children}</div>
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <label style={{ paddingTop: '2px' }} htmlFor=""> show: </label>
+                <select name="" id="" value={numberOfRowPerPage === numberOfRow ? 'all' : numberOfRowPerPage} onChange={(event) => handleChangeNumberOfRowsPerPage(event)}>
+                    <option value={DEFAULT_NUMBER_OF_ROW_PER_PAGE}>{DEFAULT_NUMBER_OF_ROW_PER_PAGE}</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="all">{numberOfRow}</option>
+                </select>
+                <span style={{ paddingTop: '2px' }}>rows</span>
+                <div style={{ padding: "2px 20px 0px 20px" }}> number of results: {filteredTransactionDataArr.length} </div>
+                <div>
+                    <button onClick={handleClearSelect}>clear all</button>
+                </div>
+            </div>
+        </div>
+        <table className="infoTable">
+            <thead>
+                <tr>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('transactionNumber')}>id {sortingKey === 'transactionNumber' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('balance')}>balance {sortingKey === 'balance' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('category')}>category {sortingKey === 'category' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('creditAmount')}>credit {sortingKey === 'creditAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('debitAmount')}>debit {sortingKey === 'debitAmount' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('locationCity')}>City {sortingKey === 'locationCity' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('locationCountry')}>Country {sortingKey === 'locationCountry' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('transactionDescription')}>Description {sortingKey === 'transactionDescription' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('transactionType')}>Type {sortingKey === 'transactionType' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('date')}>date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('frequency')}>frequency {sortingKey === 'frequency' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('frequencyUniqueKey')}>description group {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                </tr>
+            </thead>
+            <tbody>
+                {transactionRows}
+            </tbody>
+        </table>
+        {/* {numberOfRowPerPage > 7 && numberOfRow > 7  &&
+            <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+            <div>{children}</div>
+            <div style={{ display: 'flex', flexDirection: 'row'}}>
+                <label style={{ paddingTop: '2px' }} htmlFor=""> show: </label>
+                <select name="" id="" value={numberOfRowPerPage} onChange={(event) => handleChangeNumberOfRowsPerPage(event)}>
+                    <option value={DEFAULT_NUMBER_OF_ROW_PER_PAGE}>{DEFAULT_NUMBER_OF_ROW_PER_PAGE}</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
                     <option value="200">200</option>
                     <option value="all">all</option>
-                </select> rows
+                </select> 
+                <span style={{ paddingTop: '2px' , paddingRight: '10px'}}>rows</span>
+                <div style={{ paddingTop: '2px' }}> number of results: {filteredTransactionDataArr.length} </div>
+                <div>
+                    <button onClick={handleClearSelect}>clear all</button>
+                </div>
             </div>
         </div>
+        } */}
+    </>
     )
 }
 
@@ -173,6 +198,6 @@ function sortingConfigReducer(sortingConfig: SortingConfig, action: SortingConfi
 const initialSortingConfig: SortingConfig = {
     sortingKey: 'transactionNumber',
     isDesc: false,
-    numberOfRowPerPage: 25,
+    numberOfRowPerPage: DEFAULT_NUMBER_OF_ROW_PER_PAGE,
     currentPage: 1
 }

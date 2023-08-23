@@ -25,50 +25,42 @@ export function TableViewCollection(props: TableViewCollectionProps) {
         colourScale,
         colourDomainData } = props
 
-    const handleChangeCurrentTable = (e: { target: { value: string | ((prevState: "brushedTable" | "glyphTable") => "brushedTable" | "glyphTable") } }) => {
-        setCurrentTable(e.target.value as 'brushedTable' | 'glyphTable')
-    }
-
     return (
-        <div style={style}>
-            <span>
-                <label htmlFor="brushedTable">brushed table
-                    <input type="radio" name="brushedTable" id="" value={'brushedTable'} checked={currentTable === 'brushedTable'} onChange={handleChangeCurrentTable} />
-                </label>
-            </span>
-            <span>
-                <label htmlFor="glyphTable">glyph table
-                    <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={currentTable === 'glyphTable'} onChange={handleChangeCurrentTable} />
-                </label>
-            </span>
-            <FolderableContainer label={"detailed data"} initIsFolded={false} >
-                {currentTable === 'brushedTable' && <TableView
-                    transactionDataArr={transactionDataArr}
-                    transactionNumberSet={brushedTransactionNumberSet}
-                    handleClearSelect={handleClearBrush}
-                    colourScale={colourScale}
-                    colourDomainData={colourDomainData}
-                ></TableView>}
-                {currentTable === 'glyphTable' && <TableView
-                    transactionDataArr={transactionDataArr}
-                    transactionNumberSet={selectedGlyphTransactionNumberSet}
-                    handleClearSelect={handleClearGlyph}
-                    colourScale={colourScale}
-                    colourDomainData={colourDomainData}
-                ></TableView>}
-            </FolderableContainer>
+        <div style={{
+            margin: 'auto auto'
+        }} className="tableView">
+            {currentTable === 'brushedTable' && <TableView
+                transactionDataArr={transactionDataArr}
+                transactionNumberSet={brushedTransactionNumberSet}
+                handleClearSelect={handleClearBrush}
+                colourScale={colourScale}
+                colourDomainData={colourDomainData}
+            ><span>
+                    <label htmlFor="brushedTable" onClick={() => setCurrentTable('brushedTable')}>brushed table
+                        <input type="radio" name="brushedTable" id="" value={'brushedTable'} checked={true} />
+                    </label>
+                </span>
+                <span>
+                    <label htmlFor="glyphTable" onClick={() => setCurrentTable('glyphTable')}>glyph table
+                        <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={false} />
+                    </label>
+                </span></TableView>}
+            {currentTable === 'glyphTable' && <TableView
+                transactionDataArr={transactionDataArr}
+                transactionNumberSet={selectedGlyphTransactionNumberSet}
+                handleClearSelect={handleClearGlyph}
+                colourScale={colourScale}
+                colourDomainData={colourDomainData}
+            ><span>
+                    <label htmlFor="brushedTable" onClick={() => setCurrentTable('brushedTable')}>brushed table
+                        <input type="radio" name="brushedTable" id="" value={'brushedTable'} checked={false} />
+                    </label>
+                </span>
+                <span>
+                    <label htmlFor="glyphTable" onClick={() => setCurrentTable('glyphTable')}>glyph table
+                        <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={true} />
+                    </label>
+                </span></TableView>}
         </div>
     )
-}
-
-const style: CSSProperties = {
-    // position: 'absolute',
-    // right: '135px',
-    // top: '420px',
-
-    maxHeight: '100vh',
-    overflowY: 'auto',
-    margin: 'auto auto',
-    // height:'400px',
-    // width: '900px'
 }
