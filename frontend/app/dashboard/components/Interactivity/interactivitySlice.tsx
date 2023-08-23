@@ -20,7 +20,8 @@ interface InteractivityState {
     selectedClusterIdArr: Array<ClusterData['clusterId']>,
     selectedCategoryArr: Array<TransactionData['category']>,
     selectedFrequencyUniqueKeyArr: Array<TransactionData['frequencyUniqueKey']>,
-    currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | ''
+    currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | '',
+    // clickedDetailTransactionNumberArr: TransactionData['transactionNumber'][] // future feature
 }
 
 export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance" | 'frequency';
@@ -34,7 +35,8 @@ const initialState: InteractivityState = {
     selectedClusterIdArr: [],
     selectedCategoryArr: [],
     selectedFrequencyUniqueKeyArr: [],
-    currentSelector: ''
+    currentSelector: '',
+    // clickedDetailTransactionNumberArr: [],//future feature
 };
 
 
@@ -136,8 +138,13 @@ export const interactivitySlice = createSlice({
             action.payload !== 'frequencyUniqueKey' && (state.selectedFrequencyUniqueKeyArr = [])
             action.payload !== 'clusterView' && (state.clusterViewSelectedTransactionNumberArr = [])
             action.payload !== 'scatterPlot' && (state.scatterPlotSelectedTransactionNumberArr = [])
-
-        }
+        },
+        // only for future feature maybe:
+        // toggleClickedDetailTransactionByNumber(state, action: PayloadAction<TransactionData['transactionNumber']>) {
+        //     state.clickedDetailTransactionNumberArr.push(action.payload)
+        // }, clearClickedDetailTransactionByNumber(state) {
+        //     state.clickedDetailTransactionNumberArr = []
+        // }
     },
 });
 
@@ -250,4 +257,15 @@ export const selectCurrentSelectorColourScaleType = (state: RootState): colourCh
     }
 }
 
+
 export default interactivitySlice.reducer;
+
+
+// only for future feature maybe
+/**return a set of clickedDetailTransaction they should be stroked */
+const selectClickedDetailTransactionNumberArr = (state: RootState): Set<TransactionData['transactionNumber']> => {
+    const clickedDetailTransactionNumberArr = state.interactivity.clickedDetailTransactionNumberArr
+    return new Set(clickedDetailTransactionNumberArr)
+}
+/**return a set of clickedDetailTransaction they should be stroked, this is a memorised function for avoiding unnecessary rerendering */
+export const selectClickedDetailTransactionNumberArrMemorised = createMemorisedFunction(selectClickedDetailTransactionNumberArr, comparingSet)

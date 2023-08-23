@@ -41,7 +41,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
                     </label>
                 </span>
                 <span>
-                    <label htmlFor="glyphTable" onClick={() => setCurrentTable('glyphTable')}>glyph table
+                    <label htmlFor="glyphTable" onClick={() => setCurrentTable('glyphTable')} style={{accentColor: 'red'}}>glyph table
                         <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={false} />
                     </label>
                 </span></TableView>}
@@ -58,7 +58,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
                 </span>
                 <span>
                     <label htmlFor="glyphTable" onClick={() => setCurrentTable('glyphTable')}>glyph table
-                        <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={true} />
+                        <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={true} style={{accentColor: 'red'}} />
                     </label>
                 </span></TableView>}
         </div>
