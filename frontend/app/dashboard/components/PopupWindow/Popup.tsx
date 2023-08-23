@@ -20,15 +20,21 @@ export default function Popup() {
         let timeoutId: ReturnType<typeof setTimeout>; // I reference the Akxe answer for the type notation: https://stackoverflow.com/questions/45802988/typescript-use-correct-version-of-settimeout-node-vs-window
         if (servertiy !== null) {
             if (timeToLive !== null) {
-                timeoutId = setTimeout(() => setShouldShowPopup(false), timeToLive*1000)
+                timeoutId = setTimeout(() => setShouldShowPopup(false), timeToLive * 1000)
             }
         }
         return () => clearTimeout(timeoutId)
     }, [timeToLive, servertiy])
     return (<div
-    style={{}}> 
-    {/* todo: put it to center */}
-        {shouldShowPopup && <Alert severity={servertiy === null ? undefined : servertiy}>{information}</Alert>}
+        style={{
+            // referenced ProblemsOfSumit's answer: https://stackoverflow.com/questions/1776915/how-can-i-center-an-absolutely-positioned-element-in-a-div
+            position: 'absolute',
+            left: '50%',
+            transform: 'translate(-50%, 0)',
+            top: '5%'
+        }}>
+        {shouldShowPopup && <Alert variant="filled"  severity={servertiy === null ? undefined : servertiy}>{information}</Alert>}
+        {/* reference for the Alert: https://mui.com/material-ui/react-alert/ */}
     </div>
     )
 }
