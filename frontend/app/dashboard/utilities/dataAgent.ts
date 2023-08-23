@@ -30,9 +30,11 @@ export async function getTransactionData(): Promise<TransactionData[]> {
 export type FrequencyUniqueKeyConfig =
   | {
       frequencyUniqueKey: "category" | "transactionDescription";
+      per: 'month'|'day'
     }
   | {
       frequencyUniqueKey: "clusteredTransactionDescription";
+      per: 'month'|'day'
       stringClusterAlgorithm: "linkage";
       distanceMeasure:
         "levenshtein"
@@ -75,6 +77,7 @@ export async function updateFrequencyInfo(
 ): Promise<TransactionData[]> {
     let fetchUrl = `${apiUrl}/transactionData/updateFrequencyInfo` +
       `?frequencyUniqueKey=${frequencyUniqueKeyConfig.frequencyUniqueKey}` +
+      `&per=${frequencyUniqueKeyConfig.per}` +
       `&metric1=${metric1}&metric2=${metric2}`+
       `&numberOfCluster=${numberOfCluster}`
     if (frequencyUniqueKeyConfig.frequencyUniqueKey=='clusteredTransactionDescription'){

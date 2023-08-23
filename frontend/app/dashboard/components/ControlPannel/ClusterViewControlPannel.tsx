@@ -68,7 +68,7 @@ function ClusterViewMappingControlPannel() {
                 <td>
                     <select name="" id="" value={xLable} onChange={e => handleChangeXLable(e.target.value)}>
                         <option value="transactionAmount">transaction amount</option>
-                        <option value="frequency">frequency</option>
+                        <option value="frequency">frequency(per month)</option>
                         <option value="dayOfYear">dayOfYear</option>
                         <option value="balance">balance</option>
                     </select>
@@ -86,7 +86,7 @@ function ClusterViewMappingControlPannel() {
                 <td>
                     <select name="" id="" value={yLable} onChange={e => handleChangeYLable(e.target.value)}>
                         <option value="transactionAmount">transaction amount</option>
-                        <option value="frequency">frequency</option>
+                        <option value="frequency">frequency(per month)</option>
                         <option value="dayOfYear">dayOfYear</option>
                         <option value="balance">balance</option>
                     </select>
@@ -142,7 +142,7 @@ function ClusterAlgorithmControlPannel() {
                 <td colSpan={2}>
                     <select name="" id="" value={metric1} onChange={e => setMetric1(e.target.value as "transactionAmount" | "category" | "frequency")}>
                         <option value='transactionAmount'>transactionAmount</option>
-                        <option value='frequency'>frequency</option>
+                        <option value='frequency'>frequency(per month)</option>
                         <option value='category'>category</option>
                     </select>
                 </td>
@@ -153,7 +153,7 @@ function ClusterAlgorithmControlPannel() {
                 <td colSpan={2}>
                     <select name="" id="" value={metric2} onChange={e => setMetric2(e.target.value as "transactionAmount" | "category" | "frequency")}>
                         <option value='transactionAmount'>transactionAmount</option>
-                        <option value='frequency'>frequency</option>
+                        <option value='frequency'>frequency(per month)</option>
                         <option value='category'>category</option>
                     </select>
                 </td>

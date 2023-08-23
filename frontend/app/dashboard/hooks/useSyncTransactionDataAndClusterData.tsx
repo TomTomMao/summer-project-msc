@@ -32,6 +32,7 @@ export default function useSyncTransactionDataAndClusterData() {
         if (frequencyUniqueKey === 'clusteredTransactionDescription') {
             frequencyUniqueKeyConfig = {
                 frequencyUniqueKey: frequencyUniqueKey,
+                per: 'month',
                 stringClusterAlgorithm: "linkage",
                 distanceMeasure: distanceMeasure,
                 linkageMethod: linkageMethod,
@@ -39,7 +40,8 @@ export default function useSyncTransactionDataAndClusterData() {
             };
         } else {
             frequencyUniqueKeyConfig = {
-                frequencyUniqueKey: frequencyUniqueKey
+                frequencyUniqueKey: frequencyUniqueKey,
+                per: 'month'
             }
         }
         dataAgent.updateFrequencyInfo(frequencyUniqueKeyConfig, metric1, metric2, numberOfCluster)

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
-from typing import Union
+from typing import Literal, Union
 from enum import Enum
 from app.Cluster import LinkageBasedStringCluster
 from app.stringPreprocessor import preprocess
@@ -37,7 +37,7 @@ class FrequencyOption:
         a class wrap the information for the frequency option
     '''
 
-    def __init__(self, uniqueKey: FrequencyUniqueKey, distanceMeasure: Union[DistanceMeasure, None] = None, linkageMethod: Union[LinkageMethod, None] = None, numberOfCluster: Union[int, None] = None):
+    def __init__(self, uniqueKey: FrequencyUniqueKey, distanceMeasure: Union[DistanceMeasure, None] = None, linkageMethod: Union[LinkageMethod, None] = None, numberOfCluster: Union[int, None] = None, per:Literal['month','day']='month'):
         '''
             initialise the frequencyOption object
             uniqueKey: category or transactionDescription or clusteredTransactionDescription
@@ -61,6 +61,7 @@ class FrequencyOption:
         self.distanceMeasure = distanceMeasure
         self.linkageMethod = linkageMethod
         self.numberOfCluster = numberOfCluster
+        self.per:Literal['month','day'] = per
 
     # getters
 
@@ -84,6 +85,9 @@ class FrequencyOption:
             return self.numberOfCluster
         else:
             return None
+        
+    def getPer(self)->Literal['month','day']:
+        return self.per
 
 
 class TransactionDataset:
@@ -151,24 +155,26 @@ class TransactionDataset:
 
         # add a 'frequency' column group by the frequencyUniqueKey and transactionDate Columns
         frequency = self.dataframe.groupby(
-            'frequencyUniqueKey').apply(self.__getFrequencyOfGroup)['frequency']
+            'frequencyUniqueKey').apply(lambda x: self.__getFrequencyOfGroup(x,self.frequencyOption.getPer()))['frequency']
         print('frequency::::', frequency)
         self.dataframe['frequency'] = self.dataframe['frequencyUniqueKey'].map(frequency)
 
-    def __getFrequencyOfGroup(self, dataGroup) -> pd.Series:
+    def __getFrequencyOfGroup(self,dataGroup, per:Literal['month','day']) -> pd.Series:
         '''
         Helper function used for calculate frequency
         '''
+        # reference Rooy, J. L. (2010, October 28). Answer to ‘Best way to find the months between two dates’. Stack Overflow. https://stackoverflow.com/a/4040338
+        def getNumberOfMonth(date1, date2):
+            return (date2.year - date1.year) * 12 + date2.month - date1.month + 1
+
+        def getNumberOfDay(date1, date2):
+            return (date2 - date1).days + 1
+        
         numberOfTransaction = dataGroup.shape[0]
         firstTransactionDate = dataGroup['transactionDate'].min()
         lastTransactionDate = dataGroup['transactionDate'].max()
-        length = (lastTransactionDate - firstTransactionDate).days
-        if (numberOfTransaction == 1):
-            frequency = -1
-        elif (length == 0):
-            frequency = 0
-        else:
-            frequency = numberOfTransaction/length
+        length = getNumberOfMonth(firstTransactionDate, lastTransactionDate) if (per=='month') else getNumberOfDay(firstTransactionDate, lastTransactionDate)
+        frequency = numberOfTransaction/length
             # assert frequency != 0
         return pd.Series({'frequency': frequency})
 
