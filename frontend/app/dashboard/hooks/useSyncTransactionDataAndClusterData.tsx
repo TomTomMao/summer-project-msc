@@ -49,7 +49,7 @@ export default function useSyncTransactionDataAndClusterData() {
     }, [frequencyUniqueKey, distanceMeasure, linkageMethod, numberOfClusterForString])
 
     useEffect(() => {
-        clusterViewSlice.getClusterData(numberOfCluster, metric1, metric2).then((fetchedClusterData: ClusterData[]) => {
+        dataAgent.getClusterData(numberOfCluster, metric1, metric2).then((fetchedClusterData: ClusterData[]) => {
             updateClusterDataArr(fetchedClusterData)
             // console.log('clusterdata updated: ', fetchedClusterData, numberOfCluster, metric1, metric2)
         }

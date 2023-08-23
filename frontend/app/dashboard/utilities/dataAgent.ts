@@ -1,4 +1,6 @@
+import { ClusterViewState } from "../components/ClusterView/clusterViewSlice";
 import { TransactionData } from "./DataObject";
+import { ClusterData } from "./clusterDataObject";
 import { apiUrl } from "./consts";
 
 /**
@@ -126,4 +128,31 @@ interface TransactionServerData {
   frequencyUniqueKey: number | string;
   frequency: number;
   cluster: number;
+}
+
+export async function getClusterData(
+  numberOfCluster: ClusterViewState["clusterConfig"]["numberOfCluster"],
+  metric1: ClusterViewState["clusterConfig"]["metric1"],
+  metric2: ClusterViewState["clusterConfig"]["metric2"]
+) {
+  const url =
+    apiUrl +
+    `/transactionData/kmean?numberOfCluster=${numberOfCluster}&metric1=${metric1}&metric2=${metric2}`;
+  const response = await fetch(url);
+  if (response.status === 200) {
+    const fetchedData = await response.json();
+    const transactionNumbers: string[] =
+      Object.getOwnPropertyNames(fetchedData);
+    const clusterData: ClusterData[] = transactionNumbers.map(
+      (transactionNumber) => {
+        return {
+          transactionNumber: transactionNumber,
+          clusterId: String(fetchedData[transactionNumber]["cluster"]),
+        };
+      }
+    );
+    return clusterData;
+  } else {
+    throw new Error("invalid url:" + url);
+  }
 }

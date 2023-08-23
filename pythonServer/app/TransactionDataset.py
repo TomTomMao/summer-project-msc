@@ -7,6 +7,9 @@ from app.Cluster import LinkageBasedStringCluster
 from app.stringPreprocessor import preprocess
 
 
+VALID_KMEAN_ITERATION = [1, 2000]
+VALID_KMEAN_N_INIT = [10,1000]
+
 class FrequencyUniqueKey(Enum):
     CATEGORY = 'category'
     TRANSACTION_DESCRIPTION = 'transactionDescription'
@@ -37,7 +40,7 @@ class FrequencyOption:
         a class wrap the information for the frequency option
     '''
 
-    def __init__(self, uniqueKey: FrequencyUniqueKey, distanceMeasure: Union[DistanceMeasure, None] = None, linkageMethod: Union[LinkageMethod, None] = None, numberOfCluster: Union[int, None] = None, per:Literal['month','day']='month'):
+    def __init__(self, uniqueKey: FrequencyUniqueKey, distanceMeasure: Union[DistanceMeasure, None] = None, linkageMethod: Union[LinkageMethod, None] = None, numberOfCluster: Union[int, None] = None, per: Literal['month', 'day'] = 'month'):
         '''
             initialise the frequencyOption object
             uniqueKey: category or transactionDescription or clusteredTransactionDescription
@@ -61,7 +64,7 @@ class FrequencyOption:
         self.distanceMeasure = distanceMeasure
         self.linkageMethod = linkageMethod
         self.numberOfCluster = numberOfCluster
-        self.per:Literal['month','day'] = per
+        self.per: Literal['month', 'day'] = per
 
     # getters
 
@@ -85,8 +88,8 @@ class FrequencyOption:
             return self.numberOfCluster
         else:
             return None
-        
-    def getPer(self)->Literal['month','day']:
+
+    def getPer(self) -> Literal['month', 'day']:
         return self.per
 
 
@@ -127,7 +130,7 @@ class TransactionDataset:
             isCredit (boolean), transactionAmount (float)
         '''
         return self.dataframe
-    
+
     def setFrequencyOption(self, newFrequencyOption):
         '''
         Set the frequency option, update the frequency column, frequency Unique key Column. if frequency is based on clustering, algorithm will be run
@@ -155,11 +158,12 @@ class TransactionDataset:
 
         # add a 'frequency' column group by the frequencyUniqueKey and transactionDate Columns
         frequency = self.dataframe.groupby(
-            'frequencyUniqueKey').apply(lambda x: self.__getFrequencyOfGroup(x,self.frequencyOption.getPer()))['frequency']
-        print('frequency::::', frequency)
-        self.dataframe['frequency'] = self.dataframe['frequencyUniqueKey'].map(frequency)
+            'frequencyUniqueKey').apply(lambda x: self.__getFrequencyOfGroup(x, self.frequencyOption.getPer()))['frequency']
+        # print('frequency::::', frequency)
+        self.dataframe['frequency'] = self.dataframe['frequencyUniqueKey'].map(
+            frequency)
 
-    def __getFrequencyOfGroup(self,dataGroup, per:Literal['month','day']) -> pd.Series:
+    def __getFrequencyOfGroup(self, dataGroup, per: Literal['month', 'day']) -> pd.Series:
         '''
         Helper function used for calculate frequency
         '''
@@ -169,13 +173,14 @@ class TransactionDataset:
 
         def getNumberOfDay(date1, date2):
             return (date2 - date1).days + 1
-        
+
         numberOfTransaction = dataGroup.shape[0]
         firstTransactionDate = dataGroup['transactionDate'].min()
         lastTransactionDate = dataGroup['transactionDate'].max()
-        length = getNumberOfMonth(firstTransactionDate, lastTransactionDate) if (per=='month') else getNumberOfDay(firstTransactionDate, lastTransactionDate)
+        length = getNumberOfMonth(firstTransactionDate, lastTransactionDate) if (
+            per == 'month') else getNumberOfDay(firstTransactionDate, lastTransactionDate)
         frequency = numberOfTransaction/length
-            # assert frequency != 0
+        # assert frequency != 0
         return pd.Series({'frequency': frequency})
 
     def __getStringClusterMap(self, frequencyOption: FrequencyOption):
@@ -293,24 +298,32 @@ class TransactionDataset:
         else:
             return self.dataframe[columnName]
 
-    def clusterByKMeans(self, metric1, metric2, numberOfCluster):
+    def clusterByKMeans(self, metric1, metric2, numberOfCluster, maxIteration: int = 300, nInit=10):
         '''
             assume metric1 and metric2 exist in the column names.
             run KMean clustering algorithm based on the two metrics
             if any metric is not int or float, they will be try to convert to float.
             set the clusterId column to be the result of clustering algorithm
             this method will mutate self.dataframe
+            maxIteration should >VALID_KMEAN_ITERATION[0] and <VALID_KMEAN_ITERATION[1]
         '''
         assert metric1 in self.dataframe.columns, f"{metric1} does not exist"
         assert metric2 in self.dataframe.columns, f"{metric2} does not exist"
-
+        if (maxIteration < VALID_KMEAN_ITERATION[0] or maxIteration > VALID_KMEAN_ITERATION[1]):
+            raise ValueError(
+                'maxIteration should <1 and >2000, given: ' + str(maxIteration))
+        if (numberOfCluster < 1):
+            raise ValueError(
+                'invalid number of cluster, it must be at least 1')
         # get the numerical value of two columns
         x1 = self.getColumn(metric1, toNumerical=True).to_numpy()
         x2 = self.getColumn(metric2, toNumerical=True).to_numpy()
+        # print(metric1, metric2)
         X = np.dstack((x1, x2))[0]
         # run kmean
         # reference: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
-        kmeans = KMeans(n_clusters=numberOfCluster, random_state=0).fit(X)
+        kmeans = KMeans(n_clusters=numberOfCluster, random_state=0,
+                        max_iter=maxIteration, n_init=nInit).fit(X)
         # update the clusterId column
         self.dataframe['cluster'] = kmeans.labels_
         return True
