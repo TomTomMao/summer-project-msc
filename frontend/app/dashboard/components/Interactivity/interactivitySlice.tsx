@@ -131,6 +131,12 @@ export const interactivitySlice = createSlice({
         },
         setCurrentSelector(state, action: PayloadAction<InteractivityState['currentSelector']>) {
             state.currentSelector = action.payload
+            state.selectedClusterIdArr = []
+            state.selectedCategoryArr = []
+            state.selectedFrequencyUniqueKeyArr = []
+            state.clusterViewSelectedTransactionNumberArr = []
+            state.scatterPlotSelectedTransactionNumberArr = []
+            
         }
     },
 });
