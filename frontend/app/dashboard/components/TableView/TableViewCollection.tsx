@@ -65,8 +65,10 @@ const style: CSSProperties = {
     // position: 'absolute',
     // right: '135px',
     // top: '420px',
-    overflowY: 'scroll',
-    margin: 'auto auto'
+
+    maxHeight: '100vh',
+    overflowY: 'auto',
+    margin: 'auto auto',
     // height:'400px',
     // width: '900px'
 }

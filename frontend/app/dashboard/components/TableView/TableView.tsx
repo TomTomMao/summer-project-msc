@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useReducer, useState } from "react";
 import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObject";
 import { PublicScale, PublicValueGetter } from "../../utilities/types";
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
@@ -43,9 +43,18 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
         })
         return transactionNumberMappingColour
     }, [colourDomainData, transactionNumberSet, colourScale])
+
+    // for the table paging feature
+    const numberOfRow = sortedFilteredTransactionDataArr.length
+    const numberOfRowPerPage = sortingConfig.numberOfRowPerPage === 'all' ? numberOfRow : sortingConfig.numberOfRowPerPage
+    const maxPageNumber = Math.ceil(numberOfRow / numberOfRowPerPage)
+    const currentPageNumber = sortingConfig.currentPage
+    const startIndex = (currentPageNumber - 1) * numberOfRowPerPage
+    const endIndex = startIndex + numberOfRowPerPage >= numberOfRow ? numberOfRow - 1 : startIndex + numberOfRowPerPage - 1// >= because it is index
+    const currentPageTransactionDataArr = sortedFilteredTransactionDataArr.slice(startIndex, endIndex + 1) // +1 because end is exclusive 
     const transactionRows = useMemo(() => {
         return (
-            sortedFilteredTransactionDataArr.map(transactionData => {
+            currentPageTransactionDataArr.map(transactionData => {
                 const colour = colourForTransactionNumberMap.get(transactionData.transactionNumber);
                 return (
                     <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
@@ -64,7 +73,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                     </tr>)
             })
         )
-    }, [sortedFilteredTransactionDataArr, colourForTransactionNumberMap])
+    }, [currentPageTransactionDataArr, colourForTransactionNumberMap])
     function handleClickColumnName(columnName: TransactionDataAttrs) {
         if (columnName === sortingKey) {
             handleToggleOrder()
@@ -78,10 +87,23 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
     function handleToggleOrder() {
         dispatch({ type: 'toggle order' })
     }
+    function handleChangeNumberOfRowsPerPage(event: ChangeEvent<HTMLSelectElement>) {
+        const value = event.target.value
+        if (String(parseInt(value)) === value) {
+            dispatch({
+                type: 'change number of rows',
+                numberOfRowPerPage: parseInt(value)
+            })
+        } else if (value === 'all') {
+            dispatch({
+                type: 'change number of rows',
+                numberOfRowPerPage: 'all'
+            })
+        }
+    }
     return (
         <div>
-            <div className="text-xs">number of results: {filteredTransactionDataArr.length}</div>
-            <button onClick={handleClearSelect}>clear all</button>
+
             <table className="infoTable">
                 <thead>
                     <tr>
@@ -103,43 +125,36 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                     {transactionRows}
                 </tbody>
             </table>
+            <div>
+                <div className="text-xs">number of results: {filteredTransactionDataArr.length}</div>
+                <button onClick={handleClearSelect}>clear all</button>
+                <label htmlFor=""> show: </label>
+                <select name="" id="" onChange={(event) => handleChangeNumberOfRowsPerPage(event)}>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="all">all</option>
+                </select> rows
+            </div>
         </div>
     )
 }
 
-// helper functions
-
-/**
- * return transactionNumber of those transactionData whose transactionDescription and isCredit() in the filteredDescriptionAndIsCreditArr array 
- * @param transactionDataArr an array of transactionData
- * @param filteredDescriptionAndIsCreditArr conditions to contains
- * @return a set of transactionData.transactionNumber
- * time complexity: O(n*k) where n is transactionDataArr.length and k is filteredDescriptionAndIsCreditArr.length
- * can be improved in the future
- */
-function getFilteredTransactionNumbers(transactionDataArr: TransactionData[], filteredDescriptionAndIsCreditArr: DescriptionAndIsCredit[]): Set<TransactionData['transactionNumber']> {
-    const transactionNumberSet = new Set<TransactionData['transactionNumber']>();
-    for (let i = 0; i < transactionDataArr.length; i++) {
-        for (let j = 0; j < filteredDescriptionAndIsCreditArr.length; j++) {
-            const currTransactionData = transactionDataArr[i];
-            const currDescriptionAndIsCredit = filteredDescriptionAndIsCreditArr[j];
-            if (currTransactionData.transactionDescription === currDescriptionAndIsCredit.transactionDescription && currTransactionData.isCredit() === currDescriptionAndIsCredit.isCredit) {
-                transactionNumberSet.add(currTransactionData.transactionNumber);
-            }
-        }
-    }
-    return transactionNumberSet;
-}
-
 type SortingConfig = {
     sortingKey: TransactionDataAttrs,
-    isDesc: boolean
+    isDesc: boolean,
+    numberOfRowPerPage: number | 'all',
+    currentPage: number
 }
 type SortingConfigAction = {
     type: 'change sorting key',
     newSortingKey: SortingConfig['sortingKey']
 } | {
     type: 'toggle order'
+} | {
+    type: 'change number of rows',
+    numberOfRowPerPage: number | 'all'
 }
 function sortingConfigReducer(sortingConfig: SortingConfig, action: SortingConfigAction): SortingConfig {
     switch (action.type) {
@@ -147,12 +162,17 @@ function sortingConfigReducer(sortingConfig: SortingConfig, action: SortingConfi
             return { ...sortingConfig, sortingKey: action.newSortingKey }
         case 'toggle order':
             return { ...sortingConfig, isDesc: !sortingConfig.isDesc }
+        case 'change number of rows':
+            return { ...sortingConfig, numberOfRowPerPage: action.numberOfRowPerPage }
         default:
+            const _exhaustiveCheck: never = action
             throw new Error("invalid action");
             ;
     }
 }
 const initialSortingConfig: SortingConfig = {
     sortingKey: 'transactionNumber',
-    isDesc: false
+    isDesc: false,
+    numberOfRowPerPage: 25,
+    currentPage: 1
 }
