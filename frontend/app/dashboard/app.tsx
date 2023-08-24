@@ -27,8 +27,7 @@ import { ClusterView } from "./components/ClusterView/ClusterView";
 import TransactionAmountView from "./components/TransactionAmountView.tsx/TransactionAmountView";
 import * as colourChannelSlice from "./components/ColourChannel/colourChannelSlice";
 import Popup from "./components/PopupWindow/Popup";
-import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Button from "@mui/material/Button"
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -176,6 +175,9 @@ export default function App() {
                     </div>
                 </div>
                 <Popup></Popup>
+                <div>
+                    <Button onClick={() => dispatch(interactivitySlice.toggleShowOneTimeTransaction())}>show one time transaction</Button>
+                </div>
             </div>
 
         )

@@ -7,6 +7,47 @@ import * as colourChannelSlice from "../ColourChannel/colourChannelSlice";
 import { createMemorisedFunction, comparingArray, comparingSet } from "../../utilities/createMemorisedFunction";
 import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
 import * as scatterPlotSlice from "../TransactionAmountView.tsx/scatterPlotSlice";
+import { cluster, flatRollup, rollup } from "d3";
+
+// for future filters
+// interface InArrFilterConfig<Element> {
+//     filterType: 'inArr',
+//     filterValue: Element[]
+// }
+
+// interface GreaterAndEqualFilterConfig<Datum> {
+//     filterType: 'greaterAndEqual',
+//     filterValue: Datum,
+// }
+
+// interface SmallerAndEqualFilterConfig<Datum> {
+//     filterType: 'smallerAndEqual',
+//     filterValue: Datum
+// }
+// interface BooleanFilterConfig {
+//     filterType: 'boolean',
+//     filterValue: boolean
+// }
+// type DateFilterConfig = InArrFilterConfig<Date>
+
+// interface FilterConfig {
+//     /**undefined means there is no filter for this column */
+//     transactionNumber: { inArrFilterConfig: InArrFilterConfig<TransactionData['transactionNumber']> | undefined }, // categorical
+//     category: { inArrFilterConfig: InArrFilterConfig<TransactionData['category']> | undefined }, // categorical
+//     locationCity: { inArrFilterConfig: InArrFilterConfig<TransactionData['locationCity']> | undefined }, // categorical
+//     locationCountry: { inArrFilterConfig: InArrFilterConfig<TransactionData['locationCountry']> | undefined }, // categorical
+//     transactionDescription: { inArrFilterConfig: InArrFilterConfig<TransactionData['transactionDescription']> | undefined }, // categorical
+//     transactionType: { inArrFilterConfig: InArrFilterConfig<TransactionData['transactionType']> | undefined }, // categorical
+//     frequencyUniqueKey: { inArrFilterConfig: InArrFilterConfig<TransactionData['frequencyUniqueKey']> | undefined }, // categorical
+//     clusterId: { inArrFilterConfig: InArrFilterConfig<ClusterData['clusterId']> | undefined }, // categorical
+//     balance: { greaterAndEqualFilterConfig: GreaterAndEqualFilterConfig<Number> | undefined, smallerAndEqualFilterConfig: SmallerAndEqualFilterConfig<Number> | undefined },
+//     transactionAmount: { greaterAndEqualFilterConfig: GreaterAndEqualFilterConfig<Number> | undefined, smallerAndEqualFilterConfig: SmallerAndEqualFilterConfig<Number> | undefined },
+//     frequency: { greaterAndEqualFilterConfig: GreaterAndEqualFilterConfig<Number> | undefined, smallerAndEqualFilterConfig: SmallerAndEqualFilterConfig<Number> | undefined,
+//     frequencyType: 'oneTime' | 'other' | 'all'},
+//     isCredit: { booleanFilterConfig: BooleanFilterConfig | undefined },
+//     date: { dateFilterConfig: DateFilterConfig | undefined },
+//     year: {inArrFilterConfig: InArrFilterConfig<number>}
+// }
 
 /**
  * key is the domain value for the colour channel
@@ -20,7 +61,7 @@ interface InteractivityState {
     selectedClusterIdArr: Array<ClusterData['clusterId']>,
     selectedCategoryArr: Array<TransactionData['category']>,
     selectedFrequencyUniqueKeyArr: Array<TransactionData['frequencyUniqueKey']>,
-    currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | '',
+    currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | '' | 'oneTimeTransaction',
     // clickedDetailTransactionNumberArr: TransactionData['transactionNumber'][] // future feature
 }
 
@@ -35,7 +76,7 @@ const initialState: InteractivityState = {
     selectedClusterIdArr: [],
     selectedCategoryArr: [],
     selectedFrequencyUniqueKeyArr: [],
-    currentSelector: '',
+    currentSelector: 'oneTimeTransaction',
     // clickedDetailTransactionNumberArr: [],//future feature
 };
 
@@ -138,7 +179,9 @@ export const interactivitySlice = createSlice({
             action.payload !== 'frequencyUniqueKey' && (state.selectedFrequencyUniqueKeyArr = [])
             action.payload !== 'clusterView' && (state.clusterViewSelectedTransactionNumberArr = [])
             action.payload !== 'scatterPlot' && (state.scatterPlotSelectedTransactionNumberArr = [])
-        },
+        }, toggleShowOneTimeTransaction(state) {
+            state.currentSelector = state.currentSelector === 'oneTimeTransaction' ? '' : 'oneTimeTransaction'
+        }
         // only for future feature maybe:
         // toggleClickedDetailTransactionByNumber(state, action: PayloadAction<TransactionData['transactionNumber']>) {
         //     state.clickedDetailTransactionNumberArr.push(action.payload)
@@ -158,7 +201,7 @@ export const {
     setScatterPlotSelectedTransactionNumberArr,
     setClusterViewSelectedTransactionNumberArr,
     clearBrush,
-    setCurrentSelector
+    setCurrentSelector, toggleShowOneTimeTransaction
 } = interactivitySlice.actions;
 
 // export the selectors
@@ -204,7 +247,6 @@ export const selectSelectedTransactionNumberSetMemorised = createMemorisedFuncti
 export const selectSelectedTransactionNumberArr = (state: RootState) => {
     switch (state.interactivity.currentSelector) {
         case '':
-            // return state.interactivity.transactionDataArr.map(transactionData => transactionData.transactionNumber)
             return []
         case 'category':
             const selectedCategorySet = new Set(state.interactivity.selectedCategoryArr)
@@ -220,12 +262,11 @@ export const selectSelectedTransactionNumberArr = (state: RootState) => {
                 .map(transactionData => transactionData.transactionNumber)
         case 'clusterView':
             return state.interactivity.clusterViewSelectedTransactionNumberArr
-        // var transactionDataArr = state.interactivity.transactionDataArr
-        // return state.interactivity.clusterViewSelectedTransactionDataIndexArr.map(index => transactionDataArr[index].transactionNumber)
         case 'scatterPlot':
             return state.interactivity.scatterPlotSelectedTransactionNumberArr
-        // var transactionDataArr = state.interactivity.transactionDataArr
-        // return state.interactivity.scatterPlotSelectedTransactionDataIndexArr.map(index => transactionDataArr[index].transactionNumber)
+        case 'oneTimeTransaction':
+            /**a set of transaction number for the one time transaction */
+            return getOneTimeTransactionNumberArr(state.interactivity.transactionDataArr)
         default:
             const _exausthive: never = state.interactivity.currentSelector
             throw new Error("invalid currentSelector");
@@ -250,6 +291,7 @@ export const selectCurrentSelectorColourScaleType = (state: RootState): colourCh
         case "clusterId": return 'cluster'
         case "scatterPlot": return scatterPlotSlice.selectColourLabel(state)
         case "clusterView": return clusterViewSlice.selectColourLabel(state)
+        case "oneTimeTransaction": return 'category'
         default:
             const _exausthiveChecking: never = currentSelector
             throw new Error("check exhastive checking");
@@ -269,3 +311,25 @@ export default interactivitySlice.reducer;
 // }
 /**return a set of clickedDetailTransaction they should be stroked, this is a memorised function for avoiding unnecessary rerendering */
 // export const selectClickedDetailTransactionNumberArrMemorised = createMemorisedFunction(selectClickedDetailTransactionNumberArr, comparingSet)
+
+/**
+ * given a transaction data array, return a Arr of transaction number such that the transactionData with this number has a unique description group id (or frequencyUniqueKey)
+ * @param transactionDataArr 
+ * @returns 
+ */
+function getOneTimeTransactionNumberArr(transactionDataArr: TransactionData[]): Array<TransactionData['transactionNumber']> {
+    /**[frequencyUnqiueKey, numberOfTransaction] */
+    const frequencyUniqueKeyAndCountArr = flatRollup(transactionDataArr,
+        transactionDataWithSingleFrequencyUniqueKeyArr => {
+            return {
+                numberOfTransaction: transactionDataWithSingleFrequencyUniqueKeyArr.length,
+                transactionNumber: transactionDataWithSingleFrequencyUniqueKeyArr.length === 1 ? transactionDataWithSingleFrequencyUniqueKeyArr[0].transactionNumber : '-1'
+            }
+        },
+        transactionData => transactionData.frequencyUniqueKey)
+    console.log(frequencyUniqueKeyAndCountArr)
+    const oneTimeTransactionNumberArr = frequencyUniqueKeyAndCountArr.filter(frequencyUniqueKeyAndCount => frequencyUniqueKeyAndCount[1].numberOfTransaction === 1).map(frequencyUniqueKeyAndCount => frequencyUniqueKeyAndCount[1].transactionNumber)
+
+    console.log(oneTimeTransactionNumberArr)
+    return oneTimeTransactionNumberArr
+}
