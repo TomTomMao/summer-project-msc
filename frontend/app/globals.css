@@ -100,6 +100,7 @@ input {
 }
 
 /* table view */
+/* reference: https://labotrees.com/web-technologies/how-to-set-tbody-height-with-overflow-scroll/#:~:text=To%20do%20this%2C,the%20behavior%20of%20a%20table. */
 .tableView table,
 .tableView tr td {
     /* border: 1px solid #000; */
@@ -125,5 +126,3 @@ input {
 .tableView tbody .help {
     cursor: help;
 }
-
-/* https://labotrees.com/web-technologies/how-to-set-tbody-height-with-overflow-scroll/#:~:text=To%20do%20this%2C,the%20behavior%20of%20a%20table. */

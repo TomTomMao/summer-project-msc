@@ -3,6 +3,7 @@ import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObjec
 import { PublicScale } from "../../utilities/types";
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
 import { relative } from "path";
+import { Tooltip } from "@mui/material";
 const DEFAULT_NUMBER_OF_ROW_PER_PAGE = 8
 export interface DescriptionAndIsCredit {
     transactionDescription: string;
@@ -24,6 +25,7 @@ type Props = {
  * transactionNumberSet: transactionNumber that going to show
  * 
  * transactionDataArr: the transactionDataArr to loop thorugh
+ * reference for fixed head: https://labotrees.com/web-technologies/how-to-set-tbody-height-with-overflow-scroll/#:~:text=To%20do%20this%2C,the%20behavior%20of%20a%20table.
  */
 export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect, colourScale, colourDomainData, children }:
     Props) {
@@ -70,18 +72,18 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                 const colour = colourForTransactionNumberMap.get(transactionData.transactionNumber);
                 return (
                     <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
-                        <td className="help" title={transactionData.transactionNumber} style={{ width: '50%', height: '4em' }}>{transactionData.transactionNumber}</td>
-                        <td className="help" title={String(transactionData.balance)} style={{ width: '70%', height: '4em' }}>{transactionData.balance}</td>
-                        <td className="help" title={transactionData.category} style={{ width: '100%', height: '4em' }}>{transactionData.category}</td>
-                        <td className="help" title={String(transactionData.creditAmount)} style={{ width: '70%', height: '4em' }}>{transactionData.creditAmount}</td>
-                        <td className="help" title={String(transactionData.debitAmount)} style={{ width: '70%', height: '4em' }}>{transactionData.debitAmount}</td>
-                        <td className="help" title={transactionData.locationCity} style={{ width: '70%', height: '4em' }}>{transactionData.locationCity}</td>
-                        <td className="help" title={transactionData.locationCountry} style={{ width: '100%', height: '4em' }}>{transactionData.locationCountry}</td>
-                        <td className="help" title={transactionData.transactionDescription} style={{ width: '150%', height: '4em' }}>{transactionData.transactionDescription}</td>
-                        <td className="help" title={transactionData.transactionType} style={{ width: '50%', height: '4em' }}>{transactionData.transactionType}</td>
-                        <td className="help" title={transactionData.date?.toDateString()} style={{ width: '100%', height: '4em' }}>{transactionData.date?.toDateString()}</td>
-                        <td className="help" title={String(transactionData.frequency)} style={{ width: '100%', height: '4em' }}>{(transactionData.frequency.toFixed(2))}</td>
-                        <td className="help" title={transactionData.frequencyUniqueKey} style={{ width: '100%', height: '4em' }}>{transactionData.frequencyUniqueKey}</td>
+                        <Tooltip title={transactionData.transactionNumber}><td className="help" style={{ width: '50%', height: '4em' }}>{transactionData.transactionNumber}</td></Tooltip>
+                        <Tooltip title={String(transactionData.balance)}><td className="help" style={{ width: '70%', height: '4em' }}>{transactionData.balance}</td></Tooltip>
+                        <Tooltip title={transactionData.category}><td className="help" style={{ width: '100%', height: '4em' }}>{transactionData.category}</td></Tooltip>
+                        <Tooltip title={String(transactionData.creditAmount)}><td className="help" style={{ width: '70%', height: '4em' }}>{transactionData.creditAmount}</td></Tooltip>
+                        <Tooltip title={String(transactionData.debitAmount)}><td className="help" style={{ width: '70%', height: '4em' }}>{transactionData.debitAmount}</td></Tooltip>
+                        <Tooltip title={transactionData.locationCity}><td className="help" style={{ width: '70%', height: '4em' }}>{transactionData.locationCity}</td></Tooltip>
+                        <Tooltip title={transactionData.locationCountry}><td className="help" style={{ width: '100%', height: '4em' }}>{transactionData.locationCountry}</td></Tooltip>
+                        <Tooltip title={transactionData.transactionDescription} ><td className="help" style={{ width: '150%', height: '4em' }}>{transactionData.transactionDescription}</td></Tooltip>
+                        <Tooltip title={transactionData.transactionType}><td className="help" style={{ width: '50%', height: '4em' }}>{transactionData.transactionType}</td></Tooltip>
+                        <Tooltip title={transactionData.date?.toDateString()}><td className="help" style={{ width: '100%', height: '4em' }}>{transactionData.date?.toDateString()}</td></Tooltip>
+                        <Tooltip title={String(transactionData.frequency)}><td className="help" style={{ width: '100%', height: '4em' }}>{(transactionData.frequency.toFixed(2))}</td></Tooltip>
+                        <Tooltip title={transactionData.frequencyUniqueKey}><td className="help" style={{ width: '100%', height: '4em' }}>{transactionData.frequencyUniqueKey}</td></Tooltip>
                     </tr>)
             })
         )
@@ -168,26 +170,6 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                 {transactionRows}
             </tbody>
         </table>
-        {/* {numberOfRowPerPage > 7 && numberOfRow > 7  &&
-            <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-            <div>{children}</div>
-            <div style={{ display: 'flex', flexDirection: 'row'}}>
-                <label style={{ paddingTop: '2px' }} htmlFor=""> show: </label>
-                <select name="" id="" value={numberOfRowPerPage} onChange={(event) => handleChangeNumberOfRowsPerPage(event)}>
-                    <option value={DEFAULT_NUMBER_OF_ROW_PER_PAGE}>{DEFAULT_NUMBER_OF_ROW_PER_PAGE}</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="200">200</option>
-                    <option value="all">all</option>
-                </select> 
-                <span style={{ paddingTop: '2px' , paddingRight: '10px'}}>rows</span>
-                <div style={{ paddingTop: '2px' }}> number of results: {filteredTransactionDataArr.length} </div>
-                <div>
-                    <button onClick={handleClearSelect}>clear all</button>
-                </div>
-            </div>
-        </div>
-        } */}
     </>
     )
 }
