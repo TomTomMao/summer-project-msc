@@ -64,37 +64,51 @@ export function ClusterView(props: ClusterViewProps) {
     const dataset = useAppSelector(state => state.interactivity.transactionDataArr)
     const shouldShowBrusher = useAppSelector(clusterViewSlice.selectShouldShowClusterViewBrusher)
     return (
-        <InteractiveScatterPlot
-            onSelectTransactionNumberArr={handleSelectTransactionNumberArr}
-            onSetThisSelector={handleSetThisSelector}
-            onChangeXDomain={handleChangeXDomain}
-            onChangeYDomain={handleChangeYDomain}
-            onSwap={handleSwap}
-            xLabel={xLabel}
-            yLabel={yLabel}
-            colourLabel={colourLabel}
-            colourScale={colourScale}
-            containerHeight={containerHeight}
-            containerWidth={containerWidth}
-            marginLeft={marginLeft}
-            marginRight={marginRight}
-            marginTop={marginTop}
-            marginBottom={marginBottom}
-            isExpand={isExpand}
-            xArr={xArr}
-            yArr={yArr}
-            colourDomainArr={colourDomainArr}
-            idArr={idArr}
-            selectedIdArr={selectedIdArr}
-            xLog={xLog}
-            yLog={yLog}
-            filteredXDomainMin={filteredXDomainMin}
-            filteredXDomainMax={filteredXDomainMax}
-            filteredYDomainMin={filteredYDomainMin}
-            filteredYDomainMax={filteredYDomainMax}
-            dataset={dataset}
-            shouldShowBrusher={shouldShowBrusher}
-            className={'clusterView'}
-        ></InteractiveScatterPlot>
+        <>
+            {/* https://www.educative.io/answers/how-to-center-an-absolutely-positioned-element-inside-its-parent */}
+            <div style={{
+                width: 170,
+                height: 12,
+                position: 'absolute',
+                fontSize: '14px',
+                top: 5,
+                zIndex:8,
+                left: marginLeft + (containerWidth - marginLeft - marginRight) / 2,
+                transform: 'translate(-50%,0)',
+                textAlign: 'center'
+            }}>cluster view</div>
+            <InteractiveScatterPlot
+                onSelectTransactionNumberArr={handleSelectTransactionNumberArr}
+                onSetThisSelector={handleSetThisSelector}
+                onChangeXDomain={handleChangeXDomain}
+                onChangeYDomain={handleChangeYDomain}
+                onSwap={handleSwap}
+                xLabel={xLabel}
+                yLabel={yLabel}
+                colourLabel={colourLabel}
+                colourScale={colourScale}
+                containerHeight={containerHeight}
+                containerWidth={containerWidth}
+                marginLeft={marginLeft}
+                marginRight={marginRight}
+                marginTop={marginTop}
+                marginBottom={marginBottom}
+                isExpand={isExpand}
+                xArr={xArr}
+                yArr={yArr}
+                colourDomainArr={colourDomainArr}
+                idArr={idArr}
+                selectedIdArr={selectedIdArr}
+                xLog={xLog}
+                yLog={yLog}
+                filteredXDomainMin={filteredXDomainMin}
+                filteredXDomainMax={filteredXDomainMax}
+                filteredYDomainMin={filteredYDomainMin}
+                filteredYDomainMax={filteredYDomainMax}
+                dataset={dataset}
+                shouldShowBrusher={shouldShowBrusher}
+                className={'clusterView'}
+            ></InteractiveScatterPlot>
+        </>
     )
 }

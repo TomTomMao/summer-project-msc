@@ -149,9 +149,9 @@ export default function App() {
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
-                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 6 }}>
+                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 9 }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div style={{ maxHeight: '300px', backgroundColor: 'RGB(220,220,220)', overflowY: 'auto' }}>
+                                    <div style={{ maxHeight: '380px', backgroundColor: 'RGB(220,220,220)', overflowY: 'auto' }}>
                                         <div style={{ margin: '2px' }}>
                                             <ClusterViewControlPannel></ClusterViewControlPannel>
                                         </div>
