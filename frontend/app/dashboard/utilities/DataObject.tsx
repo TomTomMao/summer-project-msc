@@ -2,6 +2,7 @@
 
 import assert from "assert";
 import { Day } from "../components/CalendarView3/CalendarView3";
+import { isNumber } from "./isNumeric";
 
 
 export type TransactionDataAttrs = "dayOfYear" | "transactionAmount" | "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry" | "frequency" | "frequencyUniqueKey";
@@ -96,12 +97,20 @@ export class TransactionData {
                     return (a[key] as number) - (b[key] as number);
                 }
                 // string can be convert to number
-            } else if (key === 'transactionNumber' || key === 'frequencyUniqueKey') {
+            } else if (key === 'transactionNumber') {
                 return (a: TransactionData, b: TransactionData) => {
                     return parseInt(a[key]) - parseInt(b[key]);
                 }
-                // string
+            } else if (key === 'frequencyUniqueKey') {
+                return (a: TransactionData, b: TransactionData) => {
+                    if (isNumber(a.frequencyUniqueKey) && isNumber(b.frequencyUniqueKey)) {
+                        return parseInt(a[key]) - parseInt(b[key]);
+                    } else {
+                        return (a[key]) > (b[key]) ? 1 : -1;
+                    }
+                }
             } else {
+                // string
                 return (a: TransactionData, b: TransactionData) => {
                     return (a[key]) > (b[key]) ? 1 : -1;
                 }
@@ -111,9 +120,17 @@ export class TransactionData {
                 return (a: TransactionData, b: TransactionData) => {
                     return (b[key] as number) - (a[key] as number);
                 }
-            } else if (key === 'transactionNumber' || key === 'frequencyUniqueKey') {
+            } else if (key === 'transactionNumber') {
                 return (a: TransactionData, b: TransactionData) => {
                     return parseInt(b[key]) - parseInt(a[key]);
+                }
+            } else if (key === 'frequencyUniqueKey') {
+                return (a: TransactionData, b: TransactionData) => {
+                    if (isNumber(a.frequencyUniqueKey) && isNumber(b.frequencyUniqueKey)) {
+                        return parseInt(b[key]) - parseInt(a[key]);
+                    } else {
+                        return (b[key]) > (a[key]) ? 1 : -1;
+                    }
                 }
             } else {
                 return (a: TransactionData, b: TransactionData) => {
@@ -122,7 +139,6 @@ export class TransactionData {
             }
         }
     }
-
     // * reference: user2501097. (2016, December 5). Answer to ‘JavaScript calculate the day of the year (1—366)’. Stack Overflow. https://stackoverflow.com/a/40975730
     public get dayOfYear() {
         return (Date.UTC(this.date.getFullYear(), this.date.getMonth(), this.date.getDate()) - Date.UTC(this.date.getFullYear(), 0, 0)) / 24 / 60 / 60 / 1000;

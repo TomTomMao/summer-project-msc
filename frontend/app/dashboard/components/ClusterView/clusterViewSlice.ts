@@ -167,6 +167,12 @@ export const clusterViewSlice = createSlice({
     setColour: (state, action: PayloadAction<ValidColours>) => {
       state.colour = action.payload;
     },
+    toggleXLog:(state) => {
+      state.xLog = !state.xLog
+    },
+    toggleYLog:(state) => {
+      state.yLog = !state.yLog
+    },
     setXLog: (state, action: PayloadAction<boolean>) => {
       state.xLog = action.payload;
     },
@@ -217,7 +223,9 @@ export const {
   setYLable,
   setColour,
   setXLog,
+  toggleXLog,
   setYLog,
+  toggleYLog,
   swap,
   setFrequency,
   removeJustChangedSize,

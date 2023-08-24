@@ -1,6 +1,11 @@
 import { MouseEventHandler } from "react";
+import { Button as MUIButton, ButtonProps as MUIButtonProps } from "@mui/material";
+// interface ButtonProps { onClick: MouseEventHandler<HTMLButtonElement> | undefined; available: boolean | undefined; children: any | undefined} 
+interface ButtonProps extends MUIButtonProps {
+    available?: boolean;
+}
+export function Button({ available, ...rest }: ButtonProps) {
 
-export function Button({ onClick, available, children }: { onClick: MouseEventHandler<HTMLButtonElement> | undefined; available: boolean | undefined; children: any | undefined; }) {
-
-    return <button className={available ? "hoverableButton" : "inavailableButton"} onClick={onClick} disabled={!available}>{children}</button>;
+    // return <button className={available ? "hoverableButton" : "inavailableButton"} onClick={onClick} disabled={!available}>{children}</button>;
+    return <MUIButton {...rest} disabled={!available}>{rest.children}</MUIButton>;
 }

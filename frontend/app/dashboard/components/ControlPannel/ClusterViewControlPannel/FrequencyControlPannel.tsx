@@ -4,7 +4,7 @@ import { ChangeEvent, useState } from "react";
 import { FrequencyUniqueKeyConfig } from "@/app/dashboard/utilities/dataAgent";
 import { Button } from "../../Button";
 import * as popupSlice from "../../PopupWindow/PopupSlice";
-import { TextField, Tooltip } from "@mui/material";
+import { FormControl, Grid, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
 const MAX_NUMBER_DESCRIPTION = 400
 const MIN_NUMBER_DESCRIPTION = 50
 
@@ -34,6 +34,7 @@ export function FrequencyControlPannel() {
     } else {
         isChanged = initFrequencyUniqueKey !== frequencyUniqueKey
     }
+    const isValidNumberOfCluster = !(numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION)
     const dispatch = useAppDispatch()
 
     const handleReset = () => {
@@ -51,14 +52,14 @@ export function FrequencyControlPannel() {
             linkageMethod,
             numberOfClusterForString
         }
-        if (numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION) {
+        if (!isValidNumberOfCluster) {
             dispatch(popupSlice.showInvalidInputData(`target number of transaction description group is invalid, it must between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}`))
         } else {
             dispatch(clusterViewSlice.setFrequency(frequencyConfig))
         }
     }
     return (
-        <>
+        <Grid container spacing={2}>
             <FrequencyUniqueKeyOption frequencyUniqueKey={frequencyUniqueKey} onChangeFrequncyUniqueKey={setFrequencyUniqueKey}></FrequencyUniqueKeyOption>
             {frequencyUniqueKey === 'clusteredTransactionDescription' &&
                 <LinkageClusteredTransactionDescriptionOption
@@ -70,15 +71,13 @@ export function FrequencyControlPannel() {
                     onChangeNumberOfClusterForString={setNumberOfClusterForString}
                 />
             }
-            <tr>
-                <td colSpan={4}>
-                    <div style={{ float: 'right' }}>
-                        <Button onClick={handleReset} available={isChanged} >reset</Button>
-                        <Button onClick={handleSave} available={isChanged}>update</Button>
-                    </div>
-                </td>
-            </tr>
-        </>
+            <Grid item xs={6}>
+                <Button variant="outlined" onClick={handleReset} available={isChanged} >reset</Button>
+            </Grid>
+            <Grid item xs={6}>
+                <Button variant="outlined" onClick={handleSave} available={isChanged && isValidNumberOfCluster}>update</Button>
+            </Grid>
+        </Grid>
     )
 }
 
@@ -86,18 +85,23 @@ export function FrequencyUniqueKeyOption({ frequencyUniqueKey, onChangeFrequncyU
     frequencyUniqueKey: clusterViewSlice.FrequencyConfig['frequencyUniqueKey'],
     onChangeFrequncyUniqueKey: (frequencyUniqueKey: clusterViewSlice.FrequencyConfig['frequencyUniqueKey']) => void
 }) {
-    return (<>
-        <tr>
-            <td colSpan={2}>frequency uniqueKey</td>
-            <td colSpan={2}>
-                <select name="" id="" value={frequencyUniqueKey} onChange={e => onChangeFrequncyUniqueKey(e.target.value as clusterViewSlice.FrequencyConfig['frequencyUniqueKey'])}>
-                    <option value="transactionDescription">transaction description</option>
-                    <option value="category">category</option>
-                    <option value="clusteredTransactionDescription">clusteredTransactionDescription</option>
-                </select>
-            </td>
-        </tr>
-    </>);
+    return (
+        <Grid item xs={12}>
+            <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">transaction group</InputLabel>
+                <Select
+                    size="small"
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={frequencyUniqueKey}
+                    label="frequencyUniqueKey"
+                    onChange={e => onChangeFrequncyUniqueKey(e.target.value as clusterViewSlice.FrequencyConfig['frequencyUniqueKey'])}
+                ><MenuItem value="transactionDescription">Transaction Description</MenuItem>
+                    <MenuItem value="category">Category</MenuItem>
+                    <MenuItem value="clusteredTransactionDescription">Clustered Transaction Description</MenuItem>
+                </Select>
+            </FormControl>
+        </Grid>);
 }
 export function LinkageClusteredTransactionDescriptionOption({
     distanceMeasure,
@@ -116,52 +120,58 @@ export function LinkageClusteredTransactionDescriptionOption({
     const dispatch = useAppDispatch()
 
     return (<>
-        <tr>
-            <td colSpan={2}>
-                distance measure
-            </td>
-            <td colSpan={2}>
-                <select name="" id="" value={distanceMeasure} onChange={e => onChangeDistanceMeasure(e.target.value as clusterViewSlice.DistanceMeasure)}>
-                    <option value='levenshtein'>levenshtein</option>
-                    <option value='damerauLevenshtein'>damerauLevenshtein</option>
-                    <option value='hamming'>hamming</option>
-                    <option value='jaroSimilarity'>jaroSimilarity</option>
-                    <option value='jaroWinklerSimilarity'>jaroWinklerSimilarity</option>
-                    <option value='MatchRatingApproach'>MatchRatingApproach</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td colSpan={2}>
-                linkage method
-            </td>
-            <td colSpan={2}>
-                <select name="" id="" value={linkageMethod} onChange={e => onChangeLinkageMethod(e.target.value as clusterViewSlice.LinkageMethod)}>
-                    <option value="single">single</option>
-                    <option value="complete">complete</option>
-                    <option value="average">average</option>
-                    <option value="weighted">weighted</option>
-                    <option value="centroid">centroid</option>
-                    <option value="median">median</option>
-                    <option value="ward">ward</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td colSpan={4}>
-                <Tooltip title={`between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}`}>
-                    <TextField
-                        error={numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION}
-                        helperText={(numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION) ? `must between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}` : <></>}
-                        fullWidth
-                        label={'number of transaction description gruoup'}
-                        size='small'
-                        variant="filled"
-                        type="number"
-                        value={numberOfClusterForString}
-                        onChange={e => onChangeNumberOfClusterForString(parseInt(e.target.value))} />
-                </Tooltip>
-            </td>
-        </tr>
+        <Grid item xs={12}>
+            <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Distance Measure</InputLabel>
+                <Select
+                    size="small"
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={distanceMeasure}
+                    label="distanceMeasure"
+                    onChange={e => onChangeDistanceMeasure(e.target.value as clusterViewSlice.DistanceMeasure)}
+                >   <MenuItem value='levenshtein'>levenshtein</MenuItem>
+                    <MenuItem value='damerauLevenshtein'>damerauLevenshtein</MenuItem>
+                    <MenuItem value='hamming'>hamming</MenuItem>
+                    <MenuItem value='jaroSimilarity'>jaroSimilarity</MenuItem>
+                    <MenuItem value='jaroWinklerSimilarity'>jaroWinklerSimilarity</MenuItem>
+                    <MenuItem value='MatchRatingApproach'>MatchRatingApproach</MenuItem>
+                </Select>
+            </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+            <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Linkage Method</InputLabel>
+                <Select
+                    size="small"
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={linkageMethod}
+                    label="linkageMethod"
+                    onChange={e => onChangeDistanceMeasure(e.target.value as clusterViewSlice.DistanceMeasure)}
+                >   <MenuItem value="single">single</MenuItem>
+                    <MenuItem value="complete">complete</MenuItem>
+                    <MenuItem value="average">average</MenuItem>
+                    <MenuItem value="weighted">weighted</MenuItem>
+                    <MenuItem value="centroid">centroid</MenuItem>
+                    <MenuItem value="median">median</MenuItem>
+                    <MenuItem value="ward">ward</MenuItem>
+                </Select>
+            </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+            <Tooltip title={`between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}`}>
+                <TextField
+                    error={numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION}
+                    helperText={(numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION) ? `must between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}` : <></>}
+                    fullWidth
+                    label={'number of transaction description group'}
+                    size='small'
+                    variant="outlined"
+                    type="number"
+                    value={numberOfClusterForString}
+                    onChange={e => onChangeNumberOfClusterForString(parseInt(e.target.value))} />
+            </Tooltip>
+        </Grid>
     </>);
 }
