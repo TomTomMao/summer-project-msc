@@ -127,7 +127,7 @@ function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
     const Arrow = (sortBy === 'colour' ? <span></span> : sortBy === 'domainAscending' ? DOWNARROW : UPARROW)
     return (
         <>
-            <div style={{ cursor: 'pointer', position: 'fixed', backgroundColor: 'white', zIndex: 3, width: COLOURLEGEND_WIDTH - 16.5, lineHeight: '1em' }} onClick={handleToggleSortting}>{label}{Arrow}</div>
+            <div style={{ cursor: 'pointer', position: 'absolute', backgroundColor: 'white', zIndex: 3, width: COLOURLEGEND_WIDTH - 16.5, lineHeight: '1em' }} onClick={handleToggleSortting}>{label}{Arrow}</div>
             <div style={{ height: `${label.length / 10}em` }} />
             {sortedColourMappingArr.map(colourMapping => {
                 return (

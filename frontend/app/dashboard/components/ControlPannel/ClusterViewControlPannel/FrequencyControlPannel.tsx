@@ -148,7 +148,7 @@ export function LinkageClusteredTransactionDescriptionOption({
                     id="demo-simple-select"
                     value={linkageMethod}
                     label="linkageMethod"
-                    onChange={e => onChangeDistanceMeasure(e.target.value as clusterViewSlice.DistanceMeasure)}
+                    onChange={e => onChangeLinkageMethod(e.target.value as clusterViewSlice.LinkageMethod)}
                 >   <MenuItem value="single">single</MenuItem>
                     <MenuItem value="complete">complete</MenuItem>
                     <MenuItem value="average">average</MenuItem>
