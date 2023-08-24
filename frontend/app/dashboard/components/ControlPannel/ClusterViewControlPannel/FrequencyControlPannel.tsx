@@ -4,7 +4,7 @@ import { ChangeEvent, useState } from "react";
 import { FrequencyUniqueKeyConfig } from "@/app/dashboard/utilities/dataAgent";
 import { Button } from "../../Button";
 import * as popupSlice from "../../PopupWindow/PopupSlice";
-import { Tooltip } from "@mui/material";
+import { TextField, Tooltip } from "@mui/material";
 const MAX_NUMBER_DESCRIPTION = 400
 const MIN_NUMBER_DESCRIPTION = 50
 
@@ -148,10 +148,18 @@ export function LinkageClusteredTransactionDescriptionOption({
             </td>
         </tr>
         <tr>
-            <td colSpan={2}>number of cluster for<br /> transaction Description</td>
-            <td colSpan={2}>
+            <td colSpan={4}>
                 <Tooltip title={`between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}`}>
-                    <input type="number" name="" id="" min={MIN_NUMBER_DESCRIPTION} max={MAX_NUMBER_DESCRIPTION} value={numberOfClusterForString} onChange={e => onChangeNumberOfClusterForString(parseInt(e.target.value))} />
+                    <TextField
+                        error={numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION}
+                        helperText={(numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION) ? `must between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}` : <></>}
+                        fullWidth
+                        label={'number of transaction description gruoup'}
+                        size='small'
+                        variant="filled"
+                        type="number"
+                        value={numberOfClusterForString}
+                        onChange={e => onChangeNumberOfClusterForString(parseInt(e.target.value))} />
                 </Tooltip>
             </td>
         </tr>

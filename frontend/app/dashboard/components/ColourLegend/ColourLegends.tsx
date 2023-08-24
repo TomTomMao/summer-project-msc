@@ -5,6 +5,7 @@ import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { useCategoryColourScale, useClusterIdColourScale, useFrequencyUniqueKeyColourScale } from "../../hooks/useColourScales";
 import { useMemo } from "react";
 import { GRAY1 } from "../../utilities/consts";
+import { COLOURLEGEND_WIDTH } from "../InteractiveScatterPlot/InteractiveScatterPlot";
 
 export function CategoryColourLegend() {
     const dispatch = useAppDispatch()
@@ -26,7 +27,7 @@ export function CategoryColourLegend() {
         }
     })
     return (
-        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect}>category</LegendList>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'category'}></LegendList>
     )
 }
 
@@ -50,7 +51,7 @@ export function FrequencyUniqueKeyColourLegend() {
         }
     })
     return (
-        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect}>frequencyUniqueKey</LegendList>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'transaction description group id'}></LegendList>
     )
 }
 export function ClusterIdColourLegend() {
@@ -73,36 +74,40 @@ export function ClusterIdColourLegend() {
         }
     })
     return (
-        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect}>ClusterIdColourLegend</LegendList>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'cluster id'}></LegendList>
     )
 }
 
-function LegendList({ colourMappingArr, onToggleSelect, children }: {
+function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
     colourMappingArr: {
         domain: string;
         value: string;
         highLighted: boolean;
     }[],
     onToggleSelect: (domain: string) => void,
-    children: React.ReactNode
+    label: string,
+    children?: React.ReactNode
 }) {
     return (
         <>
-            {/* {children} */}
+            <div style={{ position: 'fixed', backgroundColor: 'white', zIndex: 3, width: COLOURLEGEND_WIDTH-16.5, height: '' }}>{label}</div>
+            <br />
+            {label.length > 10 && <br />}
+            {label.length > 20 && <br />}
             {colourMappingArr.map(colourMapping => {
                 return (
-                    <div onClick={() => onToggleSelect(colourMapping.domain)} key={colourMapping.domain} style={{ fontSize: '8px', display: "flex"}}>
-                        <div style={{ position: 'relative', backgroundColor: 'white', margin: 0, padding: 0, width: '8px', height: '8px' }}>
+                    <div onClick={() => onToggleSelect(colourMapping.domain)} key={colourMapping.domain} style={{ fontSize: '12px', display: "flex" }}>
+                        <div style={{ position: 'relative', backgroundColor: 'white', margin: 0, padding: 0, width: '12px', height: '12px' }}>
                             <div style={{
                                 backgroundColor: colourMapping.highLighted ? colourMapping.value : GRAY1,
-                                width: '8px', 
-                                height: '8px',
+                                width: '12px',
+                                height: '12px',
                                 display: 'block',
                                 marginTop: '1.6px',
-                                left: '0.4em'   
+                                left: '0.4em'
                             }}></div>
                         </div>
-                        <div style={{marginLeft:'2px'}}>
+                        <div style={{ marginLeft: '2px' }}>
                             {colourMapping.domain === '' ? 'unknown' : colourMapping.domain}
                         </div>
                     </div>)

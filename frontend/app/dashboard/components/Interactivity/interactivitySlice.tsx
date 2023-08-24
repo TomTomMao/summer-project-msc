@@ -263,9 +263,9 @@ export default interactivitySlice.reducer;
 
 // only for future feature maybe
 /**return a set of clickedDetailTransaction they should be stroked */
-const selectClickedDetailTransactionNumberArr = (state: RootState): Set<TransactionData['transactionNumber']> => {
-    const clickedDetailTransactionNumberArr = state.interactivity.clickedDetailTransactionNumberArr
-    return new Set(clickedDetailTransactionNumberArr)
-}
+// const selectClickedDetailTransactionNumberArr = (state: RootState): Set<TransactionData['transactionNumber']> => {
+//     const clickedDetailTransactionNumberArr = state.interactivity.clickedDetailTransactionNumberArr
+//     return new Set(clickedDetailTransactionNumberArr)
+// }
 /**return a set of clickedDetailTransaction they should be stroked, this is a memorised function for avoiding unnecessary rerendering */
-export const selectClickedDetailTransactionNumberArrMemorised = createMemorisedFunction(selectClickedDetailTransactionNumberArr, comparingSet)
+// export const selectClickedDetailTransactionNumberArrMemorised = createMemorisedFunction(selectClickedDetailTransactionNumberArr, comparingSet)

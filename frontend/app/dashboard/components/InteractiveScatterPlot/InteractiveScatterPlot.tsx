@@ -12,7 +12,7 @@ import { ScaleOrdinalWithTransactionNumber } from "../../hooks/useColourScales";
 import { ColourDomainData, ValidColours } from "../ColourChannel/colourChannelSlice";
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "../ColourLegend/ColourLegends";
 
-const COLOURLEGEND_WIDTH = 120
+export const COLOURLEGEND_WIDTH = 125
 
 export interface InteractiveScatterPlotProps {
     onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void,

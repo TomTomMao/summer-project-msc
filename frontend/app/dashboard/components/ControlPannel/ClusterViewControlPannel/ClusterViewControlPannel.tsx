@@ -1,12 +1,15 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { CSSProperties, useState } from "react";
+import { useState } from "react";
 import * as clusterViewSlice from "../../ClusterView/clusterViewSlice";
 import { Button } from "../../Button";
 import { ValidAxisLabels } from "../../Interactivity/interactivitySlice";
 import { ValidColours } from "../../ColourChannel/colourChannelSlice";
 import { FrequencyControlPannel } from "./FrequencyControlPannel";
-import { MiddlewareArray } from "@reduxjs/toolkit";
 import { FolderableContainerInTable } from "../../Containers/FolderableContainer";
+import { TextField, Tooltip } from "@mui/material";
+import { showInvalidInputData } from "../../PopupWindow/PopupSlice";
+const MIN_NUMBER_CLUSTER = 2
+const MAX_NUMBER_CLUSTER = 100
 
 export default function ClusterViewControlPannel() {
     return (
@@ -127,15 +130,30 @@ function ClusterAlgorithmControlPannel() {
         setMetric2(initMetric2)
     }
     const saveTable = () => {
-        dispatch(clusterViewSlice.setClusterArguments({ numberOfCluster, metric1, metric2 }))
+        if (numberOfCluster < MIN_NUMBER_CLUSTER || numberOfCluster > MAX_NUMBER_CLUSTER){
+            dispatch(showInvalidInputData(`target number of cluster is invalid, it must between ${MIN_NUMBER_CLUSTER} and ${MAX_NUMBER_CLUSTER}`))
+        } else{
+            dispatch(clusterViewSlice.setClusterArguments({ numberOfCluster, metric1, metric2 }))
+        }
     }
 
     return (
         <>
             <tr>
-                <td colSpan={2}>target number of cluster:</td>
-                <td colSpan={2}><input type="number" value={numberOfCluster} onChange={e => setNumberOfCluster(parseInt(e.target.value))} /></td>
-
+                <td colSpan={4}>
+                    <Tooltip title={`between ${MIN_NUMBER_CLUSTER} and ${MAX_NUMBER_CLUSTER}`}>
+                        <TextField
+                            error={numberOfCluster < MIN_NUMBER_CLUSTER || numberOfCluster > MAX_NUMBER_CLUSTER}
+                            helperText={(numberOfCluster < MIN_NUMBER_CLUSTER || numberOfCluster > MAX_NUMBER_CLUSTER) ? `must between ${MIN_NUMBER_CLUSTER} and ${MAX_NUMBER_CLUSTER}` : <></>}
+                            fullWidth
+                            label={'number of cluster'}
+                            size='small'
+                            variant="filled"
+                            type="number"
+                            value={numberOfCluster}
+                            onChange={e => setNumberOfCluster(parseInt(e.target.value))} />
+                    </Tooltip>
+                </td>
             </tr>
             <tr>
                 <td colSpan={2}>clustering metric1:</td>

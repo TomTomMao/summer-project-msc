@@ -12,7 +12,7 @@ export default function Popup() {
     const [shouldShowPopup, setShouldShowPopup] = useState<boolean>(false)
     const timeToLive = useAppSelector(popupSlice.selectTimeToLive)
     const { information, servertiy } = useAppSelector(popupSlice.selectPopupInformation)
-    const dispatch=useAppDispatch()
+    const dispatch = useAppDispatch()
     useEffect(() => {
         const nextShouldShowPopup = information !== null && servertiy !== null
         setShouldShowPopup(nextShouldShowPopup)
@@ -25,10 +25,10 @@ export default function Popup() {
                     setShouldShowPopup(false);
                     dispatch(popupSlice.clearPopupWindow())
                 }, timeToLive * 1000)
-                
+
             }
         }
-        return () => clearTimeout(timeoutId)
+        return () => { setShouldShowPopup(false); clearTimeout(timeoutId); }
     }, [timeToLive, servertiy])
     return (<div
         style={{
@@ -39,7 +39,7 @@ export default function Popup() {
             top: '5%',
             zIndex: 999
         }}>
-        {shouldShowPopup && <Alert variant="filled"  severity={servertiy === null ? undefined : servertiy}>{information}</Alert>}
+        {shouldShowPopup && <Alert variant="filled" severity={servertiy === null ? undefined : servertiy}>{information}</Alert>}
         {/* reference for the Alert: https://mui.com/material-ui/react-alert/ */}
     </div>
     )
