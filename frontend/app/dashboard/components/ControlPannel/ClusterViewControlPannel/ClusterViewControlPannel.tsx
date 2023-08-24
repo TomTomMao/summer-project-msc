@@ -1,12 +1,12 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { CSSProperties, useState } from "react";
-import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
-import { Button } from "../Button";
-import { ValidAxisLabels } from "../Interactivity/interactivitySlice";
-import { ValidColours } from "../ColourChannel/colourChannelSlice";
+import * as clusterViewSlice from "../../ClusterView/clusterViewSlice";
+import { Button } from "../../Button";
+import { ValidAxisLabels } from "../../Interactivity/interactivitySlice";
+import { ValidColours } from "../../ColourChannel/colourChannelSlice";
 import { FrequencyControlPannel } from "./FrequencyControlPannel";
 import { MiddlewareArray } from "@reduxjs/toolkit";
-import { FolderableContainerInTable } from "../Containers/FolderableContainer";
+import { FolderableContainerInTable } from "../../Containers/FolderableContainer";
 
 export default function ClusterViewControlPannel() {
     return (

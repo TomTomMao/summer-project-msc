@@ -1,10 +1,12 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as clusterViewSlice from '@/app/dashboard/components/ClusterView/clusterViewSlice'
-import { useState } from "react";
-import { FrequencyUniqueKeyConfig } from "../../utilities/dataAgent";
-import { Button } from "../Button";
-const MIN_NUMBER_DESCRIPTION = 50
+import { ChangeEvent, useState } from "react";
+import { FrequencyUniqueKeyConfig } from "@/app/dashboard/utilities/dataAgent";
+import { Button } from "../../Button";
+import * as popupSlice from "../../PopupWindow/PopupSlice";
+import { Tooltip } from "@mui/material";
 const MAX_NUMBER_DESCRIPTION = 400
+const MIN_NUMBER_DESCRIPTION = 50
 
 export function FrequencyControlPannel() {
     const initFrequencyUniqueKey = useAppSelector(clusterViewSlice.selectFrequencyUniqueKey)
@@ -24,14 +26,12 @@ export function FrequencyControlPannel() {
     //     || initLinkageMethod !== linkageMethod
     //     || initNumberOfClusterForString !== numberOfClusterForString
     if (frequencyUniqueKey === 'clusteredTransactionDescription') {
-        console.log('isChanged branch 1')
         isChanged = initFrequencyUniqueKey !== frequencyUniqueKey
             || initStringClusterAlgorithm !== stringClusterAlgorithm
             || initDistanceMeasure !== distanceMeasure
             || initLinkageMethod !== linkageMethod
             || initNumberOfClusterForString !== numberOfClusterForString
     } else {
-        console.log('isChanged branch 2')
         isChanged = initFrequencyUniqueKey !== frequencyUniqueKey
     }
     const dispatch = useAppDispatch()
@@ -51,7 +51,11 @@ export function FrequencyControlPannel() {
             linkageMethod,
             numberOfClusterForString
         }
-        dispatch(clusterViewSlice.setFrequency(frequencyConfig))
+        if (numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION) {
+            dispatch(popupSlice.showInvalidInputData(`target number of transaction description group is invalid, it must between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}`))
+        } else {
+            dispatch(clusterViewSlice.setFrequency(frequencyConfig))
+        }
     }
     return (
         <>
@@ -109,6 +113,7 @@ export function LinkageClusteredTransactionDescriptionOption({
         onChangeLinkageMethod: (p: clusterViewSlice.LinkageMethod) => void
         onChangeNumberOfClusterForString: (p: number) => void
     }) {
+    const dispatch = useAppDispatch()
 
     return (<>
         <tr>
@@ -145,7 +150,9 @@ export function LinkageClusteredTransactionDescriptionOption({
         <tr>
             <td colSpan={2}>number of cluster for<br /> transaction Description</td>
             <td colSpan={2}>
-                <input type="number" name="" id="" min={MIN_NUMBER_DESCRIPTION} max={MAX_NUMBER_DESCRIPTION} value={numberOfClusterForString} onChange={e => onChangeNumberOfClusterForString(parseInt(e.target.value))} />
+                <Tooltip title={`between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}`}>
+                    <input type="number" name="" id="" min={MIN_NUMBER_DESCRIPTION} max={MAX_NUMBER_DESCRIPTION} value={numberOfClusterForString} onChange={e => onChangeNumberOfClusterForString(parseInt(e.target.value))} />
+                </Tooltip>
             </td>
         </tr>
     </>);

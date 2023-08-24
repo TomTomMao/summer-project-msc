@@ -14,7 +14,7 @@ import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice
 import * as scatterPlotSlice from "./components/TransactionAmountView.tsx/scatterPlotSlice";
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 
-import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel";
+import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel/ClusterViewControlPannel";
 
 
 import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";
