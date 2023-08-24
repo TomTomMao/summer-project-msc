@@ -3,9 +3,11 @@ import * as colourChannelSlice from "../ColourChannel/colourChannelSlice";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { useCategoryColourScale, useClusterIdColourScale, useFrequencyUniqueKeyColourScale } from "../../hooks/useColourScales";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { GRAY1 } from "../../utilities/consts";
 import { COLOURLEGEND_WIDTH } from "../InteractiveScatterPlot/InteractiveScatterPlot";
+import { isNumber } from "../../utilities/isNumeric";
+import { DOWNARROW, UPARROW } from "../../utilities/Arrows";
 
 export function CategoryColourLegend() {
     const dispatch = useAppDispatch()
@@ -78,23 +80,56 @@ export function ClusterIdColourLegend() {
     )
 }
 
+type ColourMapping = {
+    domain: string;
+    value: string;
+    highLighted: boolean;
+};
+
 function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
-    colourMappingArr: {
-        domain: string;
-        value: string;
-        highLighted: boolean;
-    }[],
+    colourMappingArr: ColourMapping[],
     onToggleSelect: (domain: string) => void,
     label: string,
     children?: React.ReactNode
 }) {
+    const isDomainNumberLike = colourMappingArr.every(colourMapping => isNumber(colourMapping.domain))
+    const comparatorAscending = isDomainNumberLike ?
+        ((a: ColourMapping, b: ColourMapping) => parseFloat(a.domain) - parseFloat(b.domain)) :
+        ((a: ColourMapping, b: ColourMapping) => a.domain > b.domain ? 1 : -1)
+    const comparatorDescending = (a: ColourMapping, b: ColourMapping) => -comparatorAscending(a, b)
+    const [sortBy, setSortBy] = useState<'domainDescending' | 'domainAscending' | 'colour'>('domainDescending')
+    let sortedColourMappingArr: ColourMapping[] = [...colourMappingArr]
+    switch (sortBy) {
+        case 'domainAscending':
+            sortedColourMappingArr.sort(comparatorAscending)
+            break;
+        case 'domainDescending':
+            sortedColourMappingArr.sort(comparatorDescending)
+            break;
+        case 'colour':
+            break;
+        default:
+            const _exhaustiveCheck: never = sortBy
+            throw new Error("exhaustive check error");
+    }
+    function handleToggleSortting() {
+        if (sortBy === 'colour') {
+            setSortBy('domainAscending')
+        } else if (sortBy === 'domainAscending') {
+            setSortBy('domainDescending')
+        } else if (sortBy === 'domainDescending') {
+            setSortBy('colour')
+        } else {
+            const _exhaustiveCheck: never = sortBy
+            throw new Error("exhaustive check error");
+        }
+    }
+    const Arrow = (sortBy === 'colour' ? <span></span> : sortBy === 'domainAscending' ? DOWNARROW : UPARROW)
     return (
         <>
-            <div style={{ position: 'fixed', backgroundColor: 'white', zIndex: 3, width: COLOURLEGEND_WIDTH-16.5, height: '' }}>{label}</div>
-            <br />
-            {label.length > 10 && <br />}
-            {label.length > 20 && <br />}
-            {colourMappingArr.map(colourMapping => {
+            <div style={{ cursor: 'pointer', position: 'fixed', backgroundColor: 'white', zIndex: 3, width: COLOURLEGEND_WIDTH - 16.5, lineHeight: '1em' }} onClick={handleToggleSortting}>{label}{Arrow}</div>
+            <div style={{ height: `${label.length / 10}em` }} />
+            {sortedColourMappingArr.map(colourMapping => {
                 return (
                     <div onClick={() => onToggleSelect(colourMapping.domain)} key={colourMapping.domain} style={{ fontSize: '12px', display: "flex" }}>
                         <div style={{ position: 'relative', backgroundColor: 'white', margin: 0, padding: 0, width: '12px', height: '12px' }}>

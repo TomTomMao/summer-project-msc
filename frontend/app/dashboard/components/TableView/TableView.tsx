@@ -4,13 +4,13 @@ import { PublicScale } from "../../utilities/types";
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
 import { relative } from "path";
 import { Tooltip } from "@mui/material";
+import { UPARROW, DOWNARROW } from "../../utilities/Arrows";
 const DEFAULT_NUMBER_OF_ROW_PER_PAGE = 8
 export interface DescriptionAndIsCredit {
     transactionDescription: string;
     isCredit: boolean;
 }
-const UPARROW = <span>↑</span>;
-const DOWNARROW = <span>↓</span>;
+
 type Props = {
     transactionDataArr: TransactionData[];
     transactionNumberSet: Set<TransactionData['transactionNumber']>;
