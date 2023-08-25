@@ -6,7 +6,6 @@ import { Data, getDataFromTransactionDataMapMD, getDataFromTransactionDataMapYMD
 import { useAppSelector } from "@/app/hooks";
 import * as barDayViewSlice from "./barDayViewSlice";
 import * as calendarViewSlice from "../calendarViewSlice";
-import { PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 import { PublicScale } from "@/app/dashboard/utilities/types";
 
 export type BarGlyphScalesLinearHeight = {
@@ -117,7 +116,7 @@ export function BarDayView(props: BarDayViewProps) {
         {barsOfEachYear.map(d => {
             let shouldDisplay = false;
             if (isSuperPositioned) {
-                shouldDisplay = d.year === -1
+                shouldDisplay = d.year === -1 // -1 is the flag for superpositioned bar glyph
             } else {
                 shouldDisplay = d.year === currentYear
             }

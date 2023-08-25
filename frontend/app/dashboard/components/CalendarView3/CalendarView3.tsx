@@ -86,34 +86,12 @@ export default function CalendarView3(props:
     // high light the border of mm's month and dd's day 
 
     // used for pie glyph's radius
-    const { linearRadiusScale, logRadiusScale } = useMemo(() => {
-        let groupedData: [number, number, number, number][] | [number, number, number][] = [] // // [year, month, day, sumTransactionAmountOfDay] or // [month, day, sumTransactionAmountOfDayForEachYear]
-        let radiusMinDomain: number | undefined // if isSuperpositioned = true, it is the sum of data for all a day of all the year; else for each year 
-        let radiusMaxDomain: number | undefined // if isSuperpositioned = true, it is the sum of data for all a day of all the year; else for each year 
-        if (isSuperPositioned) {
-            groupedData = getFlatGroupedTransactionAmountByDaySuperpositionedYear(transactionDataArr) // [month, day, sumTransactionAmountOfDayForEachYear]
-            const d = d3.extent(groupedData, d => d[2])
-            radiusMinDomain = d[0]
-            radiusMaxDomain = d[1]
-        } else {
-            groupedData = getFlatGroupedTransactionAmountByDay(transactionDataArr); // [year, month, day, sumTransactionAmountOfDay]
-            const d = d3.extent(groupedData, d => d[3])
-            radiusMinDomain = d[0]
-            radiusMaxDomain = d[1]
-        }
-
-        if (radiusMinDomain === undefined || radiusMaxDomain === undefined) {
-            return { linearRadiusScale: null, logRadiusScale: null }
-        } else {
-            const linearRadiusScale = d3.scaleLinear().domain([radiusMinDomain, radiusMaxDomain]).range([0, currentContainerWidth > currentContainerHeight ? currentContainerHeight : currentContainerWidth])
-            const logRadiusScale = d3.scaleLog().domain([radiusMinDomain, radiusMaxDomain]).range([0, currentContainerWidth])
-            return { linearRadiusScale, logRadiusScale }
-        }
-    }, [transactionDataArr, currentContainerWidth, currentContainerHeight, isSuperPositioned])
+    const { linearRadiusScale, logRadiusScale } = useMemo(curryGetPieDayViewRadiusScales(isSuperPositioned, transactionDataArr, currentContainerWidth, currentContainerHeight),
+        [transactionDataArr, currentContainerWidth, currentContainerHeight, isSuperPositioned])
 
     if (transactionDataArr.length === 0 || linearRadiusScale === null || logRadiusScale === null) {
         throw new Error("transactionDataArr.length === 0 || linearRadiusScale === null || logRadiusScale === null");
-        
+
     }
     const data: Data = useMemo(() => {
         return {
@@ -153,7 +131,6 @@ export default function CalendarView3(props:
 
     // public scales for pie :
     const pieCalendarViewSharedScales: PieCalendarViewSharedScales = { colourScale, linearRadiusScale, logRadiusScale }
-    console.log('calendarview colourscale 1', colourScale.getColour('Savings'))
 
     return (
         <>
@@ -203,6 +180,33 @@ type MonthViewProps = {
     highLightedCalendarDayBorderMMDDSet: Set<string>
 } & {
 
+}
+
+function curryGetPieDayViewRadiusScales(isSuperPositioned: boolean, transactionDataArr: TransactionData[], currentContainerWidth: number, currentContainerHeight: number): () => { linearRadiusScale: null; logRadiusScale: null; } | { linearRadiusScale: d3.ScaleLinear<number, number, never>; logRadiusScale: d3.ScaleLogarithmic<number, number, never>; } {
+    return () => {
+        let groupedData: [number, number, number, number][] | [number, number, number][] = []; // // [year, month, day, sumTransactionAmountOfDay] or // [month, day, sumTransactionAmountOfDayForEachYear]
+        let radiusMinDomain: number | undefined; // if isSuperpositioned = true, it is the sum of data for all a day of all the year; else for each year 
+        let radiusMaxDomain: number | undefined; // if isSuperpositioned = true, it is the sum of data for all a day of all the year; else for each year 
+        if (isSuperPositioned) {
+            groupedData = getFlatGroupedTransactionAmountByDaySuperpositionedYear(transactionDataArr); // [month, day, sumTransactionAmountOfDayForEachYear]
+            const d = d3.extent(groupedData, d => d[2]);
+            radiusMinDomain = d[0];
+            radiusMaxDomain = d[1];
+        } else {
+            groupedData = getFlatGroupedTransactionAmountByDay(transactionDataArr); // [year, month, day, sumTransactionAmountOfDay]
+            const d = d3.extent(groupedData, d => d[3]);
+            radiusMinDomain = d[0];
+            radiusMaxDomain = d[1];
+        }
+
+        if (radiusMinDomain === undefined || radiusMaxDomain === undefined) {
+            return { linearRadiusScale: null, logRadiusScale: null };
+        } else {
+            const linearRadiusScale = d3.scaleLinear().domain([radiusMinDomain, radiusMaxDomain]).range([0, currentContainerWidth > currentContainerHeight ? currentContainerHeight : currentContainerWidth]);
+            const logRadiusScale = d3.scaleLog().domain([radiusMinDomain, radiusMaxDomain]).range([0, currentContainerWidth]);
+            return { linearRadiusScale, logRadiusScale };
+        }
+    };
 }
 
 function MonthView(props: MonthViewProps) {
