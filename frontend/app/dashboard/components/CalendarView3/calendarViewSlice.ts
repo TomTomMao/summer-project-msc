@@ -6,7 +6,7 @@ const MAX_YEAR = 2022;
 const MIN_YEAR = 2015;
 
 interface CalendarViewState {
-  glyphType: "bar" | "pie";
+  glyphType: "bar" | "pie" | 'polarArea';
   containerWidth: number;
   containerHeight: number;
   expandedContainerWidth: number;
@@ -18,7 +18,7 @@ interface CalendarViewState {
 }
 
 const initialState: CalendarViewState = {
-  glyphType: "pie",
+  glyphType: "polarArea",
   // container width and height refer to the cell size of each day
   containerWidth: 25,
   containerHeight: 25,

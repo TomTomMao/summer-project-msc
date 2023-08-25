@@ -28,6 +28,7 @@ import TransactionAmountView from "./components/TransactionAmountView.tsx/Transa
 import * as colourChannelSlice from "./components/ColourChannel/colourChannelSlice";
 import Popup from "./components/PopupWindow/Popup";
 import Button from "@mui/material/Button"
+import { TestPolarAreaChart } from "./components/CalendarView3/DayViews/PolarAreaChart";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -178,6 +179,7 @@ export default function App() {
                 <div>
                     <Button onClick={() => dispatch(interactivitySlice.toggleShowOneTimeTransaction())}>show one time transaction</Button>
                 </div>
+                <TestPolarAreaChart></TestPolarAreaChart>
             </div>
 
         )

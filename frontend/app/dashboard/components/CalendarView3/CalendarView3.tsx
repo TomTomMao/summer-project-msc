@@ -18,6 +18,9 @@ import { useTransactionDataArr } from "../../hooks/useTransactionData";
 import { useHighLightedCalendarDayBorderMMDDSet } from "./useCalendarDayHighlightInfo";
 
 import styles from './styles.module.css'
+import { usePolarAreaCalendarViewSharedRadialScales, usePolarAreaCalendarViewSharedAngleScales as usePolarAreaCalendarViewSharedAngleScale } from "./usePolarAreaCalendarViewSharedScales";
+import useCategoryOrderMap from "./useCategoryOrder";
+import { PolarAreaDayView, PolarAreaDayViewProps, PolarAreaViewSharedScales } from "./DayViews/PolarAreaDayView";
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
@@ -27,9 +30,12 @@ type TransactionAmountSumMapByDayMD = d3.InternMap<number, d3.InternMap<number, 
 export type Data = {
     transactionDataMapYMD: TransactionDataMapYMD;
     transactionDataMapMD: TransactionDataMapMD;
+    /**if empty, show all the transaction */
     highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
-    transactionAmountSumMapByDayYMD: TransactionAmountSumMapByDayYMD
-    transactionAmountSumMapByDayMD: TransactionAmountSumMapByDayMD
+    transactionAmountSumMapByDayYMD: TransactionAmountSumMapByDayYMD;
+    transactionAmountSumMapByDayMD: TransactionAmountSumMapByDayMD;
+    /**if empty, show all the category */
+    categorySetWithSelectedTransaction: Set<TransactionData['category']>
 }
 
 type CalendarViewProps = {
@@ -49,10 +55,10 @@ export type Day = {
 
 export default function CalendarView3(props:
     CalendarViewProps) {
-    const transactionDataArr = useTransactionDataArr()
-    const colourScale = useCategoryColourScale()
+    const transactionDataArr = props.transactionDataArr
+    const colourScale = props.colourScale
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
-    const highLightedTransactionNumberSetByBrusher = useAppSelector(interactivitySlice.selectSelectedTransactionNumberSetMemorised)
+    const highLightedTransactionNumberSetByBrusher = props.highLightedTransactionNumberSetByBrusher
     // config
     const currentContainerHeight = useAppSelector(calendarViewSlice.selectCurrentContainerHeight)
     const currentContainerWidth = useAppSelector(calendarViewSlice.selectCurrentContainerWidth)
@@ -93,13 +99,23 @@ export default function CalendarView3(props:
         throw new Error("transactionDataArr.length === 0 || linearRadiusScale === null || logRadiusScale === null");
 
     }
+    const categorySetWithSelectedTransaction: Data['categorySetWithSelectedTransaction'] = useMemo(() => {
+        const categorySetWithSelectedTransaction = new Set<TransactionData['category']>
+        transactionDataArr.forEach(transactionData => {
+            if (highLightedTransactionNumberSetByBrusher.has(transactionData.transactionNumber)) {
+                categorySetWithSelectedTransaction.add(transactionData.category);
+            }
+        })
+        return categorySetWithSelectedTransaction
+    }, [transactionDataArr, highLightedTransactionNumberSetByBrusher])
     const data: Data = useMemo(() => {
         return {
             transactionDataMapYMD: transactionDataMapYMD,
             transactionDataMapMD: transactionDataMapMD,
             highLightedTransactionNumberSetByBrusher: highLightedTransactionNumberSetByBrusher,
             transactionAmountSumMapByDayYMD: transactionAmountSumMapByDayYMD,
-            transactionAmountSumMapByDayMD: transactionAmountSumMapByDayMD
+            transactionAmountSumMapByDayMD: transactionAmountSumMapByDayMD,
+            categorySetWithSelectedTransaction: categorySetWithSelectedTransaction
         }
     },
         [transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher, transactionAmountSumMapByDayYMD, transactionAmountSumMapByDayMD])
@@ -132,6 +148,26 @@ export default function CalendarView3(props:
     // public scales for pie :
     const pieCalendarViewSharedScales: PieCalendarViewSharedScales = { colourScale, linearRadiusScale, logRadiusScale }
 
+    // ------PolarAreaGlyph: linear and log radius scale; angle scale; colour scale; categoryOrderMap------
+    // polarAreaCalendarViewSharedScale -> Month view -> PolarAreaDayView
+    // prepare shared RadiusScales for PolarAreaGlyphs, domain determined by transactionDataArr, isSuperPositioned, and currentYear, range determinde by currentContainerHeight and currentContainerWidth
+    // the hook don't read any data from the store, it just use the args with some useMemo
+    const polarAreaCalendarViewSharedRadialScales: { linearRadiusScale: d3.ScaleLinear<number, number>, logRadiusScale: d3.ScaleLogarithmic<number, number> } | { linearRadiusScale: null, logRadiusScale: null } =
+        usePolarAreaCalendarViewSharedRadialScales(transactionDataArr, isSuperPositioned, currentYear, currentContainerHeight, currentContainerWidth)
+    // prepare the category order for the PolarAreaGlyphs, it read an array of category from the redux store, and create a map from category to the index, index start from 0 to |category|.length - 1
+    const categoryOrderMap: Map<TransactionData['category'], number> = useCategoryOrderMap() // read category order from the store
+    // prepare shared angle scale for PolarAreaGlyphs, which maps the index of category to start angle in the glyph
+    const polarAreaCalendarViewSharedAngleScale: d3.ScaleLinear<number, number> = usePolarAreaCalendarViewSharedAngleScale(categoryOrderMap)
+    if (polarAreaCalendarViewSharedRadialScales.linearRadiusScale === null || polarAreaCalendarViewSharedRadialScales.logRadiusScale === null) {
+        return <>loading scales</>
+    }
+    const polarAreaCalendarViewSharedScales: PolarAreaViewSharedScales = {
+        colourScale,
+        linearRadiusScale: polarAreaCalendarViewSharedRadialScales.linearRadiusScale,
+        logRadiusScale: polarAreaCalendarViewSharedRadialScales.logRadiusScale,
+        angleScale: polarAreaCalendarViewSharedAngleScale,
+        categoryOrderMap
+    }
     return (
         <>
             <table className="smallLetterTable">
@@ -148,6 +184,7 @@ export default function CalendarView3(props:
                         barDayViewValueGetter={barCalendarViewValueGetter}
                         pieDayViewScales={pieCalendarViewSharedScales}
                         pieDayViewValueGetter={pieCalendarViewValueGetter}
+                        polarAreaDayViewScales={polarAreaCalendarViewSharedScales}
                         onShowDayDetail={handleShowDayDetail}
                         detailDay={detailDay}
                         dayViewContainerSize={{
@@ -174,6 +211,7 @@ type MonthViewProps = {
     barDayViewValueGetter: BarCalendarViewValueGetter,
     pieDayViewScales: PieCalendarViewSharedScales,
     pieDayViewValueGetter: PieCalendarViewValueGetter,
+    polarAreaDayViewScales: PolarAreaViewSharedScales,
     onShowDayDetail: (day: number, month: number, year: number) => void,
     detailDay: Day | null,
     dayViewContainerSize: { containerWidth: number, containerHeight: number }
@@ -182,7 +220,8 @@ type MonthViewProps = {
 
 }
 
-function curryGetPieDayViewRadiusScales(isSuperPositioned: boolean, transactionDataArr: TransactionData[], currentContainerWidth: number, currentContainerHeight: number): () => { linearRadiusScale: null; logRadiusScale: null; } | { linearRadiusScale: d3.ScaleLinear<number, number, never>; logRadiusScale: d3.ScaleLogarithmic<number, number, never>; } {
+function curryGetPieDayViewRadiusScales(isSuperPositioned: boolean, transactionDataArr: TransactionData[], currentContainerWidth: number, currentContainerHeight: number):
+    () => { linearRadiusScale: null; logRadiusScale: null; } | { linearRadiusScale: d3.ScaleLinear<number, number, never>; logRadiusScale: d3.ScaleLogarithmic<number, number, never>; } {
     return () => {
         let groupedData: [number, number, number, number][] | [number, number, number][] = []; // // [year, month, day, sumTransactionAmountOfDay] or // [month, day, sumTransactionAmountOfDayForEachYear]
         let radiusMinDomain: number | undefined; // if isSuperpositioned = true, it is the sum of data for all a day of all the year; else for each year 
@@ -228,21 +267,48 @@ function MonthView(props: MonthViewProps) {
                 const hasDay = i < numberOfDaysInMonth;
                 const isDetailDay = detailDay !== null && detailDay.day === i + 1 && detailDay.month === month && detailDay.year === currentYear;
                 const isDayHasSelectedTransaction = highLightedCalendarDayBorderMMDDSet.has(`${month}-${i + 1}`)
-                const barDayViewProps: BarDayViewProps = {
-                    day: i + 1, ...props,
-                    scales: props.barDayViewScales,
-                    valueGetter: props.barDayViewValueGetter,
-                    containerSize: props.dayViewContainerSize,
-                }
-                const pieDayViewProps: PieDayViewProps = {
-                    day: i + 1, ...props,
-                    scales: props.pieDayViewScales,
-                    valueGetter: props.pieDayViewValueGetter,
-                    containerSize: props.dayViewContainerSize,
-                }
                 let dayView;
                 if (hasDay) {
-                    dayView = glyphType === 'pie' ? <PieDayView {...pieDayViewProps} /> : <BarDayView {...barDayViewProps} />
+                    switch (glyphType) {
+                        case 'pie':
+                            const pieDayViewProps: PieDayViewProps = {
+                                day: i + 1,
+                                month: props.month,
+                                currentYear: props.currentYear,
+                                data: props.data,
+                                scales: props.pieDayViewScales,
+                                valueGetter: props.pieDayViewValueGetter,
+                                containerSize: props.dayViewContainerSize,
+                            }
+                            dayView = <PieDayView {...pieDayViewProps} />
+                            break;
+                        case 'bar':
+                            const barDayViewProps: BarDayViewProps = {
+                                day: i + 1,
+                                month: props.month,
+                                currentYear: props.currentYear,
+                                data: props.data,
+                                scales: props.barDayViewScales,
+                                valueGetter: props.barDayViewValueGetter,
+                                containerSize: props.dayViewContainerSize,
+                            }
+                            dayView = <BarDayView {...barDayViewProps} />
+                            break;
+                        case 'polarArea':
+                            const polarAreaDayViewProps: PolarAreaDayViewProps = {
+                                day: i + 1,
+                                month: props.month,
+                                currentYear: props.currentYear,
+                                data: props.data,
+                                scales: props.polarAreaDayViewScales,
+                                containerSize: props.dayViewContainerSize
+                            }
+                            dayView = <PolarAreaDayView {...polarAreaDayViewProps}></PolarAreaDayView>
+                            break
+                        default:
+                            const _exhaustiveCheck: never = glyphType
+                            throw new Error("exhaustive error");
+                    }
                 } else {
                     dayView = <div style={{
                         //reference: https://www.jianshu.com/p/4278f70c2721

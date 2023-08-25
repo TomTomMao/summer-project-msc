@@ -62,6 +62,7 @@ interface InteractivityState {
     selectedCategoryArr: Array<TransactionData['category']>,
     selectedFrequencyUniqueKeyArr: Array<TransactionData['frequencyUniqueKey']>,
     currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | '' | 'oneTimeTransaction',
+    categoryOrderArr: TransactionData['category'][]
     // clickedDetailTransactionNumberArr: TransactionData['transactionNumber'][] // future feature
 }
 
@@ -77,6 +78,7 @@ const initialState: InteractivityState = {
     selectedCategoryArr: [],
     selectedFrequencyUniqueKeyArr: [],
     currentSelector: 'oneTimeTransaction',
+    categoryOrderArr: [],
     // clickedDetailTransactionNumberArr: [],//future feature
 };
 
@@ -87,6 +89,7 @@ export const interactivitySlice = createSlice({
     reducers: {
         setTransactionDataArr(state, action: PayloadAction<TransactionData[]>) {
             state.transactionDataArr = action.payload
+            state.categoryOrderArr = Array.from(new Set(action.payload.map(d => d.category)))
         },
         setClusterDataArr(state, action: PayloadAction<ClusterData[]>) {
             state.selectedClusterIdArr = []
@@ -299,6 +302,8 @@ export const selectCurrentSelectorColourScaleType = (state: RootState): colourCh
     }
 }
 
+/**it is memorised because its a plan array */
+export const selectCategoryOrderArrMemorised = (state: RootState): TransactionData['category'][] => state.interactivity.categoryOrderArr
 
 export default interactivitySlice.reducer;
 
@@ -327,9 +332,6 @@ function getOneTimeTransactionNumberArr(transactionDataArr: TransactionData[]): 
             }
         },
         transactionData => transactionData.frequencyUniqueKey)
-    console.log(frequencyUniqueKeyAndCountArr)
     const oneTimeTransactionNumberArr = frequencyUniqueKeyAndCountArr.filter(frequencyUniqueKeyAndCount => frequencyUniqueKeyAndCount[1].numberOfTransaction === 1).map(frequencyUniqueKeyAndCount => frequencyUniqueKeyAndCount[1].transactionNumber)
-
-    console.log(oneTimeTransactionNumberArr)
     return oneTimeTransactionNumberArr
 }

@@ -7,6 +7,7 @@ import { GRAY1, PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
 import { useAppSelector } from "@/app/hooks";
 import * as pieDayViewSlice from "./pieDayViewSlice"
 import * as calendarViewSlice from "../calendarViewSlice"
+import useCalendarDayGlyphTransactionDataArr from "./useDayData";
 let sumArc = 0;
 export type PieCalendarViewSharedScales = {
     colourScale: PublicScale['colourScale'],
@@ -35,7 +36,7 @@ export const pieCalendarViewValueGetter: PieCalendarViewValueGetter = {
     name: (d: TransactionData) => d.transactionNumber
 };
 export function PieDayView(props: PieDayViewProps) {
-    //reference: Holtz, Y. (n.d.). Pie chart with React. Retrieved 17 July 2023, from https://www.react-graph-gallery.com/pie-plot
+    //I modify the code from here (reference) : Holtz, Y. (n.d.). Pie chart with React. Retrieved 17 July 2023, from https://www.react-graph-gallery.com/pie-plot
     const { day, month, currentYear, data, scales, valueGetter, containerSize } = props;
     const { highLightedTransactionNumberSetByBrusher, transactionDataMapYMD, transactionAmountSumMapByDayYMD, transactionDataMapMD, transactionAmountSumMapByDayMD } = data
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
@@ -45,13 +46,8 @@ export function PieDayView(props: PieDayViewProps) {
      * 
      * if isSuperPositioned = false, dayData is an array of all the transactionData whose year, month and day are the same as props.day, props.month and props.currentyear
     */
-    const dayData = useMemo(() => {
-        if (!isSuperPositioned) {
-            return getDataFromTransactionDataMapYMD(transactionDataMapYMD, day, month, currentYear);
-        } else {
-            return getDataFromTransactionDataMapMD(transactionDataMapMD, day, month);
-        }
-    }, [day, month, currentYear, transactionDataMapYMD, transactionDataMapMD, isSuperPositioned])
+    const dayData = useCalendarDayGlyphTransactionDataArr(day, month, currentYear, transactionDataMapYMD, transactionDataMapMD, isSuperPositioned)
+    // console.log(`pie day view day data:  ${day}-${month}--${isSuperPositioned ? 'superpositioned' : currentYear}`, dayData)
 
     // configs
     const { containerWidth, containerHeight } = containerSize
@@ -98,7 +94,7 @@ export function PieDayView(props: PieDayViewProps) {
     }, [valueGetter, dayData, containerWidth, radius])
     const paths = useMemo(() => {
         const paths = arcs.map((arc, i) => {
-            const {category, transactionNumber} = dayData[i]
+            const { category, transactionNumber } = dayData[i]
             return <path id={transactionNumber + 'pie'} key={i} d={arc === null ? undefined : arc} fill={colourScale.getColour(category, transactionNumber)}
                 opacity={1}
             />;
