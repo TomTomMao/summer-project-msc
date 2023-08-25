@@ -9,7 +9,8 @@ from app.stringPreprocessor import preprocess
 
 
 VALID_KMEAN_ITERATION = [1, 2000]
-VALID_KMEAN_N_INIT = [10,1000]
+VALID_KMEAN_N_INIT = [10, 1000]
+
 
 class FrequencyUniqueKey(Enum):
     CATEGORY = 'category'
@@ -112,6 +113,8 @@ class TransactionDataset:
         self.__addTransactionAmountInfo()
         # add dayOfYear dayOfWeek weekOfYear columns, set transactionData tobe datetime type
         self.__cleanDateInfo()
+        # replace NaN in category column by 'unknown'
+        self.__cleanCategory()
         self.frequencyOption = FrequencyOption(
             FrequencyUniqueKey.TRANSACTION_DESCRIPTION)
         self.__updateFrequency()
@@ -278,6 +281,18 @@ class TransactionDataset:
         except:
             return False
 
+    def __cleanCategory(self):
+        '''
+            warning: mutate self.dataframe
+            assume there is 'category' column in self.dataframe
+            replace the NaN value in the category column by the string 'unknown'
+        '''
+        if 'category' not in self.getColumnNames():
+            raise ValueError(
+                f"category column does not exist in {self.getColumnNames()}")
+        self.dataframe['category'].fillna('unknown', inplace=True)
+        return True
+
     def __getNumericalDataFromCategoricalData(self, categoricalColumnName) -> pd.Series:
         '''
             assume categoricalColumnName exists
@@ -295,7 +310,8 @@ class TransactionDataset:
         '''
         assert columnName in self.dataframe.columns, f"{columnName} doesn't exist"
         # referenced danthelion's answer for checking numericals: https://stackoverflow.com/questions/19900202/how-to-determine-whether-a-column-variable-is-numeric-or-not-in-pandas-numpy
-        isColumnCategorical = pd.api.types.is_numeric_dtype(self.dataframe[columnName]) == False
+        isColumnCategorical = pd.api.types.is_numeric_dtype(
+            self.dataframe[columnName]) == False
         if toNumerical and isColumnCategorical:
             return self.__getNumericalDataFromCategoricalData(columnName)
         else:
@@ -321,13 +337,13 @@ class TransactionDataset:
         # get the numerical value of two columns
         x1 = self.getColumn(metric1, toNumerical=True).to_numpy()
         x2 = self.getColumn(metric2, toNumerical=True).to_numpy()
-        
+
         # reference for normalise the data: https://scikit-learn.org/stable/modules/preprocessing.html#normalization
         # normalise the data so that one of the dimension won't dominant the clustering algorithm
-        x1Norm = sklearn.preprocessing.normalize([x1]) 
+        x1Norm = sklearn.preprocessing.normalize([x1])
         x2Norm = sklearn.preprocessing.normalize([x2])
 
-        X = np.dstack((x1Norm, x2Norm))[0] # type: ignore
+        X = np.dstack((x1Norm, x2Norm))[0]  # type: ignore
         # run kmean
         # reference: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
         kmeans = KMeans(n_clusters=numberOfCluster, random_state=0,
