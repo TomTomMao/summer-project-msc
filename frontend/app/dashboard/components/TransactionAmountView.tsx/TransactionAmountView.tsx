@@ -3,6 +3,7 @@ import * as scatterPlotSlice from "./scatterPlotSlice";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { ScaleOrdinalWithTransactionNumber } from "../../hooks/useColourScales";
 import InteractiveScatterPlot from "../InteractiveScatterPlot/InteractiveScatterPlot";
+import LogScaleSwitcher, { LogScaleSwitcherGroup } from "../InteractiveScatterPlot/LogScaleSwitcher";
 
 export interface TransactionAmountViewProps {
     // for better performance
@@ -57,6 +58,12 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
 
     const dataset = useAppSelector(state => state.interactivity.transactionDataArr)
     const shouldShowBrusher = useAppSelector(scatterPlotSlice.selectShouldShowBrusher)
+
+    // scale switcher data and handler: XLog, yLog, handleTurnOnXLog, handleTurnOffXLog, handleTurnOnYLog, handleTurnOffYLog
+    const handleTurnOnXLog = () => dispatch(scatterPlotSlice.setXLog(true))
+    const handleTurnOffXLog = () => dispatch(scatterPlotSlice.setXLog(false))
+    const handleTurnOnYLog = () => dispatch(scatterPlotSlice.setYLog(true))
+    const handleTurnOffYLog = () => dispatch(scatterPlotSlice.setYLog(false))
     return (
         <>
             {/* https://www.educative.io/answers/how-to-center-an-absolutely-positioned-element-inside-its-parent */}
@@ -66,11 +73,18 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
                 position: 'absolute',
                 fontSize: '14px',
                 top: 5,
-                zIndex:8,
+                zIndex: 8,
                 left: marginLeft + (containerWidth - marginLeft - marginRight) / 2,
                 transform: 'translate(-50%,0)',
                 textAlign: 'center'
             }}>transaction amount view</div>
+            <div style={{ position: 'absolute', top: -7, right: -10, transform: 'scale(0.8)', zIndex: 7 }}>
+                <LogScaleSwitcherGroup isXLog={xLog} isYLog={yLog}
+                    onTurnOnXLog={handleTurnOnXLog}
+                    onTurnOnYLog={handleTurnOnYLog}
+                    onTurnOffXLog={handleTurnOffXLog}
+                    onTurnOffYLog={handleTurnOffYLog} />
+            </div>
             <InteractiveScatterPlot
                 onSelectTransactionNumberArr={handleSelectTransactionNumberArr}
                 onSetThisSelector={handleSetThisSelector}

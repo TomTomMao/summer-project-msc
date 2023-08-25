@@ -13,6 +13,9 @@ import { ColourDomainData, ValidColours } from "../ColourChannel/colourChannelSl
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "../ColourLegend/ColourLegends";
 
 export const COLOURLEGEND_WIDTH = 125
+const COLOUR_LEGEND_MARGIN_TOP = 10
+const COLOUR_LEGEND_MARGIN_BOTTOM = 30
+
 
 export interface InteractiveScatterPlotProps {
     onSelectTransactionNumberArr: (selectedTransactionNumberArr: TransactionData['transactionNumber'][]) => void,
@@ -324,8 +327,15 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                 height: containerHeight,
                 zIndex: 4
             }}>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: containerHeight, width: COLOURLEGEND_WIDTH }}>
-                    <div style={{ maxHeight: containerHeight, width: COLOURLEGEND_WIDTH, overflowY: 'auto' }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: COLOUR_LEGEND_MARGIN_TOP,
+                    height: containerHeight - COLOUR_LEGEND_MARGIN_TOP - COLOUR_LEGEND_MARGIN_BOTTOM,
+                    width: COLOURLEGEND_WIDTH
+                }}>
+                    <div style={{ maxHeight: containerHeight - COLOUR_LEGEND_MARGIN_TOP - COLOUR_LEGEND_MARGIN_BOTTOM, width: COLOURLEGEND_WIDTH, overflowY: 'auto' }}>
                         {colourLegend}
                     </div>
                 </div>
