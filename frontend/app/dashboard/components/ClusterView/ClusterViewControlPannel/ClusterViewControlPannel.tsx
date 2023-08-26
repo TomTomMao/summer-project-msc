@@ -1,6 +1,6 @@
 import { FrequencyControlPannel } from "./FrequencyControlPannel";
-import { FolderableContainerInTable } from "../../Containers/FolderableContainer";
-import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary} from "@/app/dashboard/utilities/styledAccordion";
+import { Typography } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ClusterViewMappingControlPannel } from "./ClusterViewMappingControlPannel";
 import { ClusterAlgorithmControlPannel } from "./ClusterAlgorithmControlPannel";
