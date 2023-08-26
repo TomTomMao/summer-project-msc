@@ -22,7 +22,7 @@ export const polarAreaDayViewSlice = createSlice({
     },
   },
 });
-
+export const {setRadiusAxis} = polarAreaDayViewSlice.actions
 export const selectRadiusAxis = (state: RootState) =>
   state.polarAreaDayView.radiusAxis;
 

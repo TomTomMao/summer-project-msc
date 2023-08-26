@@ -7,6 +7,7 @@ import FolderableContainer from "../Containers/FolderableContainer"
 import { Typography, FormControlLabel, Switch, Button, ButtonGroup, FormControl, Grid, InputLabel, MenuItem, Select, Container, Radio, FormLabel, RadioGroup } from "@mui/material";
 import { Accordion, AccordionDetails, AccordionSummary } from "@/app/dashboard/utilities/styledAccordion"
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import * as polarAreaDayViewSlice from "./DayViews/polarAreaDayViewSlice"
 
 
 /**
@@ -16,35 +17,14 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
  */
 export default function CalendarViewControlPannel() {
 
-    // config for the pie view
-    const radiusScaleType: 'linear' | 'log' | 'constant' = useAppSelector(pieDayViewSlice.selectRadiusAxis)
-
     // config for the selected glyph type
     const calendarViewGlyphType = useAppSelector(calendarViewSlice.selectGlyphType)
 
     const dispatch = useAppDispatch()
-
-
-
     const handleUseGlyph = (glyphType: calendarViewSlice.CalendarViewState['glyphType']): void => {
         dispatch(calendarViewSlice.setGlyphType(glyphType))
     }
 
-    function handleSetPieGlyphRadiusAxis(nextAxis: string): void {
-        switch (nextAxis) {
-            case 'log':
-                dispatch(pieDayViewSlice.setRadiusAxis('log'));
-                break;
-            case 'linear':
-                dispatch(pieDayViewSlice.setRadiusAxis('linear'));
-                break;
-            case 'constant':
-                dispatch(pieDayViewSlice.setRadiusAxis('constant'));
-                break;
-            default:
-                throw new Error("invalid nextAxis: " + nextAxis)
-        }
-    }
     return (
         <div style={{ width: 550, border: 'black 1px solid' }}>
             <Accordion
@@ -67,6 +47,7 @@ export default function CalendarViewControlPannel() {
                 </AccordionDetails>
             </Accordion>
             <Accordion
+
                 defaultExpanded={calendarViewGlyphType === 'bar'}>
                 {/* reference: https://mui.com/material-ui/react-accordion/ */}
                 <AccordionSummary
@@ -74,7 +55,7 @@ export default function CalendarViewControlPannel() {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography>Bar Glyph Config</Typography>
+                    <Typography color={calendarViewGlyphType === 'bar' ? 'success.main' : undefined}>Bar Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <BarDayViewControlPannel></BarDayViewControlPannel>
@@ -88,10 +69,10 @@ export default function CalendarViewControlPannel() {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography>Pie Glyph Config</Typography>
+                    <Typography color={calendarViewGlyphType === 'pie' ? 'success.main' : undefined}>Pie Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <BarDayViewControlPannel></BarDayViewControlPannel>
+                    <PieDayViewControlPannel></PieDayViewControlPannel>
                 </AccordionDetails>
             </Accordion>
             <Accordion
@@ -102,88 +83,13 @@ export default function CalendarViewControlPannel() {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography>Polar Area Glyph Config</Typography>
+                    <Typography color={calendarViewGlyphType === 'polarArea' ? 'success.main' : undefined}>Polar Area Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <BarDayViewControlPannel></BarDayViewControlPannel>
+                    <PolarAreaViewControlPannel></PolarAreaViewControlPannel>
                 </AccordionDetails>
             </Accordion>
         </div>)
-    // return (<>
-    //     <div className="controlPannelSubtitle">
-    //         calendar view setting
-    //     </div>
-    //     <table>
-    //         <tr>
-    //             <td><input type="radio" name="barGlyph" checked={calendarViewGlyphType === 'bar'} id="barGlyph"
-    //                 onChange={handleUseBarGlyph} /><label htmlFor="barGlyph">bar glyph</label></td>
-    //             <td><input type="radio" name="pieGlyph" checked={calendarViewGlyphType === 'pie'} id="pieGlyph"
-    //                 onChange={handleUsePieGlyph} /><label htmlFor="pieGlyph">pie glyph</label></td>
-    //         </tr>
-    //         <tr><td><hr /></td><td><hr /></td></tr>
-    //         <FolderableContainer label={"bar glyph config"} initIsFolded={false}>
-    //             <tr>
-    //                 <td>
-    //                     barGlyph share bandwidth?
-    //                 </td>
-    //                 <td>
-    //                     <select name="" id="" value={String(barDayViewIsSharedBandWidth)}
-    //                         onChange={(e) => handleSetBarGlyphShareBandWidth(e.target.value === 'true' ? true : false)}>
-    //                         <option value='true'>true</option>
-    //                         <option value='false'>false</option>
-    //                     </select>
-    //                 </td>
-    //             </tr>
-    //             <tr>
-    //                 <td>
-    //                     barGlyph sorting key:
-    //                 </td>
-    //                 <td>
-    //                     <select name="" id="" value={barDayViewSortingKey} onChange={(e) => handleSetBarGlyphSortingKey(e.target.value)}>
-    //                         {TransactionData.getColumnNames().map(columnName => <option key={columnName} value={columnName}>{columnName}</option>)}
-    //                     </select>
-    //                 </td>
-    //             </tr>
-    //             <tr>
-    //                 <td>
-    //                     barGlyph sorting order:
-    //                 </td>
-    //                 <td>
-    //                     <select name="" id="" value={barDayViewIsDesc ? 'descending' : 'ascending'} onChange={(e) => handleSetBarGlyphSortingOrder(e.target.value)}>
-    //                         <option value="descending">descending</option>
-    //                         <option value="ascending">ascending</option>
-    //                     </select>
-    //                 </td>
-    //             </tr>
-    //             <tr>
-    //                 <td>
-    //                     barGlyph height axis:
-    //                 </td>
-    //                 <td>
-    //                     <select name="" id="" value={barDayViewHeightAxis} onChange={(e) => handleSetBarGlyphHeightAxis(e.target.value)}>
-    //                         <option value="log">log</option>
-    //                         <option value="linear">linear</option>
-    //                     </select>
-    //                 </td>
-    //             </tr>
-    //         </FolderableContainer>
-    //         <tr><td><hr /></td><td><hr /></td></tr>
-    //         <FolderableContainer label={"pie glyph config"} initIsFolded={false}>
-    //             <tr>
-    //                 <td>
-    //                     pieGlyph radius
-    //                 </td>
-    //                 <td>
-    //                     <select name="" id="" value={radiusScaleType} onChange={(e) => handleSetPieGlyphRadiusAxis(e.target.value)}>
-    //                         <option value="log">log</option>
-    //                         <option value="linear">linear</option>
-    //                         <option value="constant">constant</option>
-    //                     </select>
-    //                 </td>
-    //             </tr>
-    //         </FolderableContainer>
-    //     </table>
-    // </>)
 }
 function BarDayViewControlPannel() {
     const barDayViewIsSharedBandWidth = useAppSelector(barDayViewSlice.selectIsSharedBandWidth)
@@ -215,18 +121,6 @@ function BarDayViewControlPannel() {
             dispatch(barDayViewSlice.setDescendingOrder())
         } else if (nextOrder === 'ascending') {
             dispatch(barDayViewSlice.setAscendingOrder())
-        }
-    }
-    const handleSetBarGlyphHeightAxis = (nextAxis: string) => {
-        switch (nextAxis) {
-            case 'log':
-                dispatch(barDayViewSlice.setHeightAxis('log'));
-                break;
-            case 'linear':
-                dispatch(barDayViewSlice.setHeightAxis('linear'))
-                break;
-            default:
-                throw new Error("invalid nextAxis: " + nextAxis);
         }
     }
     return (<>
@@ -271,7 +165,7 @@ function BarDayViewControlPannel() {
                     </RadioGroup>
                 </FormControl>
             </Grid>
-            
+
             <Grid item xs={6}>
                 <Container>
                     <FormControlLabel
@@ -281,6 +175,95 @@ function BarDayViewControlPannel() {
                             checked={barDayViewHeightAxis === 'log'}
                             onChange={handleToggleBarDayViewHeightAxis} />} label='Use Log Height' />
                 </Container>
+            </Grid>
+        </Grid>
+    </>)
+}
+function PieDayViewControlPannel() {
+    // config for the pie view
+    const radiusScaleType: 'linear' | 'log' | 'constant' = useAppSelector(pieDayViewSlice.selectRadiusAxis)
+    const dispatch = useAppDispatch()
+
+    function handleSetPieGlyphRadiusAxis(nextAxis: string): void {
+        switch (nextAxis) {
+            case 'log':
+                dispatch(pieDayViewSlice.setRadiusAxis('log'));
+                break;
+            case 'linear':
+                dispatch(pieDayViewSlice.setRadiusAxis('linear'));
+                break;
+            case 'constant':
+                dispatch(pieDayViewSlice.setRadiusAxis('constant'));
+                break;
+            default:
+                throw new Error("invalid nextAxis: " + nextAxis)
+        }
+    }
+    return (<>
+        <Grid container spacing={1}>
+            <Grid item xs={2} justifyContent={'center'} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>Radius</Grid>
+            <Grid item xs={10}>
+                <FormControl>
+                    {/*reference for radio button: https://mui.com/material-ui/react-radio-button/ */}
+                    <RadioGroup
+                        row
+                        aria-labelledby="demo-row-radio-buttons-group-label"
+                        name="row-radio-buttons-group"
+                        onChange={e => handleSetPieGlyphRadiusAxis(e.target.value)}
+                        value={radiusScaleType}
+                    >
+                        <FormControlLabel value="linear" control={<Radio />} label="Linear" />
+                        <FormControlLabel value="log" control={<Radio />} label="Log" />
+                        <FormControlLabel value="constant" control={<Radio />} label="Local" />
+                    </RadioGroup>
+                </FormControl>
+            </Grid>
+        </Grid>
+    </>)
+}
+function PolarAreaViewControlPannel() {
+    // config for the polar area view
+    const radiusScaleType: "logGlobal" | "linearGlobal" | "logLocal" | "linearLocal" = useAppSelector(polarAreaDayViewSlice.selectRadiusAxis)
+    const dispatch = useAppDispatch()
+
+    function handleSetPieGlyphRadiusAxis(nextAxis: string): void {
+        switch (nextAxis) {
+            case 'logLocal':
+                dispatch(polarAreaDayViewSlice.setRadiusAxis(nextAxis));
+                break;
+            case 'linearLocal':
+                dispatch(polarAreaDayViewSlice.setRadiusAxis(nextAxis));
+                break;
+            case 'logGlobal':
+                dispatch(polarAreaDayViewSlice.setRadiusAxis(nextAxis));
+                break;
+            case 'linearGlobal':
+                dispatch(polarAreaDayViewSlice.setRadiusAxis(nextAxis));
+                break;
+
+            default:
+                throw new Error("invalid nextAxis: " + nextAxis)
+        }
+    }
+    return (<>
+        <Grid container spacing={1}>
+            <Grid item xs={2} justifyContent={'center'} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>Radius</Grid>
+            <Grid item xs={10}>
+                <FormControl>
+                    {/*reference for radio button: https://mui.com/material-ui/react-radio-button/ */}
+                    <RadioGroup
+                        row
+                        aria-labelledby="demo-row-radio-buttons-group-label"
+                        name="row-radio-buttons-group"
+                        onChange={e => handleSetPieGlyphRadiusAxis(e.target.value)}
+                        value={radiusScaleType}
+                    >
+                        <FormControlLabel value="linearGlobal" control={<Radio />} label="Linear" />
+                        <FormControlLabel value="logGlobal" control={<Radio />} label="Log" />
+                        <FormControlLabel value="linearLocal" control={<Radio />} label="Linear(local)" />
+                        <FormControlLabel value="logLocal" control={<Radio />} label="Log(local)" />
+                    </RadioGroup>
+                </FormControl>
             </Grid>
         </Grid>
     </>)
