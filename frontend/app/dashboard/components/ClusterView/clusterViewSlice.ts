@@ -428,7 +428,11 @@ export const selectShouldShowClusterViewBrusher = (state: RootState) =>
 
 export const selectFilteredDomainMemorised = createMemorisedFunction(
   selectFilteredDomain,
-  (a, b) => Object.entries(a).toString() === Object.entries(b).toString() //reference: https://www.samanthaming.com/tidbits/33-how-to-compare-2-objects/
+  (a, b) =>
+    a.filteredXDomainMax === b.filteredXDomainMax &&
+    a.filteredXDomainMin === b.filteredXDomainMin &&
+    a.filteredYDomainMax === b.filteredYDomainMax &&
+    a.filteredYDomainMin === b.filteredYDomainMin
 );
 
 function selectFilteredDomain(state: RootState) {
