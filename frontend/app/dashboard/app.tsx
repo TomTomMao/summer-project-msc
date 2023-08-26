@@ -3,7 +3,7 @@ import { useEffect, useMemo } from "react"
 import { TransactionData } from "./utilities/DataObject";
 import CalendarView3, { CalendarViewYearController } from "./components/CalendarView3/CalendarView3";
 
-import CalendarViewControlPannel from "./components/ControlPannel/CalendarViewControlPannel";
+import CalendarViewControlPannel from "./components/CalendarView3/CalendarViewControlPannel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
 import { PUBLIC_VALUEGETTER } from "./utilities/consts";
 import ExpandableContainer from "./components/Containers/ExpandableContainer";
@@ -12,7 +12,7 @@ import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice
 import * as scatterPlotSlice from "./components/TransactionAmountView.tsx/scatterPlotSlice";
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 
-import ClusterViewControlPannel from "./components/ControlPannel/ClusterViewControlPannel/ClusterViewControlPannel";
+import ClusterViewControlPannel from "./components/ClusterView/ClusterViewControlPannel/ClusterViewControlPannel";
 
 
 import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";

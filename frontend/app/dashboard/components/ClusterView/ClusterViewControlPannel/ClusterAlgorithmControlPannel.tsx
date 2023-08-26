@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useState } from "react";
-import * as clusterViewSlice from "../../ClusterView/clusterViewSlice";
+import * as clusterViewSlice from "../clusterViewSlice";
 import { Button } from "../../Button";
 import { FormControl, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
 import Grid from '@mui/material/Grid';

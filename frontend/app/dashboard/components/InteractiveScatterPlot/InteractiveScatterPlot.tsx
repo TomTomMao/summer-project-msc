@@ -1,7 +1,7 @@
 import { TransactionData } from "../../utilities/DataObject";
 import * as d3 from "d3";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AxisBottom, AxisLeft } from "../Axis";
+import { AxisBottom, AxisLeft } from "./Axis";
 import { GRAY1 } from "../../utilities/consts";
 import { Circles } from "./CirclesGL";
 import { IconButton, Slider } from "@mui/material";

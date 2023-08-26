@@ -1,8 +1,8 @@
 import { TransactionData, } from "../../utilities/DataObject"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import * as barDayViewSlice from "../CalendarView3/DayViews/barDayViewSlice"
-import * as calendarViewSlice from "../CalendarView3/calendarViewSlice"
-import * as pieDayViewSlice from "../CalendarView3/DayViews/pieDayViewSlice"
+import * as barDayViewSlice from "./DayViews/barDayViewSlice"
+import * as calendarViewSlice from "./calendarViewSlice"
+import * as pieDayViewSlice from "./DayViews/pieDayViewSlice"
 import FolderableContainer from "../Containers/FolderableContainer"
 /**
  * require ConfigureContext and ConfigDispatchContext

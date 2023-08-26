@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import * as clusterViewSlice from "../../ClusterView/clusterViewSlice";
+import * as clusterViewSlice from "../clusterViewSlice";
 import { ValidAxisLabels } from "../../Interactivity/interactivitySlice";
 import { ValidColours } from "../../ColourChannel/colourChannelSlice";
 import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch } from "@mui/material";
