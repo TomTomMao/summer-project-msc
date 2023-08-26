@@ -68,7 +68,7 @@ button:hover {
 /* calendar view */
 
 .calendarView {
-    padding: 2em 2em 2em 2em;
+    padding: 2em 2em 2em 0em;
     background-color: white;
 }
 
