@@ -31,7 +31,7 @@ export function ClusterAlgorithmControlPannel() {
     };
 
     return (
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
             <Grid item xs={6}>
                 <FormControl fullWidth>
                     <InputLabel id="demo-simple-select-label">clustering metric1</InputLabel>

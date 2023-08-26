@@ -57,7 +57,7 @@ export function FrequencyControlPannel() {
         setFrequencyUniqueKey(frequencyUniqueKey)
     }
     return (
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
             <FrequencyUniqueKeyOption frequencyUniqueKey={frequencyUniqueKey} onChangeFrequncyUniqueKey={handleChangeFrequencyUniqueKey}></FrequencyUniqueKeyOption>
             {frequencyUniqueKey === 'clusteredTransactionDescription' &&
                 <LinkageClusteredTransactionDescriptionOption

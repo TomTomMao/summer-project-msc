@@ -39,7 +39,7 @@ export function ClusterViewMappingControlPannel() {
         dispatch(clusterViewSlice.swap());
     };
     return (
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
             {/* reference: https://mui.com/material-ui/react-grid/ */}
             <Grid item xs={12}>
                 <FormControl fullWidth>

@@ -26,6 +26,12 @@ export const barDayViewSlice = createSlice({
   initialState,
   // redux library uses immer, so this is immutable updating.
   reducers: {
+    toggleHeightAxis: (state) => {
+      state.heightAxis = state.heightAxis === "linear" ? "log" : "linear";
+    },
+    toggleShareBandwidth: (state) => {
+      state.isSharedBandWidth = state.isSharedBandWidth === false;
+    },
     setSharedBandwidth: (state) => {
       state.isSharedBandWidth = true;
     },
@@ -53,7 +59,10 @@ export const barDayViewSlice = createSlice({
     setMaxTransactionCountOfDay: (state, action: PayloadAction<number>) => {
       state.maxTransactionCountOfDay = action.payload;
     },
-    setMaxTransactionCountOfDaySuperpositioned: (state, action: PayloadAction<number>) => {
+    setMaxTransactionCountOfDaySuperpositioned: (
+      state,
+      action: PayloadAction<number>
+    ) => {
       state.maxTransactionCountOfDaySuperpositioned = action.payload;
     },
   },
@@ -61,6 +70,8 @@ export const barDayViewSlice = createSlice({
 
 // export the action creators
 export const {
+  toggleHeightAxis,
+  toggleShareBandwidth,
   setSharedBandwidth,
   setPrivateBandWidth,
   setSortingKey,
@@ -68,7 +79,7 @@ export const {
   setAscendingOrder,
   setHeightAxis,
   setMaxTransactionCountOfDay,
-  setMaxTransactionCountOfDaySuperpositioned
+  setMaxTransactionCountOfDaySuperpositioned,
 } = barDayViewSlice.actions;
 
 // export the selectors
@@ -82,7 +93,8 @@ export const selectHeightAxis = (state: RootState) =>
   state.barDayView.heightAxis;
 export const selectMaxTransactionCountOfDay = (state: RootState) =>
   state.barDayView.maxTransactionCountOfDay;
-export const selectMaxTransactionCountOfDaySuperpositioned = (state: RootState) =>
-  state.barDayView.maxTransactionCountOfDaySuperpositioned;
+export const selectMaxTransactionCountOfDaySuperpositioned = (
+  state: RootState
+) => state.barDayView.maxTransactionCountOfDaySuperpositioned;
 
 export default barDayViewSlice.reducer;

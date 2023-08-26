@@ -5,7 +5,7 @@ import { Day } from "./CalendarView3";
 const MAX_YEAR = 2022;
 const MIN_YEAR = 2015;
 
-interface CalendarViewState {
+export interface CalendarViewState {
   glyphType: "bar" | "pie" | 'polarArea';
   containerWidth: number;
   containerHeight: number;

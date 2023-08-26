@@ -103,13 +103,6 @@ export default function App() {
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
                             <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 4 }}>
-                                <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div style={{ height: '450px', backgroundColor: 'white' }}>
-                                        <div style={{ margin: '2px' }}>
-                                            <ClusterViewControlPannel></ClusterViewControlPannel>
-                                        </div>
-                                    </div>
-                                </FolderableContainer>
                             </div>
                             <div style={{ height: '20px' }}></div>
                             <TransactionAmountView
