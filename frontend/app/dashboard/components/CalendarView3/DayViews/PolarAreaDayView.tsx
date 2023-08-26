@@ -8,6 +8,7 @@ import * as calendarViewSlice from "../calendarViewSlice";
 import { GRAY1 } from "@/app/dashboard/utilities/consts";
 import * as d3 from "d3";
 import { useMemo } from "react";
+import { selectRadiusAxis } from "./polarAreaDayViewSlice";
 
 export type PolarAreaViewSharedScales = {
     colourScale: ScaleOrdinalWithTransactionNumber;
@@ -30,7 +31,7 @@ export type PolarAreaDayViewProps = {
 export function PolarAreaDayView(props: PolarAreaDayViewProps) {
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
     // const radiusScaleType = useAppSelector(polarAreaDayViewSlice.selectRadiusAxis) 
-    let radiusScaleType: 'linear' | 'log' | 'const' = 'log'
+    let radiusScaleType = useAppSelector(selectRadiusAxis)
     const { day, month, currentYear, data, scales, containerSize } = props
     const { containerWidth, containerHeight } = containerSize
     const { colourScale, linearRadiusScale, logRadiusScale, angleScale, categoryOrderMap: categoryOrder } = scales
@@ -74,15 +75,18 @@ export function PolarAreaDayView(props: PolarAreaDayViewProps) {
             throw new Error(`something wrong with linearradius scale, domain: ${linearRadiusScale.domain()}, range: ${linearRadiusScale.range()}`);
         }
         switch (radiusScaleType) {
-            case "log":
+            case "logGlobal":
                 return logRadiusScale
-            case "linear":
+            case "linearGlobal":
                 return linearRadiusScale
-            case "const":
-                if (chartData.length === 1) { return null }
-                const domain = d3.extent(chartData, (chartDatum => chartDatum.value))
-                if (domain[0] === undefined || domain[1] === undefined) { return null }
-                return d3.scaleLinear().domain(domain).range([0, Math.min(...[containerHeight, containerWidth]) / 2])
+            case "logLocal":
+                const maxLog = d3.max(chartData, (chartDatum => chartDatum.value))
+                if (maxLog === undefined) { return null }
+                return d3.scaleLog().domain([0.0001, maxLog]).range([0, Math.min(...[containerHeight, containerWidth]) / 2])
+            case "linearLocal":
+                const maxLinear = d3.max(chartData, (chartDatum => chartDatum.value))
+                if (maxLinear === undefined) { return null }
+                return d3.scaleLinear().domain([0, maxLinear]).range([0, Math.min(...[containerHeight, containerWidth]) / 2])
             default:
                 const _exhaustiveCheck: never = radiusScaleType
                 throw new Error("_exhaustiveCheck error");

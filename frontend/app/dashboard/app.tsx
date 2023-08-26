@@ -39,9 +39,7 @@ export default function App() {
 
     //**table's colour scale type */
     const colourLabelForTable = useAppSelector(interactivitySlice.selectCurrentSelectorColourScaleType)
-    useEffect(() => { console.log('flag colour colourLabelForTable updated:', colourLabelForTable) }, [colourLabelForTable])
     const tableColourScale = colourLabelForTable === 'category' ? categoryColourScale : (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
-    useEffect(() => { console.log('flag colour tableColourScale updated', tableColourScale) }, [tableColourScale])
     const tableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectTableViewColourDomainDataMemorised)
 
     // set the state store

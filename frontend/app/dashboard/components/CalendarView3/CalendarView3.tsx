@@ -182,27 +182,6 @@ export default function CalendarView3(props:
     ) {
         // Return an error component or message when any scale is null
         return <>Some error string</>;
-    } else {
-        console.log(
-            `colourScale`,
-            polarAreaCalendarViewSharedScales.colourScale
-        );
-        console.log(
-            `linearRadiusScale`,
-            polarAreaCalendarViewSharedScales.linearRadiusScale
-        );
-        console.log(
-            `logRadiusScale`,
-            polarAreaCalendarViewSharedScales.logRadiusScale
-        );
-        console.log(
-            `angleScale`,
-            polarAreaCalendarViewSharedScales.angleScale
-        );
-        console.log(
-            `categoryOrderMap`,
-            polarAreaCalendarViewSharedScales.categoryOrderMap
-        );
     }
     return (
         <>
@@ -352,8 +331,8 @@ function MonthView(props: MonthViewProps) {
                         width: props.dayViewContainerSize.containerWidth, height: props.dayViewContainerSize.containerHeight
                     }}></div>
                 }
-                return <td onClick={() => handleShowDayDetail(i + 1)} style={{ padding: '0px' }} >
-                    <div key={`${month}-${i + 1}`}
+                return <td key={`${month}-${i + 1}-${isSuperPositioned ? 'superpositioned' : 'notSuperPositioned'}`} onClick={() => handleShowDayDetail(i + 1)} style={{ padding: '0px' }} >
+                    <div
                         style={{ zIndex: isDayHasSelectedTransaction ? 900 : 800, borderColor: isDayHasSelectedTransaction ? 'blue' : isDetailDay ? 'red' : 'RGB(200,200,200)' }}
                     >
                         {dayView}
