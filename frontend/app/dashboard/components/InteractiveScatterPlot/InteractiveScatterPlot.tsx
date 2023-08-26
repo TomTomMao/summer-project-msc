@@ -243,6 +243,8 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
             throw new Error(`exhaustive type error`);
     }
 
+    
+
     return (
         <div style={{ position: 'relative', width: containerWidth + COLOURLEGEND_WIDTH, height: containerHeight + 20 }} className={props.className}>
             <div className="leftSliderContainer" style={{ position: 'absolute', top: marginTop, height: height, zIndex: 5, left: 5 }}>

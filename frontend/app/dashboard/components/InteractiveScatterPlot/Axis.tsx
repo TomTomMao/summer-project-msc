@@ -2,23 +2,32 @@
 import { useMemo } from "react";
 import * as d3 from 'd3';
 // reference: Holtz, Y. (n.d.). How to build a scatter plot with React and D3. Retrieved 13 July 2023, from https://www.react-graph-gallery.com/scatter-plot
-type AxisBottomProps = {
-    xScale: d3.ScaleLinear<number, number>;
-    numberOfTicksTarget: number;
-};
+type AxisBottomProps =
+    {
+        xScale: d3.ScaleLinear<number, number>
+        numberOfTicksTarget: number;
+    } | {
+        xScale: d3.ScaleLogarithmic<number, number>;
+        numberOfTicksTarget: number;
+    }
 // tick length
 const TICK_LENGTH = 6;
 
 export const AxisBottom = ({ xScale, numberOfTicksTarget }: AxisBottomProps) => {
     const range = xScale.range();
-
     const ticks = useMemo(() => {
-        return xScale.ticks(numberOfTicksTarget).map((value) => ({
-            value,
-            xOffset: xScale(value),
-        }));
+        if (xScale.hasOwnProperty('base')) {
+            return (xScale as d3.ScaleLogarithmic<number,number>).base(2).ticks(numberOfTicksTarget).map((value) => ({
+                value,
+                xOffset: xScale(value),
+            }));
+        } else {
+            return xScale.ticks(numberOfTicksTarget).map((value) => ({
+                value,
+                xOffset: xScale(value),
+            }));
+        }
     }, [xScale]);
-
     return (
         <>
             {/* Main horizontal line */}
@@ -49,17 +58,25 @@ export const AxisBottom = ({ xScale, numberOfTicksTarget }: AxisBottomProps) => 
 type AxisLeftProps = {
     yScale: d3.ScaleLinear<number, number>;
     numberOfTicksTarget: number;
-};
+} | {
+    yScale: d3.ScaleLogarithmic<number, number>;
+    numberOfTicksTarget: number;
+}
 
 export const AxisLeft = ({ yScale, numberOfTicksTarget }: AxisLeftProps) => {
     const range = yScale.range();
-
     const ticks = useMemo(() => {
-
-        return yScale.ticks(numberOfTicksTarget).map((value) => ({
-            value,
-            yOffset: yScale(value),
-        }));
+        if (yScale.hasOwnProperty('base')) {
+            return (yScale as d3.ScaleLogarithmic<number, number>).base(2).ticks(numberOfTicksTarget).map((value) => ({
+                value,
+                yOffset: yScale(value),
+            }));
+        } else {
+            return (yScale as d3.ScaleLinear<number, number>).ticks(numberOfTicksTarget).map((value) => ({
+                value,
+                yOffset: yScale(value),
+            }));
+        }
     }, [yScale]);
 
     return (
