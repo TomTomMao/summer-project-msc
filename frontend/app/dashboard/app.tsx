@@ -125,7 +125,7 @@ export default function App() {
                                 <CalendarView3 transactionDataArr={transactionDataArr}
                                     initCurrentYear={2016}
                                     highLightedTransactionNumberSetByBrusher={brushedTransactionNumberSet}
-                                    colourScale={categoryColourScale}
+                                    colourScales={{categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale}}
                                     colourValueGetter={PUBLIC_VALUEGETTER.colour}
                                 ></CalendarView3>
                             </div>

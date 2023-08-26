@@ -42,7 +42,7 @@ export default function CalendarViewControlPannel() {
                         <Grid item xs={3}><Button variant='contained' className="w-full" onClick={() => handleUseGlyph('bar')} size="small" color={calendarViewGlyphType === 'bar' ? 'success' : 'info'}>Bar</Button></Grid>
                         <Grid item xs={3}><Button variant='contained' className="w-full" onClick={() => handleUseGlyph('pie')} size="small" color={calendarViewGlyphType === 'pie' ? 'success' : 'info'}>Pie</Button></Grid>
                         <Grid item xs={3}><Button variant='contained' className="w-full" onClick={() => handleUseGlyph('polarArea')} size="small" color={calendarViewGlyphType === 'polarArea' ? 'success' : 'info'}>Polar Area</Button></Grid>
-                        <Grid item xs={3}><Button variant='contained' className="w-full" size="small" color={'info'} disabled>Star</Button></Grid>
+                        <Grid item xs={3}><Button variant='contained' className="w-full" onClick={() => handleUseGlyph('star')} size="small" color={calendarViewGlyphType === 'star' ? 'success' : 'info'}>star</Button></Grid>
                     </Grid>
                 </AccordionDetails>
             </Accordion>
@@ -87,6 +87,20 @@ export default function CalendarViewControlPannel() {
                 </AccordionSummary>
                 <AccordionDetails>
                     <PolarAreaViewControlPannel></PolarAreaViewControlPannel>
+                </AccordionDetails>
+            </Accordion>
+            <Accordion
+                defaultExpanded={calendarViewGlyphType === 'polarArea'}>
+                {/* reference: https://mui.com/material-ui/react-accordion/ */}
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                >
+                    <Typography color={calendarViewGlyphType === 'polarArea' ? 'success.main' : undefined}>Polar Area Glyph Config</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    not implemented
                 </AccordionDetails>
             </Accordion>
         </div>)

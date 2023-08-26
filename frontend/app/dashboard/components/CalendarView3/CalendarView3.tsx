@@ -46,9 +46,11 @@ type CalendarViewProps = {
     highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
     initCurrentYear: number;
     // heightScaleType: 'log' | 'linear',
-    categoryColourScale: ScaleOrdinalWithTransactionNumber,
-    clusterIdColourScale: ScaleOrdinalWithTransactionNumber,
-    frequencyUnqiueKeyColourScale: ScaleOrdinalWithTransactionNumber,
+    colourScales: {
+        categoryColourScale: ScaleOrdinalWithTransactionNumber,
+        clusterIdColourScale: ScaleOrdinalWithTransactionNumber,
+        frequencyUniqueKeyColourScale: ScaleOrdinalWithTransactionNumber,
+    }
     colourValueGetter: PublicValueGetter['colour']
 };
 
@@ -62,7 +64,7 @@ export default function CalendarView3(props:
     CalendarViewProps) {
     const transactionDataArr = props.transactionDataArr
     const clusterDataMap: ClusterDataMap = useClusterDataMap()
-    const { categoryColourScale, clusterIdColourScale, frequencyUnqiueKeyColourScale } = props
+    const { categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale } = props.colourScales
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
     const highLightedTransactionNumberSetByBrusher = props.highLightedTransactionNumberSetByBrusher
     // config
@@ -178,7 +180,9 @@ export default function CalendarView3(props:
         polarAreaCalendarViewSharedAngleScale === null ||
         starCalendarViewSharedRadialScales.linearRadiusScale === null ||
         starCalendarViewSharedRadialScales.logRadiusScale === null ||
-        starCalenarViewSharedAngleScale === null
+        starCalenarViewSharedAngleScale === null ||
+        categoryColourScale === null ||
+        categoryColourScale === undefined
     ) {
         return <>loading scales</>
     }
