@@ -11,7 +11,7 @@ export const MAX_NUMBER_CLUSTER = 100
 export default function ClusterViewControlPannel() {
     return (
         <>
-            <div style={{ width: 500, border: 'black 1px solid' }}>
+            <div style={{ width: 450, border: 'black 1px solid' }}>
                 <Accordion
                     defaultExpanded={true} >
                     {/* reference: https://mui.com/material-ui/react-accordion/ */}

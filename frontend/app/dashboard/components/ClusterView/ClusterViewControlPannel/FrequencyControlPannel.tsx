@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { FrequencyUniqueKeyConfig } from "@/app/dashboard/utilities/dataAgent";
 import { Button } from "../../Button";
 import * as popupSlice from "../../PopupWindow/PopupSlice";
-import { FormControl, Grid, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
+import { FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, TextField, Tooltip, Switch } from "@mui/material";
 const MAX_NUMBER_DESCRIPTION = 400
 const MIN_NUMBER_DESCRIPTION = 50
 
@@ -19,6 +19,8 @@ export function FrequencyControlPannel() {
     const [linkageMethod, setLinkageMethod] = useState(initLinkageMethod === null ? 'average' : initLinkageMethod)
     const initNumberOfClusterForString = useAppSelector(clusterViewSlice.selectNumberOfClusterForString)
     const [numberOfClusterForString, setNumberOfClusterForString] = useState(initNumberOfClusterForString === null ? 100 : initNumberOfClusterForString)
+    const [expertMode, setExpertMode] = useState(false)
+    const handleToggleExpertMode = () => setExpertMode(!expertMode)
     let isChanged: boolean
     if (frequencyUniqueKey === 'clusteredTransactionDescription') {
         isChanged = initFrequencyUniqueKey !== frequencyUniqueKey
@@ -58,9 +60,10 @@ export function FrequencyControlPannel() {
     }
     return (
         <Grid container spacing={1}>
-            <FrequencyUniqueKeyOption frequencyUniqueKey={frequencyUniqueKey} onChangeFrequncyUniqueKey={handleChangeFrequencyUniqueKey}></FrequencyUniqueKeyOption>
+            <FrequencyUniqueKeyOption expertMode={expertMode} onToggleExpertMode={handleToggleExpertMode} frequencyUniqueKey={frequencyUniqueKey} onChangeFrequncyUniqueKey={handleChangeFrequencyUniqueKey}></FrequencyUniqueKeyOption>
             {frequencyUniqueKey === 'clusteredTransactionDescription' &&
                 <LinkageClusteredTransactionDescriptionOption
+                    expertMode={expertMode}
                     distanceMeasure={distanceMeasure}
                     linkageMethod={linkageMethod}
                     numberOfClusterForString={numberOfClusterForString}
@@ -80,38 +83,53 @@ export function FrequencyControlPannel() {
     )
 }
 
-export function FrequencyUniqueKeyOption({ frequencyUniqueKey, onChangeFrequncyUniqueKey }: {
+export function FrequencyUniqueKeyOption({ frequencyUniqueKey, onChangeFrequncyUniqueKey, expertMode, onToggleExpertMode }: {
     frequencyUniqueKey: clusterViewSlice.FrequencyConfig['frequencyUniqueKey'],
-    onChangeFrequncyUniqueKey: (frequencyUniqueKey: clusterViewSlice.FrequencyConfig['frequencyUniqueKey']) => void
+    expertMode: boolean,
+    onChangeFrequncyUniqueKey: (frequencyUniqueKey: clusterViewSlice.FrequencyConfig['frequencyUniqueKey']) => void,
+    onToggleExpertMode: () => void
 }) {
     return (
-        <Grid item xs={frequencyUniqueKey === 'clusteredTransactionDescription' ? 12 : 6}>
-            <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">transaction group</InputLabel>
-                <Select
-                    size="small"
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={frequencyUniqueKey}
-                    label="frequencyUniqueKey"
-                    onChange={e => onChangeFrequncyUniqueKey(e.target.value as clusterViewSlice.FrequencyConfig['frequencyUniqueKey'])}
-                ><MenuItem value="transactionDescription">Transaction Description</MenuItem>
-                    <MenuItem value="category">Category</MenuItem>
-                    <MenuItem value="clusteredTransactionDescription">Clustered Transaction Description</MenuItem>
-                </Select>
-            </FormControl>
-        </Grid>);
+        <>
+            <Grid item xs={frequencyUniqueKey === 'clusteredTransactionDescription' ? 8 : 6}>
+                <FormControl fullWidth>
+                    <InputLabel id="demo-simple-select-label">transaction group</InputLabel>
+                    <Select
+                        size="small"
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={frequencyUniqueKey}
+                        label="frequencyUniqueKey"
+                        onChange={e => onChangeFrequncyUniqueKey(e.target.value as clusterViewSlice.FrequencyConfig['frequencyUniqueKey'])}
+                    ><MenuItem value="transactionDescription">Transaction Description</MenuItem>
+                        <MenuItem value="category">Category</MenuItem>
+                        <MenuItem value="clusteredTransactionDescription">Clustered Transaction Description</MenuItem>
+                    </Select>
+                </FormControl>
+            </Grid>
+            {frequencyUniqueKey === 'clusteredTransactionDescription' && <Grid item xs={4}>
+                <FormControlLabel
+                    className="h-full w-full flex flex-col items-center justify-center"
+                    labelPlacement='start'
+                    control={<Switch
+                        size='small'
+                        checked={expertMode}
+                        onChange={onToggleExpertMode} />} label='Advanced' /></Grid>}
+        </>
+    );
 }
 export function LinkageClusteredTransactionDescriptionOption({
     distanceMeasure,
     linkageMethod,
     numberOfClusterForString,
+    expertMode,
     onChangeDistanceMeasure,
     onChangeLinkageMethod,
     onChangeNumberOfClusterForString }: {
         distanceMeasure: clusterViewSlice.DistanceMeasure,
         linkageMethod: clusterViewSlice.LinkageMethod,
         numberOfClusterForString: number,
+        expertMode: boolean
         onChangeDistanceMeasure: (p: clusterViewSlice.DistanceMeasure) => void
         onChangeLinkageMethod: (p: clusterViewSlice.LinkageMethod) => void
         onChangeNumberOfClusterForString: (p: number) => void
@@ -123,6 +141,7 @@ export function LinkageClusteredTransactionDescriptionOption({
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Distance Measure</InputLabel>
                 <Select
+                    disabled={!expertMode}
                     size="small"
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -142,6 +161,7 @@ export function LinkageClusteredTransactionDescriptionOption({
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Linkage Method</InputLabel>
                 <Select
+                    disabled={!expertMode}
                     size="small"
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -161,6 +181,7 @@ export function LinkageClusteredTransactionDescriptionOption({
         <Grid item xs={6}>
             <Tooltip title={`between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}`}>
                 <TextField
+                    disabled={!expertMode}
                     error={numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION}
                     helperText={(numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION) ? `must between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}` : <></>}
                     fullWidth
