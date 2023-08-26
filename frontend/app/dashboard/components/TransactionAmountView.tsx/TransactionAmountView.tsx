@@ -54,7 +54,7 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
     // scales' range, domain, and isLogInfo
     const xLog = useAppSelector(scatterPlotSlice.selectXlog)
     const yLog = useAppSelector(scatterPlotSlice.selectYlog)
-    const { filteredXDomainMin, filteredXDomainMax, filteredYDomainMin, filteredYDomainMax } = useAppSelector(scatterPlotSlice.selectFilteredDomain)
+    const { filteredXDomainMin, filteredXDomainMax, filteredYDomainMin, filteredYDomainMax } = useAppSelector(scatterPlotSlice.selectFilteredDomainMemorised)
 
     const dataset = useAppSelector(state => state.interactivity.transactionDataArr)
     const shouldShowBrusher = useAppSelector(scatterPlotSlice.selectShouldShowBrusher)

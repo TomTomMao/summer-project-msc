@@ -178,14 +178,19 @@ export const selectMarginBottom = (state: RootState) =>
 export const selectShouldShowBrusher = (state: RootState) =>
   state.interactivity.currentSelector === "scatterPlot";
 
-export const selectFilteredDomain = (state: RootState) => {
-  return {
-    filteredXDomainMin: state.scatterPlot.sliderXMin,
-    filteredXDomainMax: state.scatterPlot.sliderXMax,
-    filteredYDomainMin: state.scatterPlot.sliderYMin,
-    filteredYDomainMax: state.scatterPlot.sliderYMax,
-  };
-};
+  export const selectFilteredDomainMemorised = createMemorisedFunction(
+    selectFilteredDomain,
+    (a, b) => Object.entries(a).toString() === Object.entries(b).toString()
+  );
+  
+  function selectFilteredDomain(state: RootState) {
+    return {
+      filteredXDomainMin: state.scatterPlot.sliderXMin,
+      filteredXDomainMax: state.scatterPlot.sliderXMax,
+      filteredYDomainMin: state.scatterPlot.sliderYMin,
+      filteredYDomainMax: state.scatterPlot.sliderYMax,
+    };
+  }
 
 export const selectColourDomainMemorised = createMemorisedFunction(
   selectColourDomain,

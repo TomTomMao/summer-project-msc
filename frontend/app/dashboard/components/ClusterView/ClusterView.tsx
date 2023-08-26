@@ -60,7 +60,7 @@ export function ClusterView(props: ClusterViewProps) {
     // scales' range, domain, and isLogInfo
     const xLog = useAppSelector(clusterViewSlice.selectXlog)
     const yLog = useAppSelector(clusterViewSlice.selectYlog)
-    const { filteredXDomainMin, filteredXDomainMax, filteredYDomainMin, filteredYDomainMax } = useAppSelector(clusterViewSlice.selectFilteredDomain)
+    const { filteredXDomainMin, filteredXDomainMax, filteredYDomainMin, filteredYDomainMax } = useAppSelector(clusterViewSlice.selectFilteredDomainMemorised)
 
     const dataset = useAppSelector(state => state.interactivity.transactionDataArr)
     const shouldShowBrusher = useAppSelector(clusterViewSlice.selectShouldShowClusterViewBrusher)

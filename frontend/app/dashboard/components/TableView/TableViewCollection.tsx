@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from "react"
+import { CSSProperties, Dispatch, SetStateAction, useState } from "react"
 import { TransactionData } from "../../utilities/DataObject"
 import { PublicScale, PublicValueGetter } from "../../utilities/types"
 import TableView from "./TableView"
@@ -24,7 +24,10 @@ export function TableViewCollection(props: TableViewCollectionProps) {
         handleClearGlyph,
         colourScale,
         colourDomainData } = props
-
+    const tableOption = <TableOption
+        currentTable={currentTable}
+        handleChangeCurrentTable={setCurrentTable}
+    ></TableOption>
     return (
         <div style={{
             margin: 'auto auto'
@@ -35,32 +38,30 @@ export function TableViewCollection(props: TableViewCollectionProps) {
                 handleClearSelect={handleClearBrush}
                 colourScale={colourScale}
                 colourDomainData={colourDomainData}
-            ><span>
-                    <label htmlFor="brushedTable" onClick={() => setCurrentTable('brushedTable')}>brushed table
-                        <input type="radio" name="brushedTable" id="" value={'brushedTable'} checked={true} />
-                    </label>
-                </span>
-                <span>
-                    <label htmlFor="glyphTable" onClick={() => setCurrentTable('glyphTable')} style={{accentColor: 'red'}}>glyph table
-                        <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={false} />
-                    </label>
-                </span></TableView>}
+            >{tableOption}</TableView>}
             {currentTable === 'glyphTable' && <TableView
                 transactionDataArr={transactionDataArr}
                 transactionNumberSet={selectedGlyphTransactionNumberSet}
                 handleClearSelect={handleClearGlyph}
                 colourScale={colourScale}
                 colourDomainData={colourDomainData}
-            ><span>
-                    <label htmlFor="brushedTable" onClick={() => setCurrentTable('brushedTable')}>brushed table
-                        <input type="radio" name="brushedTable" id="" value={'brushedTable'} checked={false} />
-                    </label>
-                </span>
-                <span>
-                    <label htmlFor="glyphTable" onClick={() => setCurrentTable('glyphTable')}>glyph table
-                        <input type="radio" name="glyphTable" id="" value={'glyphTable'} checked={true} style={{accentColor: 'red'}} />
-                    </label>
-                </span></TableView>}
+            >{tableOption}</TableView>}
         </div>
     )
+}
+
+function TableOption({ currentTable, handleChangeCurrentTable }: {
+    currentTable: 'brushedTable' | 'glyphTable', handleChangeCurrentTable: Dispatch<SetStateAction<"brushedTable" | "glyphTable">>
+}) {
+    return (<>
+        <span>
+            <label htmlFor="brushedTable" >Brushed Data
+                <input type="radio" name="brushedTable" id="brushedTable" value={'brushedTable'} checked={currentTable === 'brushedTable'} onChange={() => handleChangeCurrentTable('brushedTable')} />
+            </label>
+        </span>
+        <span>
+            <label htmlFor="glyphTable" style={{ accentColor: 'red' }}>Selected Glyph Data
+                <input type="radio" name="glyphTable" id="glyphTable" value={'glyphTable'} checked={currentTable === 'glyphTable'} onChange={() => handleChangeCurrentTable('glyphTable')} />
+            </label>
+        </span></>)
 }

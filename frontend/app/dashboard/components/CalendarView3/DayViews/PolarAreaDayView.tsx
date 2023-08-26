@@ -86,7 +86,7 @@ export function PolarAreaDayView(props: PolarAreaDayViewProps) {
             case "linearLocal":
                 const maxLinear = d3.max(chartData, (chartDatum => chartDatum.value))
                 if (maxLinear === undefined) { return null }
-                return d3.scaleLinear().domain([0, maxLinear]).range([0, Math.min(...[containerHeight, containerWidth]) / 2])
+                return d3.scaleLinear().domain([0, maxLinear===0 ? 1 : maxLinear]).range([0, Math.min(...[containerHeight, containerWidth]) / 2])
             default:
                 const _exhaustiveCheck: never = radiusScaleType
                 throw new Error("_exhaustiveCheck error");

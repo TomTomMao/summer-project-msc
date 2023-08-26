@@ -426,13 +426,18 @@ export const selectMarginBottom = (state: RootState) =>
 export const selectShouldShowClusterViewBrusher = (state: RootState) =>
   state.interactivity.currentSelector === "clusterView";
 
-export const selectFilteredDomain = (state: RootState) => {
+export const selectFilteredDomainMemorised = createMemorisedFunction(
+  selectFilteredDomain,
+  (a, b) => Object.entries(a).toString() === Object.entries(b).toString() //reference: https://www.samanthaming.com/tidbits/33-how-to-compare-2-objects/
+);
+
+function selectFilteredDomain(state: RootState) {
   return {
     filteredXDomainMin: state.clusterView.sliderXMin,
     filteredXDomainMax: state.clusterView.sliderXMax,
     filteredYDomainMin: state.clusterView.sliderYMin,
     filteredYDomainMax: state.clusterView.sliderYMax,
   };
-};
+}
 
 export default clusterViewSlice.reducer;
