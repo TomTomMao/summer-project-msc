@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { marginExpanded, marginFolded } from "../ClusterView/clusterViewSlice";
 import {
   ColourDomainData,
+  isColourDomainDataEqualComparator,
   ValidColours,
 } from "../ColourChannel/colourChannelSlice";
 import {
@@ -15,6 +16,7 @@ import { ClusterData } from "../../utilities/clusterDataObject";
 import { TransactionData } from "../../utilities/DataObject";
 import {
   comparingArray,
+  createArrayComparator,
   createMemorisedFunction,
 } from "../../utilities/createMemorisedFunction";
 
@@ -185,8 +187,13 @@ export const selectFilteredDomain = (state: RootState) => {
   };
 };
 
+export const selectColourDomainMemorised = createMemorisedFunction(
+  selectColourDomain,
+  createArrayComparator(isColourDomainDataEqualComparator)
+);
+
 // data array selectors
-export function selectColourDomain(state: RootState): ColourDomainData[] {
+function selectColourDomain(state: RootState): ColourDomainData[] {
   const colour = state.scatterPlot.colour;
   const transactionDataArr = selectFilteredTransactionDataArr(state);
   const clusterDataArr = selectClusterDataArr(state);

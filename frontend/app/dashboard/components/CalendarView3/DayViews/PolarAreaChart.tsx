@@ -30,7 +30,6 @@ export default function PolarAreaChart(props: PolarAreaChartProps) {
     //     }
     // }, [data, angleScale, radiusScale])
     const arcGenerator = d3.arc()
-    console.log('angleScale', angleScale)
     const startAngleArr = data.map((_, index) => {
     })
     const arcs = data.map(function (datum, index) {

@@ -37,6 +37,12 @@ export type ColourDomainData = {
   domain: string;
   transactionNumber: string;
 };
+export const isColourDomainDataEqualComparator = (
+  colourDomainData1: ColourDomainData,
+  colourDomainData2: ColourDomainData
+) =>
+  colourDomainData1.domain === colourDomainData2.domain &&
+  colourDomainData1.transactionNumber === colourDomainData2.transactionNumber;
 export type ValidColours = "category" | "cluster" | "frequencyUniqueKey";
 const initialState: ColourChannelState = {
   cluster: {

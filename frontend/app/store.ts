@@ -23,6 +23,12 @@ export const store = configureStore({
     colourChannel: colourChannelReducer,
     popUp: popUpReducer,
   },
+  //referenced Juuso Ohtonen's answer:  https://stackoverflow.com/questions/65217815/redux-handling-really-large-state-object
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      immutableCheck: false,
+      serializableCheck: false,
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

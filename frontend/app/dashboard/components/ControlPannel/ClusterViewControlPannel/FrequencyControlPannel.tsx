@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as clusterViewSlice from '@/app/dashboard/components/ClusterView/clusterViewSlice'
-import { ChangeEvent, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FrequencyUniqueKeyConfig } from "@/app/dashboard/utilities/dataAgent";
 import { Button } from "../../Button";
 import * as popupSlice from "../../PopupWindow/PopupSlice";
@@ -20,11 +20,6 @@ export function FrequencyControlPannel() {
     const initNumberOfClusterForString = useAppSelector(clusterViewSlice.selectNumberOfClusterForString)
     const [numberOfClusterForString, setNumberOfClusterForString] = useState(initNumberOfClusterForString === null ? 100 : initNumberOfClusterForString)
     let isChanged: boolean
-    // = initFrequencyUniqueKey !== frequencyUniqueKey
-    //     || initStringClusterAlgorithm !== stringClusterAlgorithm
-    //     || initDistanceMeasure !== distanceMeasure
-    //     || initLinkageMethod !== linkageMethod
-    //     || initNumberOfClusterForString !== numberOfClusterForString
     if (frequencyUniqueKey === 'clusteredTransactionDescription') {
         isChanged = initFrequencyUniqueKey !== frequencyUniqueKey
             || initStringClusterAlgorithm !== stringClusterAlgorithm
@@ -58,9 +53,12 @@ export function FrequencyControlPannel() {
             dispatch(clusterViewSlice.setFrequency(frequencyConfig))
         }
     }
+    const handleChangeFrequencyUniqueKey = (frequencyUniqueKey: clusterViewSlice.FrequencyConfig['frequencyUniqueKey']): void => {
+        setFrequencyUniqueKey(frequencyUniqueKey)
+    }
     return (
         <Grid container spacing={2}>
-            <FrequencyUniqueKeyOption frequencyUniqueKey={frequencyUniqueKey} onChangeFrequncyUniqueKey={setFrequencyUniqueKey}></FrequencyUniqueKeyOption>
+            <FrequencyUniqueKeyOption frequencyUniqueKey={frequencyUniqueKey} onChangeFrequncyUniqueKey={handleChangeFrequencyUniqueKey}></FrequencyUniqueKeyOption>
             {frequencyUniqueKey === 'clusteredTransactionDescription' &&
                 <LinkageClusteredTransactionDescriptionOption
                     distanceMeasure={distanceMeasure}
@@ -71,11 +69,12 @@ export function FrequencyControlPannel() {
                     onChangeNumberOfClusterForString={setNumberOfClusterForString}
                 />
             }
-            <Grid item xs={6}>
-                <Button variant="outlined" onClick={handleReset} available={isChanged} >reset</Button>
+            {/* {frequencyUniqueKey !== 'clusteredTransactionDescription' && <Grid item xs={6}/>} */}
+            <Grid item xs={3}>
+                <Button className="h-full w-full" variant="outlined" onClick={handleReset} available={isChanged} >reset</Button>
             </Grid>
-            <Grid item xs={6}>
-                <Button variant="outlined" onClick={handleSave} available={isChanged && isValidNumberOfCluster}>update</Button>
+            <Grid item xs={3}>
+                <Button className="h-full w-full" variant="outlined" onClick={handleSave} available={isChanged && isValidNumberOfCluster}>update</Button>
             </Grid>
         </Grid>
     )
@@ -86,7 +85,7 @@ export function FrequencyUniqueKeyOption({ frequencyUniqueKey, onChangeFrequncyU
     onChangeFrequncyUniqueKey: (frequencyUniqueKey: clusterViewSlice.FrequencyConfig['frequencyUniqueKey']) => void
 }) {
     return (
-        <Grid item xs={12}>
+        <Grid item xs={frequencyUniqueKey === 'clusteredTransactionDescription' ? 12 : 6}>
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">transaction group</InputLabel>
                 <Select
@@ -120,7 +119,7 @@ export function LinkageClusteredTransactionDescriptionOption({
     const dispatch = useAppDispatch()
 
     return (<>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Distance Measure</InputLabel>
                 <Select
@@ -139,7 +138,7 @@ export function LinkageClusteredTransactionDescriptionOption({
                 </Select>
             </FormControl>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Linkage Method</InputLabel>
                 <Select
@@ -159,7 +158,7 @@ export function LinkageClusteredTransactionDescriptionOption({
                 </Select>
             </FormControl>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
             <Tooltip title={`between ${MIN_NUMBER_DESCRIPTION} and ${MAX_NUMBER_DESCRIPTION}`}>
                 <TextField
                     error={numberOfClusterForString < MIN_NUMBER_DESCRIPTION || numberOfClusterForString > MAX_NUMBER_DESCRIPTION}

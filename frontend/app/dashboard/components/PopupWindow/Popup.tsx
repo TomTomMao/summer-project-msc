@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 export default function Popup() {
     const [shouldShowPopup, setShouldShowPopup] = useState<boolean>(false)
     const timeToLive = useAppSelector(popupSlice.selectTimeToLive)
-    const { information, servertiy } = useAppSelector(popupSlice.selectPopupInformation)
+    const { information, servertiy } = useAppSelector(popupSlice.selectPopupInformationMemorised)
     const dispatch = useAppDispatch()
     useEffect(() => {
         const nextShouldShowPopup = information !== null && servertiy !== null

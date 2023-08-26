@@ -10,11 +10,13 @@ import {
 import { getClusterDataMapFromArr } from "../../hooks/useClusterData";
 import {
   comparingArray,
+  createArrayComparator,
   createMemorisedFunction,
 } from "../../utilities/createMemorisedFunction";
 import { TransactionData } from "../../utilities/DataObject";
 import {
   ColourDomainData,
+  isColourDomainDataEqualComparator,
   ValidColours,
 } from "../ColourChannel/colourChannelSlice";
 
@@ -167,11 +169,11 @@ export const clusterViewSlice = createSlice({
     setColour: (state, action: PayloadAction<ValidColours>) => {
       state.colour = action.payload;
     },
-    toggleXLog:(state) => {
-      state.xLog = !state.xLog
+    toggleXLog: (state) => {
+      state.xLog = !state.xLog;
     },
-    toggleYLog:(state) => {
-      state.yLog = !state.yLog
+    toggleYLog: (state) => {
+      state.yLog = !state.yLog;
     },
     setXLog: (state, action: PayloadAction<boolean>) => {
       state.xLog = action.payload;
@@ -310,7 +312,12 @@ export const selectJustChangedSize = function (state: RootState) {
   return state.clusterView.justChangedSize;
 };
 
-export function selectColourDomain(state: RootState): ColourDomainData[] {
+export const selectColourDomainMemorised = createMemorisedFunction(
+  selectColourDomain,
+  createArrayComparator(isColourDomainDataEqualComparator)
+);
+
+function selectColourDomain(state: RootState): ColourDomainData[] {
   const colour = state.clusterView.colour;
   const transactionDataArr = selectClusterViewFilteredTransactionDataArr(state);
   const clusterDataArr = selectClusterDataArr(state);

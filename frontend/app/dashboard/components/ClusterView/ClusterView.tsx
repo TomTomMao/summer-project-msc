@@ -53,7 +53,7 @@ export function ClusterView(props: ClusterViewProps) {
     // dataset, they should be the same length, they are filtered
     const xArr = useAppSelector(clusterViewSlice.selectXdataMemorised)
     const yArr = useAppSelector(clusterViewSlice.selectYdataMemorised)
-    const colourDomainArr = useAppSelector(clusterViewSlice.selectColourDomain)
+    const colourDomainArr = useAppSelector(clusterViewSlice.selectColourDomainMemorised)
     const idArr = useAppSelector(clusterViewSlice.selectIdArrMemorised)
     const selectedIdArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
 

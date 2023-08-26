@@ -47,7 +47,7 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
     // dataset, they should be the same length, they are filtered
     const xArr = useAppSelector(scatterPlotSlice.selectXdataMemorised)
     const yArr = useAppSelector(scatterPlotSlice.selectYdataMemorised)
-    const colourDomainArr = useAppSelector(scatterPlotSlice.selectColourDomain)
+    const colourDomainArr = useAppSelector(scatterPlotSlice.selectColourDomainMemorised)
     const idArr = useAppSelector(scatterPlotSlice.selectIdArrMemorised)
     const selectedIdArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
 
