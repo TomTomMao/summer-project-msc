@@ -4,23 +4,25 @@ import { MONTHS, getNumberOfDaysInMonth } from "./months"
 import * as d3 from 'd3'
 
 import assert from "assert";
-import TableView from "../TableView/TableView";
 import { PieDayViewProps, pieCalendarViewValueGetter, PieDayView, PieCalendarViewSharedScales, PieCalendarViewValueGetter } from "./DayViews/PieDayView";
 import { barCalendarViewValueGetter, BarCalendarViewSharedScales, BarCalendarViewValueGetter, BarDayViewProps, BarDayView } from "./DayViews/BarDayView";
-import { PublicScale, PublicValueGetter } from "../../utilities/types";
+import { PublicValueGetter } from "../../utilities/types";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 
 import * as calendarViewSlice from './calendarViewSlice'
 import * as barDayViewSlice from './DayViews/barDayViewSlice'
-import { useCategoryColourScale } from "../../hooks/useColourScales";
-import * as interactivitySlice from "../Interactivity/interactivitySlice";
-import { useTransactionDataArr } from "../../hooks/useTransactionData";
+import { ScaleOrdinalWithTransactionNumber, useCategoryColourScale } from "../../hooks/useColourScales";
 import { useHighLightedCalendarDayBorderMMDDSet } from "./useCalendarDayHighlightInfo";
 
 import styles from './styles.module.css'
-import { usePolarAreaCalendarViewSharedRadialScales, usePolarAreaCalendarViewSharedAngleScales as usePolarAreaCalendarViewSharedAngleScale } from "./usePolarAreaCalendarViewSharedScales";
+import { usePolarAreaCalendarViewSharedRadialScales, usePolarAreaCalendarViewSharedAngleScale } from "./usePolarAreaCalendarViewSharedScales";
 import useCategoryOrderMap from "./useCategoryOrder";
 import { PolarAreaDayView, PolarAreaDayViewProps, PolarAreaViewSharedScales } from "./DayViews/PolarAreaDayView";
+import { ClusterDataMap, useClusterDataMap } from "../../hooks/useClusterData";
+import { ClusterData } from "../../utilities/clusterDataObject";
+import { useStarCalendarViewSharedAngleScale, useStarCalendarViewSharedRadialScales } from "./useStarCalendarViewSharedScales";
+import useClusterOrderMap from "./useClusterOrder";
+import { StarDayView, StarDayViewProps, StarViewSharedScales } from "./DayViews/starDayView";
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
@@ -35,7 +37,8 @@ export type Data = {
     transactionAmountSumMapByDayYMD: TransactionAmountSumMapByDayYMD;
     transactionAmountSumMapByDayMD: TransactionAmountSumMapByDayMD;
     /**if empty, show all the category */
-    categorySetWithSelectedTransaction: Set<TransactionData['category']>
+    categorySetWithSelectedTransaction: Set<TransactionData['category']>,
+    clusterDataMap: ClusterDataMap
 }
 
 type CalendarViewProps = {
@@ -43,7 +46,9 @@ type CalendarViewProps = {
     highLightedTransactionNumberSetByBrusher: HighLightedTransactionNumberSet;
     initCurrentYear: number;
     // heightScaleType: 'log' | 'linear',
-    colourScale: PublicScale['colourScale']
+    categoryColourScale: ScaleOrdinalWithTransactionNumber,
+    clusterIdColourScale: ScaleOrdinalWithTransactionNumber,
+    frequencyUnqiueKeyColourScale: ScaleOrdinalWithTransactionNumber,
     colourValueGetter: PublicValueGetter['colour']
 };
 
@@ -56,7 +61,8 @@ export type Day = {
 export default function CalendarView3(props:
     CalendarViewProps) {
     const transactionDataArr = props.transactionDataArr
-    const colourScale = props.colourScale
+    const clusterDataMap: ClusterDataMap = useClusterDataMap()
+    const { categoryColourScale, clusterIdColourScale, frequencyUnqiueKeyColourScale } = props
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned);
     const highLightedTransactionNumberSetByBrusher = props.highLightedTransactionNumberSetByBrusher
     // config
@@ -115,7 +121,8 @@ export default function CalendarView3(props:
             highLightedTransactionNumberSetByBrusher: highLightedTransactionNumberSetByBrusher,
             transactionAmountSumMapByDayYMD: transactionAmountSumMapByDayYMD,
             transactionAmountSumMapByDayMD: transactionAmountSumMapByDayMD,
-            categorySetWithSelectedTransaction: categorySetWithSelectedTransaction
+            categorySetWithSelectedTransaction: categorySetWithSelectedTransaction,
+            clusterDataMap: clusterDataMap
         }
     },
         [transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher, transactionAmountSumMapByDayYMD, transactionAmountSumMapByDayMD])
@@ -125,7 +132,7 @@ export default function CalendarView3(props:
     assert(heightDomain[0] !== undefined && heightDomain[1] !== undefined);
     const heightScaleLinear: BarCalendarViewSharedScales['heightScaleLinear'] = d3.scaleLinear(heightDomain, [0, currentContainerHeight]);
     const heightScaleLog: BarCalendarViewSharedScales['heightScaleLog'] = d3.scaleLog(heightDomain, [0, currentContainerHeight]);
-    const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScaleLinear, heightScaleLog, colourScale } // colourScale shared with other views
+    const barCalendarViewSharedScales: BarCalendarViewSharedScales = { heightScaleLinear, heightScaleLog, colourScale: categoryColourScale } // colourScale shared with other views
 
     // calculate maxTransactionCountOfDay and update the stores value
     const { maxTransactionCountOfDay, maxTransactionCountOfDaySuperpositioned } = useMemo(() => {
@@ -146,42 +153,49 @@ export default function CalendarView3(props:
     }, [maxTransactionCountOfDaySuperpositioned])
 
     // public scales for pie :
-    const pieCalendarViewSharedScales: PieCalendarViewSharedScales = { colourScale, linearRadiusScale, logRadiusScale }
+    const pieCalendarViewSharedScales: PieCalendarViewSharedScales = { colourScale: categoryColourScale, linearRadiusScale, logRadiusScale }
 
     // ------PolarAreaGlyph: linear and log radius scale; angle scale; colour scale; categoryOrderMap------
     // polarAreaCalendarViewSharedScale -> Month view -> PolarAreaDayView
     // prepare shared RadiusScales for PolarAreaGlyphs, domain determined by transactionDataArr, isSuperPositioned, and currentYear, range determinde by currentContainerHeight and currentContainerWidth
     // the hook don't read any data from the store, it just use the args with some useMemo
     const polarAreaCalendarViewSharedRadialScales: { linearRadiusScale: d3.ScaleLinear<number, number>, logRadiusScale: d3.ScaleLogarithmic<number, number> } | { linearRadiusScale: null, logRadiusScale: null } =
-        usePolarAreaCalendarViewSharedRadialScales(transactionDataArr, isSuperPositioned, currentYear, currentContainerHeight, currentContainerWidth)
+        usePolarAreaCalendarViewSharedRadialScales(transactionDataArr, isSuperPositioned, currentContainerHeight, currentContainerWidth)
     // prepare the category order for the PolarAreaGlyphs, it read an array of category from the redux store, and create a map from category to the index, index start from 0 to |category|.length - 1
     const categoryOrderMap: Map<TransactionData['category'], number> = useCategoryOrderMap() // read category order from the store
     // prepare shared angle scale for PolarAreaGlyphs, which maps the index of category to start angle in the glyph
     const polarAreaCalendarViewSharedAngleScale: d3.ScaleLinear<number, number> = usePolarAreaCalendarViewSharedAngleScale(categoryOrderMap)
-    if (polarAreaCalendarViewSharedRadialScales.linearRadiusScale === null || polarAreaCalendarViewSharedRadialScales.logRadiusScale === null) {
+
+    // star glyph data and scale, similar logic to polarareaglyph
+    const starCalendarViewSharedRadialScales: { linearRadiusScale: d3.ScaleLinear<number, number>, logRadiusScale: d3.ScaleLogarithmic<number, number> } | { linearRadiusScale: null, logRadiusScale: null } =
+        useStarCalendarViewSharedRadialScales(transactionDataArr, clusterDataMap, isSuperPositioned, currentContainerHeight, currentContainerWidth)
+    const clusterOrderMap: Map<ClusterData['clusterId'], number> = useClusterOrderMap();
+    const starCalenarViewSharedAngleScale: d3.ScaleLinear<number, number> = useStarCalendarViewSharedAngleScale(clusterOrderMap);
+
+    // checking null values
+    if (polarAreaCalendarViewSharedRadialScales.linearRadiusScale === null ||
+        polarAreaCalendarViewSharedRadialScales.logRadiusScale === null ||
+        polarAreaCalendarViewSharedAngleScale === null ||
+        starCalendarViewSharedRadialScales.linearRadiusScale === null ||
+        starCalendarViewSharedRadialScales.logRadiusScale === null ||
+        starCalenarViewSharedAngleScale === null
+    ) {
         return <>loading scales</>
     }
+
     const polarAreaCalendarViewSharedScales: PolarAreaViewSharedScales = {
-        colourScale,
+        colourScale: categoryColourScale,
         linearRadiusScale: polarAreaCalendarViewSharedRadialScales.linearRadiusScale,
         logRadiusScale: polarAreaCalendarViewSharedRadialScales.logRadiusScale,
         angleScale: polarAreaCalendarViewSharedAngleScale,
         categoryOrderMap
     }
-    if (
-        polarAreaCalendarViewSharedScales.colourScale === null ||
-        polarAreaCalendarViewSharedScales.linearRadiusScale === null ||
-        polarAreaCalendarViewSharedScales.logRadiusScale === null ||
-        polarAreaCalendarViewSharedScales.angleScale === null ||
-        polarAreaCalendarViewSharedScales.categoryOrderMap === null ||
-        polarAreaCalendarViewSharedScales.colourScale === undefined ||
-        polarAreaCalendarViewSharedScales.linearRadiusScale === undefined ||
-        polarAreaCalendarViewSharedScales.logRadiusScale === undefined ||
-        polarAreaCalendarViewSharedScales.angleScale === undefined ||
-        polarAreaCalendarViewSharedScales.categoryOrderMap === undefined
-    ) {
-        // Return an error component or message when any scale is null
-        return <>Some error string</>;
+    const starCalendarViewSharedScales: StarViewSharedScales = {
+        colourScale: clusterIdColourScale,
+        linearRadiusScale: starCalendarViewSharedRadialScales.linearRadiusScale,
+        logRadiusScale: starCalendarViewSharedRadialScales.logRadiusScale,
+        angleScale: starCalenarViewSharedAngleScale,
+        clusterOrderMap
     }
     return (
         <>
@@ -200,6 +214,7 @@ export default function CalendarView3(props:
                         pieDayViewScales={pieCalendarViewSharedScales}
                         pieDayViewValueGetter={pieCalendarViewValueGetter}
                         polarAreaDayViewScales={polarAreaCalendarViewSharedScales}
+                        starCalendarViewSharedScales={starCalendarViewSharedScales}
                         onShowDayDetail={handleShowDayDetail}
                         detailDay={detailDay}
                         dayViewContainerSize={{
@@ -227,6 +242,7 @@ type MonthViewProps = {
     pieDayViewScales: PieCalendarViewSharedScales,
     pieDayViewValueGetter: PieCalendarViewValueGetter,
     polarAreaDayViewScales: PolarAreaViewSharedScales,
+    starCalendarViewSharedScales: StarViewSharedScales
     onShowDayDetail: (day: number, month: number, year: number) => void,
     detailDay: Day | null,
     dayViewContainerSize: { containerWidth: number, containerHeight: number }
@@ -320,6 +336,17 @@ function MonthView(props: MonthViewProps) {
                             }
                             dayView = <PolarAreaDayView {...polarAreaDayViewProps}></PolarAreaDayView>
                             break
+                        case 'star':
+                            const starDayViewProps: StarDayViewProps = {
+                                day: i + 1,
+                                month: props.month,
+                                currentYear: props.currentYear,
+                                data: { ...props.data },
+                                scales: props.starCalendarViewSharedScales,
+                                containerSize: props.dayViewContainerSize
+                            }
+                            dayView = <StarDayView {...starDayViewProps}></StarDayView>
+                            break;
                         default:
                             const _exhaustiveCheck: never = glyphType
                             throw new Error("exhaustive error");
@@ -331,6 +358,7 @@ function MonthView(props: MonthViewProps) {
                         width: props.dayViewContainerSize.containerWidth, height: props.dayViewContainerSize.containerHeight
                     }}></div>
                 }
+                const _dayViewTypeCheck: JSX.Element = dayView
                 return <td key={`${month}-${i + 1}-${isSuperPositioned ? 'superpositioned' : 'notSuperPositioned'}`} onClick={() => handleShowDayDetail(i + 1)} style={{ padding: '0px' }} >
                     <div
                         style={{ zIndex: isDayHasSelectedTransaction ? 900 : 800, borderColor: isDayHasSelectedTransaction ? 'blue' : isDetailDay ? 'red' : 'RGB(200,200,200)' }}

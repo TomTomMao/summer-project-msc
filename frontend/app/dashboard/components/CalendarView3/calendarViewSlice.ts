@@ -6,7 +6,7 @@ const MAX_YEAR = 2022;
 const MIN_YEAR = 2015;
 
 export interface CalendarViewState {
-  glyphType: "bar" | "pie" | 'polarArea';
+  glyphType: "bar" | "pie" | 'polarArea' | 'star';
   containerWidth: number;
   containerHeight: number;
   expandedContainerWidth: number;

@@ -16,14 +16,12 @@ import {
  * The hook don't read any data from the store, it just use the args, it use useMemo
  * @param transactionDataArr
  * @param isSuperPositioned
- * @param currentYear
  * @param currentContainerHeight
  * @param currentContainerWidth
  */
 export function usePolarAreaCalendarViewSharedRadialScales(
   transactionDataArr: TransactionData[],
   isSuperPositioned: boolean,
-  currentYear: number,
   currentContainerHeight: number,
   currentContainerWidth: number
 ):
@@ -89,7 +87,6 @@ export function usePolarAreaCalendarViewSharedRadialScales(
   }, [
     transactionDataArr,
     isSuperPositioned,
-    currentYear,
     currentContainerHeight,
     currentContainerWidth,
   ]);
@@ -100,7 +97,7 @@ export function usePolarAreaCalendarViewSharedRadialScales(
  * prepare shared angle scale for PolarAreaGlyphs, which maps the index of category to start angle in the glyph
  * reference: https://observablehq.com/@sophiamersmann/polar-area-chart
  */
-export function usePolarAreaCalendarViewSharedAngleScales(
+export function usePolarAreaCalendarViewSharedAngleScale(
   categoryOrderMap: Map<TransactionData["category"], number>
 ): ScaleLinear<number, number> {
   return scaleLinear()

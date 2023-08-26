@@ -62,7 +62,8 @@ interface InteractivityState {
     selectedCategoryArr: Array<TransactionData['category']>,
     selectedFrequencyUniqueKeyArr: Array<TransactionData['frequencyUniqueKey']>,
     currentSelector: 'clusterId' | 'category' | 'frequencyUniqueKey' | 'scatterPlot' | 'clusterView' | '' | 'oneTimeTransaction',
-    categoryOrderArr: TransactionData['category'][]
+    categoryOrderArr: TransactionData['category'][],
+    clusterOrderArr: ClusterData['clusterId'][]
     // clickedDetailTransactionNumberArr: TransactionData['transactionNumber'][] // future feature
 }
 
@@ -79,6 +80,7 @@ const initialState: InteractivityState = {
     selectedFrequencyUniqueKeyArr: [],
     currentSelector: 'oneTimeTransaction',
     categoryOrderArr: [],
+    clusterOrderArr: [],
     // clickedDetailTransactionNumberArr: [],//future feature
 };
 
@@ -94,6 +96,7 @@ export const interactivitySlice = createSlice({
         setClusterDataArr(state, action: PayloadAction<ClusterData[]>) {
             state.selectedClusterIdArr = []
             state.clusterDataArr = action.payload
+            state.clusterOrderArr = Array.from(new Set(action.payload.map(d => d.clusterId)))
         },
 
         setScatterPlotSelectedTransactionNumberArr(state, action: PayloadAction<TransactionData['transactionNumber'][]>) {
@@ -304,6 +307,7 @@ export const selectCurrentSelectorColourScaleType = (state: RootState): colourCh
 
 /**it is memorised because its a plan array */
 export const selectCategoryOrderArrMemorised = (state: RootState): TransactionData['category'][] => state.interactivity.categoryOrderArr
+export const selectClusterOrderArrMemorised = (state: RootState): ClusterData['clusterId'][] => state.interactivity.clusterOrderArr
 
 export default interactivitySlice.reducer;
 
