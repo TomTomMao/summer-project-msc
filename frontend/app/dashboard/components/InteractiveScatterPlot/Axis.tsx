@@ -1,7 +1,7 @@
 'use client';
 import { useMemo } from "react";
 import * as d3 from 'd3';
-// reference: Holtz, Y. (n.d.). How to build a scatter plot with React and D3. Retrieved 13 July 2023, from https://www.react-graph-gallery.com/scatter-plot
+// reference: Holtz, Y. (n.d.). How to build a scatter plot with React and D3. Retrieved 13 July 2023, from https://www.react-graph-gallery.com/scatter-plo
 type AxisBottomProps =
     {
         xScale: d3.ScaleLinear<number, number>
@@ -17,10 +17,11 @@ export const AxisBottom = ({ xScale, numberOfTicksTarget }: AxisBottomProps) => 
     const range = xScale.range();
     const ticks = useMemo(() => {
         if (xScale.hasOwnProperty('base')) {
-            return (xScale as d3.ScaleLogarithmic<number,number>).base(2).ticks(numberOfTicksTarget).map((value) => ({
-                value,
+            const format = d3.scaleLog<number, number>(xScale.domain(), xScale.range()).tickFormat() // reference this for solving the problem that too many ticks appear: https://d3js.org/d3-scale/log
+            return xScale.ticks(numberOfTicksTarget).map((value) => ({
+                value: format(value) === '' ? '' : value,
                 xOffset: xScale(value),
-            }));
+            })).filter(ticks => ticks.value !== '');
         } else {
             return xScale.ticks(numberOfTicksTarget).map((value) => ({
                 value,
@@ -67,10 +68,11 @@ export const AxisLeft = ({ yScale, numberOfTicksTarget }: AxisLeftProps) => {
     const range = yScale.range();
     const ticks = useMemo(() => {
         if (yScale.hasOwnProperty('base')) {
-            return (yScale as d3.ScaleLogarithmic<number, number>).base(2).ticks(numberOfTicksTarget).map((value) => ({
-                value,
+            const format = d3.scaleLog<number, number>(yScale.domain(), yScale.range()).tickFormat() // reference this for solving the problem that too many ticks appear: https://d3js.org/d3-scale/log
+            return (yScale as d3.ScaleLogarithmic<number, number>).ticks(numberOfTicksTarget).map((value) => ({
+                value: format(value) === '' ? '' : value,
                 yOffset: yScale(value),
-            }));
+            })).filter(ticks => ticks.value !== '');
         } else {
             return (yScale as d3.ScaleLinear<number, number>).ticks(numberOfTicksTarget).map((value) => ({
                 value,
@@ -78,7 +80,7 @@ export const AxisLeft = ({ yScale, numberOfTicksTarget }: AxisLeftProps) => {
             }));
         }
     }, [yScale]);
-
+    console.log(ticks)
     return (
         <>
             {/* Main vertical line */}
