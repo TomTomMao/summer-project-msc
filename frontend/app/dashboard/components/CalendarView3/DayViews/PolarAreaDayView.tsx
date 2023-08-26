@@ -3,9 +3,11 @@ import { Data } from "../CalendarView3";
 import { TransactionData } from "@/app/dashboard/utilities/DataObject";
 import useCalendarDayGlyphTransactionDataArr from "./useDayData";
 import { useAppSelector } from "@/app/hooks";
-import { PolarAreaChartDatum } from "./PolarAreaChart";
+import PolarAreaChart, { PolarAreaChartDatum } from "./PolarAreaChart";
 import * as calendarViewSlice from "../calendarViewSlice";
 import { GRAY1 } from "@/app/dashboard/utilities/consts";
+import * as d3 from "d3";
+import { useMemo } from "react";
 
 export type PolarAreaViewSharedScales = {
     colourScale: ScaleOrdinalWithTransactionNumber;
@@ -27,34 +29,73 @@ export type PolarAreaDayViewProps = {
 }
 export function PolarAreaDayView(props: PolarAreaDayViewProps) {
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
+    // const radiusScaleType = useAppSelector(polarAreaDayViewSlice.selectRadiusAxis) 
+    let radiusScaleType: 'linear' | 'log' | 'const' = 'log'
     const { day, month, currentYear, data, scales, containerSize } = props
+    const { containerWidth, containerHeight } = containerSize
     const { colourScale, linearRadiusScale, logRadiusScale, angleScale, categoryOrderMap: categoryOrder } = scales
-    const { transactionDataMapYMD, transactionDataMapMD, categorySetWithSelectedTransaction } = data
+    const { transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher } = data
     const dayData: TransactionData[] = useCalendarDayGlyphTransactionDataArr(day, month, currentYear, transactionDataMapYMD, transactionDataMapMD, isSuperPositioned)
 
     // prepare chart data, the order should based on categoryOrderMap, if a category exists in categoryOrder, it must exist in the chart data
-    // initialise the chartData, set the transactionAmount of the category 0, and set the colour based on colourScale and it's category
-    const chartData: PolarAreaChartDatum[] = createInitChartData(categoryOrder, colourScale, categorySetWithSelectedTransaction)
-    // sum the transactionAmount for the chartData
-    dayData.forEach(transactionData => {
-        const index: number | undefined = categoryOrder.get(transactionData.category)
-        if (index === undefined) {
-            throw new Error(`category in day data doesn't exist in the categoryOrder map`
-                + ` year:${isSuperPositioned ? 'superpositioned' : currentYear}`
-                + ` month:${month}`
-                + ` day:${day}`
-                + ` category:${transactionData.category}`
-                + ` categoryOrderList:${JSON.stringify(Array.from(categoryOrder))}`
-            );
-        } else if (transactionData.category !== chartData[index].name) {
-            throw new Error('the order of name in chartData is inconsistent with the categoryOrder')
-        } else {
-            chartData[index].value += transactionData.transactionAmount
+    const chartData = useMemo(() => {
+        // initialise the chartData, set the transactionAmount of the category 0, and set the colour based on colourScale and it's category
+        const chartData: PolarAreaChartDatum[] = createInitChartData(categoryOrder)
+        // sum the transactionAmount for the chartData and set the colour
+        dayData.forEach(transactionData => {
+            const index: number | undefined = categoryOrder.get(transactionData.category)
+            if (index === undefined) {
+                throw new Error(`category in day data doesn't exist in the categoryOrder map`
+                    + ` year:${isSuperPositioned ? 'superpositioned' : currentYear}`
+                    + ` month:${month}`
+                    + ` day:${day}`
+                    + ` category:${transactionData.category}`
+                    + ` categoryOrderList:${JSON.stringify(Array.from(categoryOrder))}`
+                );
+            } else if (transactionData.category !== chartData[index].name) {
+                throw new Error('the order of name in chartData is inconsistent with the categoryOrder')
+            } else {
+                chartData[index].value += transactionData.transactionAmount
+                if (highLightedTransactionNumberSetByBrusher.size === 0 || highLightedTransactionNumberSetByBrusher.has(transactionData.transactionNumber)) {
+                    chartData[index].colour = colourScale.getColour(transactionData.category)
+                }
+            }
+        })
+        return chartData
+    }, [categoryOrder, colourScale, dayData, highLightedTransactionNumberSetByBrusher])
+
+    const radiusScale = useMemo(() => {
+        if (isNaN(logRadiusScale(logRadiusScale.domain()[0]))) {
+            console.log(`something wrong with logradius scale, domain: ${logRadiusScale.domain()}, range: ${logRadiusScale.range()}`, logRadiusScale)
+            throw new Error(`something wrong with logradius scale, domain: ${logRadiusScale.domain()}, range: ${logRadiusScale.range()}`);
         }
-    })
-    return (
-        <div><button onClick={() => console.log(chartData)}>chartData</button></div>
-    )
+        if (isNaN(linearRadiusScale(linearRadiusScale.domain()[0]))) {
+            console.log(`something wrong with linearradius scale, domain: ${linearRadiusScale.domain()}, range: ${linearRadiusScale.range()}`, linearRadiusScale)
+            throw new Error(`something wrong with linearradius scale, domain: ${linearRadiusScale.domain()}, range: ${linearRadiusScale.range()}`);
+        }
+        switch (radiusScaleType) {
+            case "log":
+                return logRadiusScale
+            case "linear":
+                return linearRadiusScale
+            case "const":
+                if (chartData.length === 1) { return null }
+                const domain = d3.extent(chartData, (chartDatum => chartDatum.value))
+                if (domain[0] === undefined || domain[1] === undefined) { return null }
+                return d3.scaleLinear().domain(domain).range([0, Math.min(...[containerHeight, containerWidth]) / 2])
+            default:
+                const _exhaustiveCheck: never = radiusScaleType
+                throw new Error("_exhaustiveCheck error");
+        }
+    }, [linearRadiusScale, logRadiusScale, radiusScaleType, chartData, containerWidth, containerHeight])
+    if (radiusScale === null) {
+        return <>error</>
+    } else {
+        return (
+            <PolarAreaChart data={chartData} radiusScale={radiusScale} angleScale={angleScale}
+            ></PolarAreaChart>
+        )
+    }
 }
 
 // todo for performance: create a memorised function that return the spreaded initChartData, to avoid calling getColour again and again for each day glyph
@@ -65,16 +106,14 @@ export function PolarAreaDayView(props: PolarAreaDayViewProps) {
  * @param colourScale domain must be category value
  * @returns an array of PolarAreaChartDatum, for each array element, the index will be the same of the categoryOrder.get(element.name) 
  */
-const createInitChartData = (categoryOrder: PolarAreaViewSharedScales['categoryOrderMap'],
-    colourScale: PolarAreaViewSharedScales['colourScale'],
-    categorySetWithSelectedTransaction: Data['categorySetWithSelectedTransaction']) => {
+const createInitChartData = (categoryOrder: PolarAreaViewSharedScales['categoryOrderMap']) => {
 
     const chartData: PolarAreaChartDatum[] = Array(categoryOrder.size)
     categoryOrder.forEach((index, category) => {
         chartData[index] = {
             name: category,
             value: 0,
-            colour: categorySetWithSelectedTransaction.has(category) || categorySetWithSelectedTransaction.size === 0 ? colourScale.getColour(category) : GRAY1
+            colour: GRAY1
         }
     })
     return chartData

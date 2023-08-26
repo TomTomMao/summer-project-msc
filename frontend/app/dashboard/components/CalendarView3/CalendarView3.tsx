@@ -168,6 +168,42 @@ export default function CalendarView3(props:
         angleScale: polarAreaCalendarViewSharedAngleScale,
         categoryOrderMap
     }
+    if (
+        polarAreaCalendarViewSharedScales.colourScale === null ||
+        polarAreaCalendarViewSharedScales.linearRadiusScale === null ||
+        polarAreaCalendarViewSharedScales.logRadiusScale === null ||
+        polarAreaCalendarViewSharedScales.angleScale === null ||
+        polarAreaCalendarViewSharedScales.categoryOrderMap === null ||
+        polarAreaCalendarViewSharedScales.colourScale === undefined ||
+        polarAreaCalendarViewSharedScales.linearRadiusScale === undefined ||
+        polarAreaCalendarViewSharedScales.logRadiusScale === undefined ||
+        polarAreaCalendarViewSharedScales.angleScale === undefined ||
+        polarAreaCalendarViewSharedScales.categoryOrderMap === undefined
+    ) {
+        // Return an error component or message when any scale is null
+        return <>Some error string</>;
+    } else {
+        console.log(
+            `colourScale`,
+            polarAreaCalendarViewSharedScales.colourScale
+        );
+        console.log(
+            `linearRadiusScale`,
+            polarAreaCalendarViewSharedScales.linearRadiusScale
+        );
+        console.log(
+            `logRadiusScale`,
+            polarAreaCalendarViewSharedScales.logRadiusScale
+        );
+        console.log(
+            `angleScale`,
+            polarAreaCalendarViewSharedScales.angleScale
+        );
+        console.log(
+            `categoryOrderMap`,
+            polarAreaCalendarViewSharedScales.categoryOrderMap
+        );
+    }
     return (
         <>
             <table className="smallLetterTable">

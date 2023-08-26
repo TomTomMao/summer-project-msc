@@ -1,9 +1,7 @@
 'use client'
-import { useState, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { TransactionData } from "./utilities/DataObject";
 import CalendarView3 from "./components/CalendarView3/CalendarView3";
-
-import { temporalValueGetter } from "./utilities/consts/valueGetter";
 
 import CalendarViewControlPannel from "./components/ControlPannel/CalendarViewControlPannel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
@@ -28,7 +26,6 @@ import TransactionAmountView from "./components/TransactionAmountView.tsx/Transa
 import * as colourChannelSlice from "./components/ColourChannel/colourChannelSlice";
 import Popup from "./components/PopupWindow/Popup";
 import Button from "@mui/material/Button"
-import { TestPolarAreaChart } from "./components/CalendarView3/DayViews/PolarAreaChart";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -179,7 +176,6 @@ export default function App() {
                 <div>
                     <Button onClick={() => dispatch(interactivitySlice.toggleShowOneTimeTransaction())}>show one time transaction</Button>
                 </div>
-                <TestPolarAreaChart></TestPolarAreaChart>
             </div>
 
         )

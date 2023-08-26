@@ -79,7 +79,6 @@ export function PieDayView(props: PieDayViewProps) {
         }
     }, [dayTotalTransactionAmount, radiusScaleType, linearRadiusScale, logRadiusScale, containerWidth])
 
-    const ref = useRef(null)
     const arcs = useMemo(() => {
         const pieGenerator = d3.pie<TransactionData>().value(valueGetter.value); // value is for angle
         const arcGenerator = d3.arc();
@@ -104,7 +103,7 @@ export function PieDayView(props: PieDayViewProps) {
 
     return (
         <svg width={containerWidth} height={containerHeight}>
-            <g ref={ref} transform={`translate(${containerWidth * 0.5},${containerHeight * 0.5})`}>
+            <g transform={`translate(${containerWidth * 0.5},${containerHeight * 0.5})`}>
                 {paths}
             </g>
         </svg>);

@@ -75,13 +75,15 @@ export function usePolarAreaCalendarViewSharedRadialScales(
         logRadiusScale: null,
       };
     } else {
+      const linearRadiusScale = scaleLinear()
+        .domain([0, maxTransactionAmountOfCategory])
+        .range(range);
+      const logRadiusScale = scaleLog()
+        .domain([0.00001, maxTransactionAmountOfCategory])
+        .range(range);
       return {
-        linearRadiusScale: scaleLinear()
-          .domain([0, maxTransactionAmountOfCategory])
-          .range(range),
-        logRadiusScale: scaleLog()
-          .domain([0, maxTransactionAmountOfCategory])
-          .range(range),
+        linearRadiusScale,
+        logRadiusScale,
       };
     }
   }, [
