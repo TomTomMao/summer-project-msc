@@ -45,12 +45,12 @@ export function StarDayView(props: StarDayViewProps) {
 
     /** a map, key is clusterId, value has two property:
      * totalTransactionAmount: the sum of transactionAmount 
-     * transactionNumber: the correspoding transaction Number of the clusterId*/
+     * transactionNumberArr: the correspoding transaction Numbers of the clusterId*/
     const clusterIdTransactionAmountMap = useMemo(() => {
         return rollup(dayData,
             (transactionDataArr: TransactionData[]) => {
                 return {
-                    transactionNumber: transactionDataArr[0].transactionNumber,
+                    transactionNumberArr: transactionDataArr.map(transactionData => transactionData.transactionNumber),
                     totalTransactionAmount: sum(transactionDataArr, transactionData => transactionData['transactionAmount'])
                 }
             },
@@ -70,26 +70,26 @@ export function StarDayView(props: StarDayViewProps) {
     const chartData = useMemo(() => {
         const chartDataLocal = Array(clusterOrderMap.size)
         clusterOrderMap.forEach((index, clusterId) => {
-            const name = clusterId
             const transactionAmountAndTransactionNumberOfClusterId = clusterIdTransactionAmountMap.get(clusterId)
             if (transactionAmountAndTransactionNumberOfClusterId === undefined) {
                 // this clusterId does not exist of dayData, push {name: clusterId, value:0, colour: GRAY1}
                 chartDataLocal[index] = { name: clusterId, value: 0, colour: GRAY1 }
             } else {
-                const { totalTransactionAmount, transactionNumber } = transactionAmountAndTransactionNumberOfClusterId
+                const { totalTransactionAmount, transactionNumberArr } = transactionAmountAndTransactionNumberOfClusterId
                 chartDataLocal[index] = {
                     name: clusterId,
                     value: totalTransactionAmount,
-                    colour: colourScale.getColour(clusterId, transactionNumber)
+                    colour: transactionNumberArr.some((transactionNumber) => colourScale.getColour(clusterId, transactionNumber) !== GRAY1) ? colourScale.getColour(clusterId) : GRAY1
                 }
             }
         })
         return chartDataLocal
     }, [clusterIdTransactionAmountMap, clusterOrderMap, colourScale])
-
+    
+    // return <div onClick={() => console.log({ props, dayData, chartData, colourScale, clusterIdTransactionAmountMap, clusterOrderMap, highLightedTransactionNumberSetByBrusher })}>
+    //     <StarChart data={chartData} radiusScale={logRadiusScale} angleScale={angleScale}></StarChart>
+    // </div>
     return <>
         <StarChart data={chartData} radiusScale={logRadiusScale} angleScale={angleScale}></StarChart>
     </>
-    return <>
-        <button onClick={() => { console.log(props); console.log(dayData); console.log(chartData) }}>consoledata</button></>
 }
