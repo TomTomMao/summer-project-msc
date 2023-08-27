@@ -6,6 +6,7 @@ import clusterViewReducer from "./dashboard/components/ClusterView/clusterViewSl
 import colourLegendReducer from "./dashboard/components/ColourLegend/colourLegendSlice";
 import pieDayViewReducer from "./dashboard/components/CalendarView3/DayViews/pieDayViewSlice";
 import polarAreaDayViewReducer from "./dashboard/components/CalendarView3/DayViews/polarAreaDayViewSlice";
+import starDayViewReducer from "./dashboard/components/CalendarView3/DayViews/starDayViewSlice";
 import scatterPlotReducer from "@/app/dashboard/components/TransactionAmountView.tsx/scatterPlotSlice";
 import interactivityReducer from "@/app/dashboard/components/Interactivity/interactivitySlice";
 import colourChannelReducer from "@/app/dashboard/components/ColourChannel/colourChannelSlice";
@@ -15,6 +16,7 @@ export const store = configureStore({
     barDayView: barDayViewReducer,
     pieDayView: pieDayViewReducer,
     polarAreaDayView: polarAreaDayViewReducer,
+    starDayView: starDayViewReducer,
     calendarView: calendarViewReducer,
     clusterView: clusterViewReducer,
     colourLegend: colourLegendReducer,

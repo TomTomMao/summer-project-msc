@@ -8,6 +8,7 @@ import { Typography, FormControlLabel, Switch, Button, ButtonGroup, FormControl,
 import { Accordion, AccordionDetails, AccordionSummary } from "@/app/dashboard/utilities/styledAccordion"
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import * as polarAreaDayViewSlice from "./DayViews/polarAreaDayViewSlice"
+import * as starDayViewSlice  from "./DayViews/starDayViewSlice"
 
 
 /**
@@ -97,10 +98,10 @@ export default function CalendarViewControlPannel() {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography color={calendarViewGlyphType === 'polarArea' ? 'success.main' : undefined}>Polar Area Glyph Config</Typography>
+                    <Typography color={calendarViewGlyphType === 'polarArea' ? 'success.main' : undefined}>Star Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    not implemented
+                <StarViewControlPannel></StarViewControlPannel>
                 </AccordionDetails>
             </Accordion>
         </div>)
@@ -253,6 +254,53 @@ function PolarAreaViewControlPannel() {
                 break;
             case 'linearGlobal':
                 dispatch(polarAreaDayViewSlice.setRadiusAxis(nextAxis));
+                break;
+
+            default:
+                throw new Error("invalid nextAxis: " + nextAxis)
+        }
+    }
+    return (<>
+        <Grid container spacing={1}>
+            <Grid item xs={2} justifyContent={'center'} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>Radius</Grid>
+            <Grid item xs={10}>
+                <FormControl>
+                    {/*reference for radio button: https://mui.com/material-ui/react-radio-button/ */}
+                    <RadioGroup
+                        row
+                        aria-labelledby="demo-row-radio-buttons-group-label"
+                        name="row-radio-buttons-group"
+                        onChange={e => handleSetPieGlyphRadiusAxis(e.target.value)}
+                        value={radiusScaleType}
+                    >
+                        <FormControlLabel value="linearGlobal" control={<Radio />} label="Linear" />
+                        <FormControlLabel value="logGlobal" control={<Radio />} label="Log" />
+                        <FormControlLabel value="linearLocal" control={<Radio />} label="Linear(local)" />
+                        <FormControlLabel value="logLocal" control={<Radio />} label="Log(local)" />
+                    </RadioGroup>
+                </FormControl>
+            </Grid>
+        </Grid>
+    </>)
+}
+function StarViewControlPannel() {
+    // config for the polar area view
+    const radiusScaleType: "logGlobal" | "linearGlobal" | "logLocal" | "linearLocal" = useAppSelector(starDayViewSlice.selectRadiusAxis)
+    const dispatch = useAppDispatch()
+
+    function handleSetPieGlyphRadiusAxis(nextAxis: string): void {
+        switch (nextAxis) {
+            case 'logLocal':
+                dispatch(starDayViewSlice.setRadiusAxis(nextAxis));
+                break;
+            case 'linearLocal':
+                dispatch(starDayViewSlice.setRadiusAxis(nextAxis));
+                break;
+            case 'logGlobal':
+                dispatch(starDayViewSlice.setRadiusAxis(nextAxis));
+                break;
+            case 'linearGlobal':
+                dispatch(starDayViewSlice.setRadiusAxis(nextAxis));
                 break;
 
             default:
