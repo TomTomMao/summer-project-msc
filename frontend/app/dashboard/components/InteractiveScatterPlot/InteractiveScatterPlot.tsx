@@ -286,7 +286,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                     step={(sliderRange.xMax - sliderRange.xMin) / 1000}
                     valueLabelFormat={value => value.toFixed(2)}
                     defaultValue={[filteredXDomainMin === 'min' ? xDomainMin : filteredXDomainMin, filteredXDomainMax === 'max' ? xDomainMax : filteredXDomainMax]}
-                    valueLabelDisplay="auto"
+                    valueLabelDisplay={isExpand ? "auto" : 'off'}
                     onChangeCommitted={(event, value) => {
                         if (typeof value === 'number') {
                             throw new Error("invalid value, it should be a list of number");
