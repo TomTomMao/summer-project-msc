@@ -30,7 +30,7 @@ export default function StarChart(props: StarChartProps) {
     const containerWidth = radiusScale.range()[1] * 2
     const containerHeight = radiusScale.range()[1] * 2
 
-    const { starAreaData, starLineData } = useStarData(data, radiusScale, angleScale)
+    const { starAreaData, starLineData } = useStarData(data,radiusScale, angleScale)
 
     return <button onClick={() => console.log({ starAreaData, starLineData, data, radiusScale, angleScale })}>data</button>
 
@@ -81,8 +81,8 @@ function getStarData(data: StarChartDatum[],
             console.log(`nan value for theta or radius, index=${index}, value=${value}, angleScale: ${angleScale}, radiusScale: ${radiusScale}`, { starAreaData, starLineData, data, radiusScale, angleScale });
             // throw new Error(`nan value for theta or radius, index=${index}, value=${value}, angleScale: ${angleScale}, radiusScale: ${radiusScale}`);
         }
-        const x = radius * Math.sin(theta / 2 / Math.PI)
-        const y = - radius * Math.cos(theta / 2 / Math.PI)
+        const x = radius * Math.sin(theta)
+        const y = - radius * Math.cos(theta)
         const currentPoint: CartesianPoint = { x, y }
         starLineData.push({ x, y, colour: colour })
         if (lastPoint !== undefined) {
