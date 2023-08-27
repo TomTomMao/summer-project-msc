@@ -5,19 +5,35 @@ import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
 import { relative } from "path";
 import { Tooltip } from "@mui/material";
 import { UPARROW, DOWNARROW } from "../../utilities/Arrows";
+import { ClusterDataMap } from "../../hooks/useClusterData";
 const DEFAULT_NUMBER_OF_ROW_PER_PAGE = 8
 export interface DescriptionAndIsCredit {
     transactionDescription: string;
     isCredit: boolean;
 }
 
+/**
+ * 
+ * transactionNumberSet: transactionNumber that going to show
+ * 
+ * transactionDataArr: the transactionDataArr to loop thorugh
+ * 
+ * handleClearSelect event handler for clicking '
+ * 
+ * colourScale, used for back ground of a row
+ * 
+ * colourDomainData: used for determine what domain value to use when calling colourScale
+ * 
+ * 
+ */
 type Props = {
     transactionDataArr: TransactionData[];
     transactionNumberSet: Set<TransactionData['transactionNumber']>;
-    handleClearSelect: (() => void)
-    colourScale: PublicScale['colourScale']
-    colourDomainData: ColourDomainData[],
-    children: React.ReactNode
+    clusterDataMap: ClusterDataMap;
+    handleClearSelect: (() => void);
+    colourScale: PublicScale['colourScale'];
+    colourDomainData: ColourDomainData[];
+    children: React.ReactNode;
 }
 /**
  * show the transactions that has the number in the transactionNumberSet
@@ -27,7 +43,7 @@ type Props = {
  * transactionDataArr: the transactionDataArr to loop thorugh
  * reference for fixed head: https://labotrees.com/web-technologies/how-to-set-tbody-height-with-overflow-scroll/#:~:text=To%20do%20this%2C,the%20behavior%20of%20a%20table.
  */
-export default function TableView({ transactionDataArr, transactionNumberSet, handleClearSelect, colourScale, colourDomainData, children }:
+export default function TableView({ transactionDataArr, transactionNumberSet, clusterDataMap, handleClearSelect, colourScale, colourDomainData, children }:
     Props) {
     // when the component mount or the filteredDescriptionAndIsCreditArr Changes, change it. the time complexity is transactionDataArr.length * filteredDescriptionAndIsCreditArr; can be improved in the future.[performance improvement]
 
@@ -36,7 +52,26 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
     const isDesc = sortingConfig.isDesc
     const filteredTransactionDataArr = useMemo(() => transactionDataArr.filter(transactionData => transactionNumberSet.has(transactionData.transactionNumber)), [transactionDataArr, transactionNumberSet])
     useEffect(() => dispatch({ type: 'init' }), [filteredTransactionDataArr])
-    const sortedFilteredTransactionDataArr = useMemo(() => filteredTransactionDataArr.sort(TransactionData.curryCompare(sortingKey, isDesc)), [sortingConfig, filteredTransactionDataArr])
+    const sortedFilteredTransactionDataArr = useMemo(() => {
+        if (sortingKey !== 'clusterId') {
+            return [...filteredTransactionDataArr].sort(TransactionData.curryCompare(sortingKey, isDesc))
+        }
+        const filteredTransactionDataArrWithClusterId = filteredTransactionDataArr.map(transactionData => {
+            const clusterId = clusterDataMap.get(transactionData.transactionNumber)
+            if (clusterId === undefined) {
+                throw new Error(`clusterData does not have transactionNumber:${transactionData.transactionNumber}`);
+            }
+            return {
+                transactionData,
+                clusterId: clusterId
+            }
+        })
+        if (isDesc) {
+            return filteredTransactionDataArrWithClusterId.sort((a, b) => a.clusterId < b.clusterId ? 1 : -1).map(d => d.transactionData)
+        }
+        return filteredTransactionDataArrWithClusterId.sort((a, b) => a.clusterId > b.clusterId ? 1 : -1).map(d => d.transactionData)
+
+    }, [sortingConfig, filteredTransactionDataArr])
     const colourForTransactionNumberMap = useMemo(() => {
         // create a dictionary map the transactionNumber to colour string
         /**key: transactionNumber, value: 'RGB(XXX,XXX,XXX)' */
@@ -70,32 +105,37 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
         return (
             currentPageTransactionDataArr.map(transactionData => {
                 const colour = colourForTransactionNumberMap.get(transactionData.transactionNumber);
+                const clusterId = clusterDataMap.get(transactionData.transactionNumber)
+                if (clusterId === undefined) {
+                    throw new Error(`clusterData does not have transactionNumber:${transactionData.transactionNumber}`);
+                }
                 return (
                     <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
-                        <Tooltip title={transactionData.transactionNumber}><td className="help" style={{ width: '50%', height: '4em' }}>{transactionData.transactionNumber}</td></Tooltip>
-                        <Tooltip title={String(transactionData.balance)}><td className="help" style={{ width: '70%', height: '4em' }}>{transactionData.balance}</td></Tooltip>
-                        <Tooltip title={transactionData.category}><td className="help" style={{ width: '100%', height: '4em' }}>{transactionData.category}</td></Tooltip>
-                        <Tooltip title={String(transactionData.creditAmount)}><td className="help" style={{ width: '70%', height: '4em' }}>{transactionData.creditAmount}</td></Tooltip>
-                        <Tooltip title={String(transactionData.debitAmount)}><td className="help" style={{ width: '70%', height: '4em' }}>{transactionData.debitAmount}</td></Tooltip>
-                        <Tooltip title={transactionData.locationCity}><td className="help" style={{ width: '70%', height: '4em' }}>{transactionData.locationCity}</td></Tooltip>
-                        <Tooltip title={transactionData.locationCountry}><td className="help" style={{ width: '100%', height: '4em' }}>{transactionData.locationCountry}</td></Tooltip>
-                        <Tooltip title={transactionData.transactionDescription} ><td className="help" style={{ width: '150%', height: '4em' }}>{transactionData.transactionDescription}</td></Tooltip>
-                        <Tooltip title={transactionData.transactionType}><td className="help" style={{ width: '50%', height: '4em' }}>{transactionData.transactionType}</td></Tooltip>
-                        <Tooltip title={transactionData.date?.toDateString()}><td className="help" style={{ width: '100%', height: '4em' }}>{transactionData.date?.toDateString()}</td></Tooltip>
-                        <Tooltip title={String(transactionData.frequency)}><td className="help" style={{ width: '100%', height: '4em' }}>{(transactionData.frequency.toFixed(2))}</td></Tooltip>
-                        <Tooltip title={transactionData.frequencyUniqueKey}><td className="help" style={{ width: '100%', height: '4em' }}>{transactionData.frequencyUniqueKey}</td></Tooltip>
+                        <Tooltip title={transactionData.transactionNumber}><td className="help" style={{ overflowX: 'hidden', width: '50%', height: '4em' }}>{transactionData.transactionNumber}</td></Tooltip>
+                        <Tooltip title={String(transactionData.balance)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em' }}>{transactionData.balance}</td></Tooltip>
+                        <Tooltip title={transactionData.category}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{transactionData.category}</td></Tooltip>
+                        <Tooltip title={String(transactionData.creditAmount)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em' }}>{transactionData.creditAmount}</td></Tooltip>
+                        <Tooltip title={String(transactionData.debitAmount)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em' }}>{transactionData.debitAmount}</td></Tooltip>
+                        <Tooltip title={transactionData.locationCity}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em' }}>{transactionData.locationCity}</td></Tooltip>
+                        <Tooltip title={transactionData.locationCountry}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{transactionData.locationCountry}</td></Tooltip>
+                        <Tooltip title={transactionData.transactionDescription} ><td className="help" style={{ overflowX: 'hidden', width: '150%', height: '4em' }}>{transactionData.transactionDescription}</td></Tooltip>
+                        <Tooltip title={transactionData.transactionType}><td className="help" style={{ overflowX: 'hidden', width: '50%', height: '4em' }}>{transactionData.transactionType}</td></Tooltip>
+                        <Tooltip title={transactionData.date?.toDateString()}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{transactionData.date?.toDateString()}</td></Tooltip>
+                        <Tooltip title={String(transactionData.frequency)}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{(transactionData.frequency.toFixed(2))}</td></Tooltip>
+                        <Tooltip title={transactionData.frequencyUniqueKey}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{transactionData.frequencyUniqueKey}</td></Tooltip>
+                        <Tooltip title={clusterId}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{clusterId}</td></Tooltip>
                     </tr>)
             })
         )
     }, [currentPageTransactionDataArr, colourForTransactionNumberMap])
-    function handleClickColumnName(columnName: TransactionDataAttrs) {
+    function handleClickColumnName(columnName: TransactionDataAttrs | 'clusterId') {
         if (columnName === sortingKey) {
             handleToggleOrder()
         } else {
             handleChangeSortingKey(columnName)
         }
     }
-    function handleChangeSortingKey(newSortingKey: TransactionDataAttrs) {
+    function handleChangeSortingKey(newSortingKey: TransactionDataAttrs | 'clusterId') {
         dispatch({ type: 'change sorting key', newSortingKey: newSortingKey })
     }
     function handleToggleOrder() {
@@ -144,7 +184,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                         <input style={{ height: '22px', position: 'relative', top: '2.7px' }} type="number" name="" id="" value={currentPageNumber} min={1} max={maxPageNumber} onChange={(e) => handleChangePage(parseInt(e.target.value))} />
                     </div>
                     <div>
-                        <button onClick={handleClearSelect}>clear all</button>
+                        <button onClick={handleClearSelect}>Clear All</button>
                     </div>
                 </div></>
             }
@@ -164,6 +204,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                     <td style={{ width: '100%', height: '4em' }}><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('date')}>Date {sortingKey === 'date' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                     <td style={{ width: '100%', height: '4em' }}><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('frequency')}>Frequency {sortingKey === 'frequency' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                     <td style={{ width: '100%', height: '4em' }}><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('frequencyUniqueKey')}>Description Group {sortingKey === 'frequencyUniqueKey' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
+                    <td style={{ width: '100%', height: '4em' }}><button style={{ width: '100%', height: '4em' }} onClick={() => handleClickColumnName('clusterId')}>Cluster Id {sortingKey === 'clusterId' ? (isDesc ? UPARROW : DOWNARROW) : ' '}</button></td>
                 </tr>
             </thead>
             <tbody style={({ height: numberOfRowPerPage > DEFAULT_NUMBER_OF_ROW_PER_PAGE ? '87vh' : '', display: 'block', overflowY: 'scroll' })}>
@@ -175,7 +216,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
 }
 
 type SortingConfig = {
-    sortingKey: TransactionDataAttrs,
+    sortingKey: TransactionDataAttrs | 'clusterId',
     isDesc: boolean,
     numberOfRowPerPage: number | 'all',
     currentPage: number

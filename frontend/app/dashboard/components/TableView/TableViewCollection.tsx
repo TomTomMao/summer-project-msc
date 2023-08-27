@@ -4,6 +4,7 @@ import { PublicScale, PublicValueGetter } from "../../utilities/types"
 import TableView from "./TableView"
 import FolderableContainer from "../Containers/FolderableContainer"
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice"
+import { useClusterDataMap } from "../../hooks/useClusterData"
 
 interface TableViewCollectionProps {
     transactionDataArr: TransactionData[], // give it to the tables
@@ -28,6 +29,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
         currentTable={currentTable}
         handleChangeCurrentTable={setCurrentTable}
     ></TableOption>
+    const clusterDataMap = useClusterDataMap()
     return (
         <div style={{
             margin: 'auto auto'
@@ -35,6 +37,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
             {currentTable === 'brushedTable' && <TableView
                 transactionDataArr={transactionDataArr}
                 transactionNumberSet={brushedTransactionNumberSet}
+                clusterDataMap={clusterDataMap}
                 handleClearSelect={handleClearBrush}
                 colourScale={colourScale}
                 colourDomainData={colourDomainData}
@@ -42,6 +45,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
             {currentTable === 'glyphTable' && <TableView
                 transactionDataArr={transactionDataArr}
                 transactionNumberSet={selectedGlyphTransactionNumberSet}
+                clusterDataMap={clusterDataMap}
                 handleClearSelect={handleClearGlyph}
                 colourScale={colourScale}
                 colourDomainData={colourDomainData}
