@@ -22,8 +22,8 @@ const initialState: CalendarViewState = {
   // container width and height refer to the cell size of each day
   containerWidth: 25,
   containerHeight: 25,
-  expandedContainerWidth: 40,
-  expandedContainerHeight: 40,
+  expandedContainerWidth: 45,
+  expandedContainerHeight: 45,
   isExpanded: false,
   detailDay: null,
   currentYear: 2016,

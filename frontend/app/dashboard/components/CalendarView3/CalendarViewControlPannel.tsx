@@ -98,7 +98,7 @@ export default function CalendarViewControlPannel() {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                 >
-                    <Typography color={calendarViewGlyphType === 'polarArea' ? 'success.main' : undefined}>Star Glyph Config</Typography>
+                    <Typography color={calendarViewGlyphType === 'star' ? 'success.main' : undefined}>Star Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                 <StarViewControlPannel></StarViewControlPannel>

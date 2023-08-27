@@ -23,6 +23,12 @@ import { ClusterData } from "../../utilities/clusterDataObject";
 import { useStarCalendarViewSharedAngleScale, useStarCalendarViewSharedRadialScales } from "./useStarCalendarViewSharedScales";
 import useClusterOrderMap from "./useClusterOrder";
 import { StarDayView, StarDayViewProps, StarViewSharedScales } from "./DayViews/starDayView";
+import { CategoryColourLegend, ClusterIdColourLegend } from "../ColourLegend/ColourLegends";
+
+const CALENDAR_VIEW_EXPANDED_LEGEND_HEIGHT = 550
+const CALENDAR_VIEW_FOLDED_LEGEND_HEIGHT = 370
+const CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH = 150
+const CALENDAR_VIEW_FOLDED_LEGEND_WIDTH = 100
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
@@ -72,6 +78,9 @@ export default function CalendarView3(props:
     const currentContainerWidth = useAppSelector(calendarViewSlice.selectCurrentContainerWidth)
     const detailDay = useAppSelector(calendarViewSlice.selectDetailDay)
     const currentYear = useAppSelector(calendarViewSlice.selectCurrentYear)
+    const isExpanded = useAppSelector(calendarViewSlice.selectIsExpand)
+
+    const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
     const dispatch = useAppDispatch()
 
     // used when user click a day cell
@@ -194,7 +203,7 @@ export default function CalendarView3(props:
         angleScale: polarAreaCalendarViewSharedAngleScale,
         categoryOrderMap
     }
-    
+
     const starCalendarViewSharedScales: StarViewSharedScales = {
         colourScale: clusterIdColourScale,
         linearRadiusScale: starCalendarViewSharedRadialScales.linearRadiusScale,
@@ -203,8 +212,8 @@ export default function CalendarView3(props:
         clusterOrderMap
     }
     return (
-        <>
-            <table className="smallLetterTable">
+        <div style={{ paddingRight: isExpanded ? CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH : CALENDAR_VIEW_FOLDED_LEGEND_WIDTH }}>
+            <table className="smallLetterTable" >
                 <thead>
                     <tr>
                         <td></td>
@@ -230,7 +239,21 @@ export default function CalendarView3(props:
                     />)}
                 </tbody>
             </table>
-        </ >
+            <div style={{
+                position: 'absolute',
+                right: 0,
+                top: '2em',
+                overflowY: 'scroll',
+                height: 'calc(100% - 4em)',
+                width: isExpanded ? CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH : CALENDAR_VIEW_FOLDED_LEGEND_WIDTH,
+            }}>
+                <div style={{ height: '100%', display:'flex'}}>
+                    <div>
+                        {glyphType === 'star' ? <ClusterIdColourLegend /> : <CategoryColourLegend />}
+                    </div>
+                </div>
+            </div>
+        </ div >
     )
 }
 
