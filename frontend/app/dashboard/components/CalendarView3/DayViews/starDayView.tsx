@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import { rollup, sum } from "d3";
 import { TransactionData, TransactionDataNumericalAttrs } from "@/app/dashboard/utilities/DataObject";
 import { GRAY1 } from "@/app/dashboard/utilities/consts";
+import StarChart from "./starChart";
 
 export type StarViewSharedScales = {
     /**colourScale should use clusterId */
@@ -85,6 +86,10 @@ export function StarDayView(props: StarDayViewProps) {
         })
         return chartDataLocal
     }, [clusterIdTransactionAmountMap, clusterOrderMap, colourScale])
+
+    return <>
+        <StarChart data={chartData} radiusScale={logRadiusScale} angleScale={angleScale}></StarChart>
+    </>
     return <>
         <button onClick={() => { console.log(props); console.log(dayData); console.log(chartData) }}>consoledata</button></>
 }
