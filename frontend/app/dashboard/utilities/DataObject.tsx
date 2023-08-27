@@ -5,6 +5,7 @@ import { Day } from "../components/CalendarView3/CalendarView3";
 import { isNumber } from "./isNumeric";
 
 
+
 export type TransactionDataAttrs = "dayOfYear" | "transactionAmount" | "date" | "transactionNumber" | "transactionType" | "transactionDescription" | "debitAmount" | "creditAmount" | "balance" | "category" | "locationCity" | "locationCountry" | "frequency" | "frequencyUniqueKey";
 /**
  * a class represent a record of transaction
@@ -188,3 +189,5 @@ export class TransactionData {
         return `${this.month}-${this.day}`
     }
 }
+
+export type TransactionDataNumericalAttrs = { [K in keyof TransactionData]: TransactionData[K] extends number ? K : never; }[keyof TransactionData]

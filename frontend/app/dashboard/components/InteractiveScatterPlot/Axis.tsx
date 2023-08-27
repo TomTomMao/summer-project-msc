@@ -80,7 +80,7 @@ export const AxisLeft = ({ yScale, numberOfTicksTarget }: AxisLeftProps) => {
             }));
         }
     }, [yScale]);
-    console.log(ticks)
+    // console.log(ticks)
     return (
         <>
             {/* Main vertical line */}

@@ -424,7 +424,11 @@ export function getDataFromTransactionDataMapMD(transactionDataMapMD: Transactio
 }
 
 /**
- * get the data in O(1)
+ * given day,  month and year, return the sum of transactionAmount of the day from the transactionAmountSumMapByDayYMD
+ * 
+ * this is used for non-superpositioned view
+ * 
+ * O(1)
  * @param transactionAmountSumMapByDayYMD 
  * @param year number of year
  * @param month 1to12
@@ -447,7 +451,11 @@ export function getDataFromTransactionAmountSumByDayYMD(transactionAmountSumMapB
 }
 
 /**
- * get the data in O(1)
+ * given day and month, return the sum of transactionAmount of the day from the transactionAmountSumMapByDayMD
+ * 
+ * this is used for superpositioned view
+ * 
+ * O(1)
  * @param transactionAmountSumMapByDayMD 
  * @param month 1to12
  * @param day 1to31
