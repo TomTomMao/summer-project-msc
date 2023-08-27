@@ -247,7 +247,7 @@ export default function CalendarView3(props:
                 height: 'calc(100% - 4em)',
                 width: isExpanded ? CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH : CALENDAR_VIEW_FOLDED_LEGEND_WIDTH,
             }}>
-                <div style={{ height: '100%', display:'flex'}}>
+                <div style={glyphType === 'star' ? { height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' } : { height: '100%' }}>
                     <div>
                         {glyphType === 'star' ? <ClusterIdColourLegend /> : <CategoryColourLegend />}
                     </div>
