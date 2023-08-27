@@ -29,7 +29,7 @@ export function CategoryColourLegend() {
         }
     })
     return (
-        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'category'}></LegendList>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'Category'}></LegendList>
     )
 }
 
@@ -53,7 +53,7 @@ export function FrequencyUniqueKeyColourLegend() {
         }
     })
     return (
-        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'transaction description group id'}></LegendList>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'Transaction Description Group ID'}></LegendList>
     )
 }
 export function ClusterIdColourLegend() {
@@ -76,7 +76,7 @@ export function ClusterIdColourLegend() {
         }
     })
     return (
-        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'cluster id'}></LegendList>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'Cluster ID'}></LegendList>
     )
 }
 

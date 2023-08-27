@@ -43,24 +43,24 @@ export function ClusterViewMappingControlPannel() {
             {/* reference: https://mui.com/material-ui/react-grid/ */}
             <Grid item xs={12}>
                 <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">colour</InputLabel>
+                    <InputLabel id="demo-simple-select-label">Colour</InputLabel>
                     <Select
                         size="small"
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
                         value={colour}
-                        label="colour"
+                        label="Colour"
                         onChange={e => handleChangeColour(e.target.value)}
                     >
-                        <MenuItem value="cluster">cluster</MenuItem>
-                        <MenuItem value="category">category</MenuItem>
-                        <MenuItem value="frequencyUniqueKey">transaction description group</MenuItem>
+                        <MenuItem value="cluster">Cluster</MenuItem>
+                        <MenuItem value="category">Category</MenuItem>
+                        <MenuItem value="frequencyUniqueKey">Transaction Description Group</MenuItem>
                     </Select>
                 </FormControl>
             </Grid>
             <Grid item xs={6}>
                 <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">x axis</InputLabel>
+                    <InputLabel id="demo-simple-select-label">X Axis</InputLabel>
                     <Select
                         size="small"
                         labelId="demo-simple-select-label"
@@ -69,28 +69,28 @@ export function ClusterViewMappingControlPannel() {
                         label="x axis"
                         onChange={e => handleChangeXLable(e.target.value)}
                     >
-                        <MenuItem value="transactionAmount">transaction amount</MenuItem>
-                        <MenuItem value="frequency">frequency(per month)</MenuItem>
-                        <MenuItem value="dayOfYear">dayOfYear</MenuItem>
-                        <MenuItem value="balance">balance</MenuItem>
+                        <MenuItem value="transactionAmount">Transaction Amount</MenuItem>
+                        <MenuItem value="frequency">Frequency(per month)</MenuItem>
+                        <MenuItem value="dayOfYear">Day of Year</MenuItem>
+                        <MenuItem value="balance">Balance</MenuItem>
                     </Select>
                 </FormControl>
             </Grid>
             <Grid item xs={6}>
                 <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">y axis</InputLabel>
+                    <InputLabel id="demo-simple-select-label">Y axis</InputLabel>
                     <Select
                         size="small"
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
                         value={yLable}
-                        label="y axis"
+                        label="Y axis"
                         onChange={e => handleChangeYLable(e.target.value)}
                     >
-                        <MenuItem value="transactionAmount">transaction amount</MenuItem>
-                        <MenuItem value="frequency">frequency(per month)</MenuItem>
-                        <MenuItem value="dayOfYear">dayOfYear</MenuItem>
-                        <MenuItem value="balance">balance</MenuItem>
+                        <MenuItem value="transactionAmount">Transaction Amount</MenuItem>
+                        <MenuItem value="frequency">Frequency(per month)</MenuItem>
+                        <MenuItem value="dayOfYear">Day of Year</MenuItem>
+                        <MenuItem value="balance">Balance</MenuItem>
                     </Select>
                 </FormControl>
             </Grid>

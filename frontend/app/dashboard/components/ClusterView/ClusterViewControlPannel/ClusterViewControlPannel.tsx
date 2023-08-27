@@ -20,7 +20,7 @@ export default function ClusterViewControlPannel() {
                         aria-controls="panel1a-content"
                         id="panel1a-header"
                     >
-                        <Typography>visual mapping</Typography>
+                        <Typography>Visual Mapping</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                         <ClusterViewMappingControlPannel></ClusterViewMappingControlPannel>
@@ -34,7 +34,7 @@ export default function ClusterViewControlPannel() {
                         aria-controls="panel1a-content"
                         id="panel1a-header"
                     >
-                        <Typography>clustering</Typography>
+                        <Typography>Clustering</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                         <ClusterAlgorithmControlPannel></ClusterAlgorithmControlPannel>
@@ -48,7 +48,7 @@ export default function ClusterViewControlPannel() {
                         aria-controls="panel1a-content"
                         id="panel1a-header"
                     >
-                        <Typography>transaction group</Typography>
+                        <Typography>Transaction Group</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                     <FrequencyControlPannel></FrequencyControlPannel>

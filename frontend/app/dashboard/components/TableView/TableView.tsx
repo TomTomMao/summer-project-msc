@@ -139,7 +139,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, ha
                     <span style={{ paddingTop: '2px', paddingRight: '8px', paddingLeft: '5px' }}>rows</span>
 
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <label htmlFor="" style={{ paddingTop: '2px' }}>{startIndex + 1}-{endIndex + 1} of {numberOfRow} current page:</label>
+                        <label htmlFor="" style={{ paddingTop: '2px' }}>{startIndex + 1}-{endIndex + 1} of {numberOfRow} Current Page:</label>
                         {/* input height is mannualy set to be the same as the clear all button */}
                         <input style={{ height: '22px', position: 'relative', top: '2.7px' }} type="number" name="" id="" value={currentPageNumber} min={1} max={maxPageNumber} onChange={(e) => handleChangePage(parseInt(e.target.value))} />
                     </div>

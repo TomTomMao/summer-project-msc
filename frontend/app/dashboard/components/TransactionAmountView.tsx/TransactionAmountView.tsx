@@ -68,7 +68,7 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
         <>
             {/* https://www.educative.io/answers/how-to-center-an-absolutely-positioned-element-inside-its-parent */}
             <div style={{
-                width: 170,
+                width: 200,
                 height: 12,
                 position: 'absolute',
                 fontSize: '14px',
@@ -77,7 +77,7 @@ export default function TransactionAmountView(props: TransactionAmountViewProps)
                 left: marginLeft + (containerWidth - marginLeft - marginRight) / 2,
                 transform: 'translate(-50%,0)',
                 textAlign: 'center'
-            }}>transaction amount view</div>
+            }}>Transaction Amount View</div>
             <div style={{ position: 'absolute', top: -7, right: -10, transform: 'scale(0.8)', zIndex: 7 }}>
                 <LogScaleSwitcherGroup isXLog={xLog} isYLog={yLog}
                     onTurnOnXLog={handleTurnOnXLog}

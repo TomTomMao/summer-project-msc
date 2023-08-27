@@ -34,35 +34,35 @@ export function ClusterAlgorithmControlPannel() {
         <Grid container spacing={1}>
             <Grid item xs={6}>
                 <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">clustering metric1</InputLabel>
+                    <InputLabel id="demo-simple-select-label">Clustering Metric1</InputLabel>
                     <Select
                         size="small"
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
                         value={metric1}
-                        label="clustering metric1"
+                        label="Clustering Metric1"
                         onChange={e => setMetric1(e.target.value as "transactionAmount" | "category" | "frequency")}
                     >
-                        <MenuItem value="transactionAmount">transaction amount</MenuItem>
-                        <MenuItem value="frequency">frequency(per month)</MenuItem>
-                        <MenuItem value="category">category</MenuItem>
+                        <MenuItem value="transactionAmount">Transaction Amount</MenuItem>
+                        <MenuItem value="frequency">Frequency(per month)</MenuItem>
+                        <MenuItem value="category">Category</MenuItem>
                     </Select>
                 </FormControl>
             </Grid>
             <Grid item xs={6}>
                 <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">clustering metric2</InputLabel>
+                    <InputLabel id="demo-simple-select-label">Clustering Metric2</InputLabel>
                     <Select
                         size="small"
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
                         value={metric2}
-                        label="clustering metric2"
+                        label="Clustering Metric2"
                         onChange={e => setMetric2(e.target.value as "transactionAmount" | "category" | "frequency")}
                     >
-                        <MenuItem value="transactionAmount">transaction amount</MenuItem>
-                        <MenuItem value="frequency">frequency(per month)</MenuItem>
-                        <MenuItem value="category">category</MenuItem>
+                        <MenuItem value="transactionAmount">Transaction Amount</MenuItem>
+                        <MenuItem value="frequency">Frequency(per month)</MenuItem>
+                        <MenuItem value="category">Category</MenuItem>
                     </Select>
                 </FormControl>
             </Grid>
@@ -72,7 +72,7 @@ export function ClusterAlgorithmControlPannel() {
                         error={numberOfCluster < MIN_NUMBER_CLUSTER || numberOfCluster > MAX_NUMBER_CLUSTER}
                         helperText={(numberOfCluster < MIN_NUMBER_CLUSTER || numberOfCluster > MAX_NUMBER_CLUSTER) ? `must between ${MIN_NUMBER_CLUSTER} and ${MAX_NUMBER_CLUSTER}` : <></>}
                         fullWidth
-                        label={'number of cluster'}
+                        label={'Number of Cluster'}
                         size='small'
                         variant="outlined"
                         type="number"
