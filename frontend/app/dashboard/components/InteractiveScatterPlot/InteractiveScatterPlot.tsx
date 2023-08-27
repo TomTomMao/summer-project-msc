@@ -243,7 +243,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
             throw new Error(`exhaustive type error`);
     }
 
-    
+
 
     return (
         <div style={{ position: 'relative', width: containerWidth + COLOURLEGEND_WIDTH, height: containerHeight + 20 }} className={props.className}>
@@ -255,7 +255,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                     max={sliderRange.yMax}
                     step={(sliderRange.yMax - sliderRange.yMin) / 1000}
                     valueLabelFormat={value => value.toFixed(2)}
-                    defaultValue={[yDomainMin, yDomainMax]}
+                    defaultValue={[filteredYDomainMin === 'min' ? yDomainMin : filteredYDomainMin, filteredYDomainMax === 'max' ? yDomainMax : filteredYDomainMax]}
                     valueLabelDisplay={isExpand ? "auto" : 'off'}
                     orientation="vertical"
                     onChangeCommitted={(event, value) => {
@@ -285,7 +285,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                     max={sliderRange.xMax}
                     step={(sliderRange.xMax - sliderRange.xMin) / 1000}
                     valueLabelFormat={value => value.toFixed(2)}
-                    defaultValue={[xDomainMin, xDomainMax]}
+                    defaultValue={[filteredXDomainMin === 'min' ? xDomainMin : filteredXDomainMin, filteredXDomainMax === 'max' ? xDomainMax : filteredXDomainMax]}
                     valueLabelDisplay="auto"
                     onChangeCommitted={(event, value) => {
                         if (typeof value === 'number') {
