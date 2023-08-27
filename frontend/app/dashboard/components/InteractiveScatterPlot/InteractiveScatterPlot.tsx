@@ -11,6 +11,7 @@ import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { ScaleOrdinalWithTransactionNumber } from "../../hooks/useColourScales";
 import { ColourDomainData, ValidColours } from "../ColourChannel/colourChannelSlice";
 import { CategoryColourLegend, ClusterIdColourLegend, FrequencyUniqueKeyColourLegend } from "../ColourLegend/ColourLegends";
+import { getPrettierAxisLabel } from "../../utilities/getPrettierAxisLabel";
 
 export const COLOURLEGEND_WIDTH = 125
 const COLOUR_LEGEND_MARGIN_TOP = 10
@@ -302,7 +303,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                 top: height / 2,
                 left: -47.5,
                 transform: 'rotate(-90deg)'
-            }}>{yLabel === 'frequency' ? 'frequency(per month)' : yLabel}</div>
+            }}>{getPrettierAxisLabel(yLabel)}</div>
             {/* reference:  https://stackoverflow.com/questions/21638859/using-elements-own-not-parents-width-for-calculation-or-percentage-in-css-w */}
             <div style={{
                 width: 150,
@@ -313,7 +314,7 @@ export default function InteractiveScatterPlot(props: InteractiveScatterPlotProp
                 left: marginLeft + width / 2,
                 transform: 'translate(-50%,0)',
                 textAlign: 'center'
-            }}>{xLabel === 'frequency' ? 'frequency(per month)' : xLabel}</div>
+            }}>{getPrettierAxisLabel(xLabel)}</div>
             <div style={{
                 position: 'absolute',
                 bottom: 5,
@@ -390,3 +391,4 @@ function useXYVisualData<Datum, Domain, Range>(channel: XYChannel<Datum, Domain,
     const range = useMemo(() => data.map(datum => scale(accessor(datum))), [data, accessor, scale]);
     return range;
 }
+

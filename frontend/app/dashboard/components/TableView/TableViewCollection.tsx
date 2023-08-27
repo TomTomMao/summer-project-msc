@@ -60,7 +60,7 @@ function TableOption({ currentTable, handleChangeCurrentTable }: {
             </label>
         </span>
         <span>
-            <label htmlFor="glyphTable" style={{ accentColor: 'red' }}>Selected Glyph Data
+            <label htmlFor="glyphTable" style={{ accentColor: 'red', paddingLeft: '1em' }}> Selected Glyph Data
                 <input type="radio" name="glyphTable" id="glyphTable" value={'glyphTable'} checked={currentTable === 'glyphTable'} onChange={() => handleChangeCurrentTable('glyphTable')} />
             </label>
         </span></>)

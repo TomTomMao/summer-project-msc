@@ -83,7 +83,7 @@ export function ClusterView(props: ClusterViewProps) {
                 left: marginLeft + (containerWidth - marginLeft - marginRight) / 2,
                 transform: 'translate(-50%,0)',
                 textAlign: 'center'
-            }}>cluster view</div>
+            }}>Cluster View</div>
             <div style={{ position: 'absolute', top: -7, right: -10, transform: 'scale(0.8)',zIndex:7 }}>
                 <LogScaleSwitcherGroup isXLog={xLog} isYLog={yLog}
                     onTurnOnXLog={handleTurnOnXLog}
