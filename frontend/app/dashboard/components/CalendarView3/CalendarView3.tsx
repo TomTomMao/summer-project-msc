@@ -194,6 +194,7 @@ export default function CalendarView3(props:
         angleScale: polarAreaCalendarViewSharedAngleScale,
         categoryOrderMap
     }
+    
     const starCalendarViewSharedScales: StarViewSharedScales = {
         colourScale: clusterIdColourScale,
         linearRadiusScale: starCalendarViewSharedRadialScales.linearRadiusScale,
