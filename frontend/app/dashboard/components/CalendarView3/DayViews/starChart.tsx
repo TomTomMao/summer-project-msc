@@ -1,3 +1,4 @@
+import { GRAY1 } from "@/app/dashboard/utilities/consts"
 import { ScaleLinear, ScaleLogarithmic } from "d3"
 import * as d3 from 'd3'
 import { useMemo } from "react"
@@ -32,7 +33,7 @@ export default function StarChart(props: StarChartProps) {
 
     const { starAreaData, starLineData } = useStarData(data, radiusScale, angleScale)
     // reference for svg triangle: https://codepen.io/pukea/pen/YjOdKv
-    const triangles = useMemo(() => starAreaData.map(triangleData => <polygon points={getPolygonPointsString(triangleData)} fill='gray' opacity={0.5}></polygon>)
+    const triangles = useMemo(() => starAreaData.map(triangleData => <polygon points={getPolygonPointsString(triangleData)} fill={GRAY1}></polygon>)
         , [starAreaData])
     // reference for line https://www.w3schools.com/graphics/svg_line.asp
     const lines = useMemo(() => starLineData.map(({ x, y, colour }) => <line x1='0' y1='0' x2={x} y2={y} style={{ stroke: colour, strokeWidth: 2 }}></line>), [starLineData])
