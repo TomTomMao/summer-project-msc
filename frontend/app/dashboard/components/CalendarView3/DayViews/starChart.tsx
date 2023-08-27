@@ -30,16 +30,22 @@ export default function StarChart(props: StarChartProps) {
     const containerWidth = radiusScale.range()[1] * 2
     const containerHeight = radiusScale.range()[1] * 2
 
-    const { starAreaData, starLineData } = useStarData(data,radiusScale, angleScale)
+    const { starAreaData, starLineData } = useStarData(data, radiusScale, angleScale)
+    // reference for svg triangle: https://codepen.io/pukea/pen/YjOdKv
+    const triangles = useMemo(() => starAreaData.map(triangleData => <polygon points={getPolygonPointsString(triangleData)} fill='gray' opacity={0.5}></polygon>)
+        , [starAreaData])
+    // reference for line https://www.w3schools.com/graphics/svg_line.asp
+    const lines = useMemo(() => starLineData.map(({ x, y, colour }) => <line x1='0' y1='0' x2={x} y2={y} style={{ stroke: colour, strokeWidth: 2 }}></line>), [starLineData])
 
-    return <button onClick={() => console.log({ starAreaData, starLineData, data, radiusScale, angleScale })}>data</button>
 
-    // return (<svg
-    //     width={containerWidth} height={containerHeight}>
-    //     <g transform={`translate(${containerWidth * 0.5},${containerHeight * 0.5})`}>
-
-    //     </g>
-    // </svg>);
+    return (<svg
+        onClick={() => console.log({ starAreaData, starLineData, data, radiusScale, angleScale })}
+        width={containerWidth} height={containerHeight}>
+        <g transform={`translate(${containerWidth * 0.5},${containerHeight * 0.5})`}>
+            {triangles}
+            {lines}
+        </g>
+    </svg>);
 }
 
 /**
@@ -87,6 +93,7 @@ function getStarData(data: StarChartDatum[],
         starLineData.push({ x, y, colour: colour })
         if (lastPoint !== undefined) {
             starAreaData.push(createTriangleData(originPoint, lastPoint, currentPoint))
+            lastPoint = { x, y }
         } else {
             lastPoint = { x, y }
         }
@@ -99,4 +106,17 @@ function getStarData(data: StarChartDatum[],
 
 function createTriangleData(cartesianPoint1: CartesianPoint, cartesianPoint2: CartesianPoint, cartesianPoint3: CartesianPoint): TriangleData {
     return [cartesianPoint1, cartesianPoint2, cartesianPoint3]
+}
+
+/**
+ * prepare points attribute for polygon
+ * @param triangleData a list of three cartesian points
+ * @return a string like this: "0,0 1,1 -1,2"
+ */
+function getPolygonPointsString(triangleData: TriangleData): string {
+    const chars: string[] = []
+    triangleData.forEach(cartesianPoint => {
+        chars.push(`${cartesianPoint.x},${cartesianPoint.y}`)
+    })
+    return chars.join(' ')
 }
