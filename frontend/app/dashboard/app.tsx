@@ -26,6 +26,7 @@ import TransactionAmountView from "./components/TransactionAmountView.tsx/Transa
 import * as colourChannelSlice from "./components/ColourChannel/colourChannelSlice";
 import Popup from "./components/PopupWindow/Popup";
 import Button from "@mui/material/Button"
+import { FormControlLabel, Switch } from "@mui/material";
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
@@ -41,6 +42,9 @@ export default function App() {
     const colourLabelForTable = useAppSelector(interactivitySlice.selectCurrentSelectorColourScaleType)
     const tableColourScale = colourLabelForTable === 'category' ? categoryColourScale : (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
     const tableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectTableViewColourDomainDataMemorised)
+
+    /**type of selector */
+    const currentSelector = useAppSelector(interactivitySlice.selectCurrentSelector)
 
     // set the state store
     const dispatch = useAppDispatch()
@@ -125,7 +129,7 @@ export default function App() {
                                 <CalendarView3 transactionDataArr={transactionDataArr}
                                     initCurrentYear={2016}
                                     highLightedTransactionNumberSetByBrusher={brushedTransactionNumberSet}
-                                    colourScales={{categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale}}
+                                    colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
                                     colourValueGetter={PUBLIC_VALUEGETTER.colour}
                                 ></CalendarView3>
                             </div>
@@ -141,7 +145,7 @@ export default function App() {
                         >
                             <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 9 }}>
                                 <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div style={{ maxHeight: '380px', backgroundColor: 'white', overflowY: 'auto', width: 'fit-content',overflowX:'hidden' }}>
+                                    <div style={{ maxHeight: '380px', backgroundColor: 'white', overflowY: 'auto', width: 'fit-content', overflowX: 'hidden' }}>
                                         <div style={{ margin: '2px' }}>
                                             <ClusterViewControlPannel></ClusterViewControlPannel>
                                         </div>
@@ -164,8 +168,14 @@ export default function App() {
                     </div>
                 </div>
                 <Popup></Popup>
-                <div>
-                    <Button onClick={() => dispatch(interactivitySlice.toggleShowOneTimeTransaction())}>show one time transaction</Button>
+
+                <div style={{ position: 'absolute', top: 0, right: 0 }}>
+                    <FormControlLabel
+                        className=""
+                        labelPlacement="end"
+                        control={<Switch
+                            checked={currentSelector === 'oneTimeTransaction'}
+                            onChange={() => dispatch(interactivitySlice.toggleShowOneTimeTransaction())} />} label='Focus on One Time Transaction' />
                 </div>
             </div>
 
