@@ -24,6 +24,7 @@ import { useStarCalendarViewSharedAngleScale, useStarCalendarViewSharedRadialSca
 import useClusterOrderMap from "./useClusterOrder";
 import { StarDayView, StarDayViewProps, StarViewSharedScales } from "./DayViews/starDayView";
 import { CategoryColourLegend, ClusterIdColourLegend } from "../ColourLegend/ColourLegends";
+import { Tooltip } from "@mui/material";
 
 const CALENDAR_VIEW_EXPANDED_LEGEND_HEIGHT = 550
 const CALENDAR_VIEW_FOLDED_LEGEND_HEIGHT = 370
@@ -318,11 +319,10 @@ function MonthView(props: MonthViewProps) {
     // month: 1to12 
     return (<tr className={styles.monthrow}>
         <td style={{ color: detailDay && detailDay.month === month && detailDay.year === currentYear ? 'red' : 'black' }}>{MONTHS[month - 1]}</td>
-
         {
-
             // 'isSuperPositioned ? 2016 : currentYear' is for use big year to show all the data
             (Array.from(Array(31).keys())).map(i => {
+                const day = i + 1
                 const hasDay = i < numberOfDaysInMonth;
                 const isDetailDay = detailDay !== null && detailDay.day === i + 1 && detailDay.month === month && detailDay.year === currentYear;
                 const isDayHasSelectedTransaction = highLightedCalendarDayBorderMMDDSet.has(`${month}-${i + 1}`)
@@ -388,11 +388,13 @@ function MonthView(props: MonthViewProps) {
                 }
                 const _dayViewTypeCheck: JSX.Element = dayView
                 return <td key={`${month}-${i + 1}-${isSuperPositioned ? 'superpositioned' : 'notSuperPositioned'}`} onClick={() => handleShowDayDetail(i + 1)} style={{ padding: '0px' }} >
-                    <div
-                        style={{ zIndex: isDayHasSelectedTransaction ? 900 : 800, borderColor: isDayHasSelectedTransaction ? 'blue' : isDetailDay ? 'red' : 'RGB(200,200,200)' }}
-                    >
-                        {dayView}
-                    </div>
+                    <Tooltip title={isSuperPositioned ? `${MONTHS[month - 1]} ${i + 1 < 10 ? '0' + String(i + 1) : i + 1} (2015 to 2022)` : new Date(currentYear, month - 1, day).toDateString()}>
+                        <div
+                            style={{ zIndex: isDayHasSelectedTransaction ? 900 : 800, borderColor: isDayHasSelectedTransaction ? 'blue' : isDetailDay ? 'red' : 'RGB(200,200,200)' }}
+                        >
+                            {dayView}
+                        </div>
+                    </Tooltip>
 
                 </td>
             })}
