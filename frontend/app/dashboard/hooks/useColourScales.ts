@@ -95,7 +95,7 @@ function useColourScale(
         throw new Error("this should never happen");
     }
     const colourRange = d3
-      .quantize((t) => interpolateFunction(t * 0.8 + 0.1), colourDomain.length)
+      .quantize((t) => interpolateFunction(t), colourDomain.length)
       .reverse();
     const scale = d3.scaleOrdinal(colourDomain, colourRange);
     return scale;

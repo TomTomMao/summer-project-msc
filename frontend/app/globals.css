@@ -45,14 +45,14 @@ button:hover {
     background-color: rgb(197, 197, 197);
 }
 
-/* controllpannel */
-.controlPannelFolderableContainer {
+/* controllpanel */
+.controlPanelFolderableContainer {
     border-radius: 0.2em;
     margin-left: 16em;
     margin-top: 3px;
 }
 
-.controlPannel {
+.controlPanel {
 
     background-color: rgb(197, 197, 197);
     padding: 3px;
@@ -86,9 +86,9 @@ button:hover {
 }
 
 
-/* clusterview controlpannel */
+/* clusterview controlpanel */
 table td select,
-.clusterViewControlPannel td input {
+.clusterViewControlPanel td input {
     width: 100%
 }
 

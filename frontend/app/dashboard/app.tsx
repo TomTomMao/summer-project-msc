@@ -3,7 +3,7 @@ import { useEffect, useMemo } from "react"
 import { TransactionData } from "./utilities/DataObject";
 import CalendarView3, { CalendarViewYearController } from "./components/CalendarView3/CalendarView3";
 
-import CalendarViewControlPannel from "./components/CalendarView3/CalendarViewControlPannel";
+import CalendarViewControlPanel from "./components/CalendarView3/CalendarViewControlPanel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
 import { PUBLIC_VALUEGETTER } from "./utilities/consts";
 import ExpandableContainer from "./components/Containers/ExpandableContainer";
@@ -12,7 +12,7 @@ import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice
 import * as scatterPlotSlice from "./components/TransactionAmountView.tsx/scatterPlotSlice";
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
 
-import ClusterViewControlPannel from "./components/ClusterView/ClusterViewControlPannel/ClusterViewControlPannel";
+import ClusterViewControlPanel from "./components/ClusterView/ClusterViewControlPanel/ClusterViewControlPanel";
 
 
 import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";
@@ -119,9 +119,9 @@ export default function App() {
                             initStyle={getExpandableContainerStyle('initStyle')}
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
-                            <div className="controlPannelFolderableContainer floatDiv">
-                                <FolderableContainer label="ControlPannel" initIsFolded={true}>
-                                    <div className="controlPannel"><CalendarViewControlPannel /></div>
+                            <div className="controlPanelFolderableContainer floatDiv">
+                                <FolderableContainer label="ControlPanel" initIsFolded={true}>
+                                    <div className="controlPanel"><CalendarViewControlPanel /></div>
                                 </FolderableContainer>
                             </div>
                             <CalendarViewYearController></CalendarViewYearController>
@@ -144,10 +144,10 @@ export default function App() {
                             expandedStyle={getExpandableContainerStyle('expandedStyle')}
                         >
                             <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 9 }}>
-                                <FolderableContainer label="ControlPannel" initIsFolded={true}>
+                                <FolderableContainer label="ControlPanel" initIsFolded={true}>
                                     <div style={{ maxHeight: '380px', backgroundColor: 'white', overflowY: 'auto', width: 'fit-content', overflowX: 'hidden' }}>
                                         <div style={{ margin: '2px' }}>
-                                            <ClusterViewControlPannel></ClusterViewControlPannel>
+                                            <ClusterViewControlPanel></ClusterViewControlPanel>
                                         </div>
                                     </div>
                                 </FolderableContainer>

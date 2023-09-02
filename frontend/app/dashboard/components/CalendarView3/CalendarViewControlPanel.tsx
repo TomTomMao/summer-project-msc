@@ -16,7 +16,7 @@ import * as starDayViewSlice  from "./DayViews/starDayViewSlice"
  * render the configuration based on the ConfigContext
  * provide buttons for controlling the ConfigContext by using ConfigDispatchContext
  */
-export default function CalendarViewControlPannel() {
+export default function CalendarViewControlPanel() {
 
     // config for the selected glyph type
     const calendarViewGlyphType = useAppSelector(calendarViewSlice.selectGlyphType)
@@ -59,7 +59,7 @@ export default function CalendarViewControlPannel() {
                     <Typography color={calendarViewGlyphType === 'bar' ? 'success.main' : undefined}>Bar Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <BarDayViewControlPannel></BarDayViewControlPannel>
+                    <BarDayViewControlPanel></BarDayViewControlPanel>
                 </AccordionDetails>
             </Accordion>
             <Accordion
@@ -73,7 +73,7 @@ export default function CalendarViewControlPannel() {
                     <Typography color={calendarViewGlyphType === 'pie' ? 'success.main' : undefined}>Pie Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <PieDayViewControlPannel></PieDayViewControlPannel>
+                    <PieDayViewControlPanel></PieDayViewControlPanel>
                 </AccordionDetails>
             </Accordion>
             <Accordion
@@ -87,7 +87,7 @@ export default function CalendarViewControlPannel() {
                     <Typography color={calendarViewGlyphType === 'polarArea' ? 'success.main' : undefined}>Polar Area Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <PolarAreaViewControlPannel></PolarAreaViewControlPannel>
+                    <PolarAreaViewControlPanel></PolarAreaViewControlPanel>
                 </AccordionDetails>
             </Accordion>
             <Accordion
@@ -101,12 +101,12 @@ export default function CalendarViewControlPannel() {
                     <Typography color={calendarViewGlyphType === 'star' ? 'success.main' : undefined}>Star Glyph Config</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                <StarViewControlPannel></StarViewControlPannel>
+                <StarViewControlPanel></StarViewControlPanel>
                 </AccordionDetails>
             </Accordion>
         </div>)
 }
-function BarDayViewControlPannel() {
+function BarDayViewControlPanel() {
     const barDayViewIsSharedBandWidth = useAppSelector(barDayViewSlice.selectIsSharedBandWidth)
     const barDayViewSortingKey = useAppSelector(barDayViewSlice.selectSortingKey)
     const barDayViewIsDesc = useAppSelector(barDayViewSlice.selectIsDesc)
@@ -194,7 +194,7 @@ function BarDayViewControlPannel() {
         </Grid>
     </>)
 }
-function PieDayViewControlPannel() {
+function PieDayViewControlPanel() {
     // config for the pie view
     const radiusScaleType: 'linear' | 'log' | 'constant' = useAppSelector(pieDayViewSlice.selectRadiusAxis)
     const dispatch = useAppDispatch()
@@ -236,7 +236,7 @@ function PieDayViewControlPannel() {
         </Grid>
     </>)
 }
-function PolarAreaViewControlPannel() {
+function PolarAreaViewControlPanel() {
     // config for the polar area view
     const radiusScaleType: "logGlobal" | "linearGlobal" | "logLocal" | "linearLocal" = useAppSelector(polarAreaDayViewSlice.selectRadiusAxis)
     const dispatch = useAppDispatch()
@@ -283,7 +283,7 @@ function PolarAreaViewControlPannel() {
         </Grid>
     </>)
 }
-function StarViewControlPannel() {
+function StarViewControlPanel() {
     // config for the polar area view
     const radiusScaleType: "logGlobal" | "linearGlobal" | "logLocal" | "linearLocal" = useAppSelector(starDayViewSlice.selectRadiusAxis)
     const dispatch = useAppDispatch()

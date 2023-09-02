@@ -8,7 +8,7 @@ import { FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Text
 const MAX_NUMBER_DESCRIPTION = 400
 const MIN_NUMBER_DESCRIPTION = 50
 
-export function FrequencyControlPannel() {
+export function FrequencyControlPanel() {
     const initFrequencyUniqueKey = useAppSelector(clusterViewSlice.selectFrequencyUniqueKey)
     const [frequencyUniqueKey, setFrequencyUniqueKey] = useState<FrequencyUniqueKeyConfig['frequencyUniqueKey']>(initFrequencyUniqueKey)
     const initStringClusterAlgorithm = useAppSelector(clusterViewSlice.selectStringClusterAlgorithm)

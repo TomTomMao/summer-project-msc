@@ -5,9 +5,9 @@ import { Button } from "../../Button";
 import { FormControl, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
 import Grid from '@mui/material/Grid';
 import { showInvalidInputData } from "../../PopupWindow/PopupSlice";
-import { MIN_NUMBER_CLUSTER, MAX_NUMBER_CLUSTER } from "./ClusterViewControlPannel";
+import { MIN_NUMBER_CLUSTER, MAX_NUMBER_CLUSTER } from "./ClusterViewControlPanel";
 
-export function ClusterAlgorithmControlPannel() {
+export function ClusterAlgorithmControlPanel() {
     const dispatch = useAppDispatch();
     const initNumberOfCluster = useAppSelector(clusterViewSlice.selectNumberOfCluster);
     const initMetric1 = useAppSelector(clusterViewSlice.selectMetric1);

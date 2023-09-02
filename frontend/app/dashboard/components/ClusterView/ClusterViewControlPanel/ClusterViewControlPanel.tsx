@@ -1,14 +1,14 @@
-import { FrequencyControlPannel } from "./FrequencyControlPannel";
+import { FrequencyControlPanel } from "./FrequencyControlPanel";
 import { Accordion, AccordionDetails, AccordionSummary} from "@/app/dashboard/utilities/styledAccordion";
 import { Typography } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { ClusterViewMappingControlPannel } from "./ClusterViewMappingControlPannel";
-import { ClusterAlgorithmControlPannel } from "./ClusterAlgorithmControlPannel";
+import { ClusterViewMappingControlPanel } from "./ClusterViewMappingControlPanel";
+import { ClusterAlgorithmControlPanel } from "./ClusterAlgorithmControlPanel";
 
 export const MIN_NUMBER_CLUSTER = 2
 export const MAX_NUMBER_CLUSTER = 100
 
-export default function ClusterViewControlPannel() {
+export default function ClusterViewControlPanel() {
     return (
         <>
             <div style={{ width: 450, border: 'black 1px solid' }}>
@@ -23,7 +23,7 @@ export default function ClusterViewControlPannel() {
                         <Typography>Visual Mapping</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <ClusterViewMappingControlPannel></ClusterViewMappingControlPannel>
+                        <ClusterViewMappingControlPanel></ClusterViewMappingControlPanel>
                     </AccordionDetails>
                 </Accordion>
                 <Accordion
@@ -37,7 +37,7 @@ export default function ClusterViewControlPannel() {
                         <Typography>Clustering</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <ClusterAlgorithmControlPannel></ClusterAlgorithmControlPannel>
+                        <ClusterAlgorithmControlPanel></ClusterAlgorithmControlPanel>
                     </AccordionDetails>
                 </Accordion>
                 <Accordion
@@ -51,7 +51,7 @@ export default function ClusterViewControlPannel() {
                         <Typography>Transaction Group</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                    <FrequencyControlPannel></FrequencyControlPannel>
+                    <FrequencyControlPanel></FrequencyControlPanel>
                     </AccordionDetails>
                 </Accordion>
             </div>

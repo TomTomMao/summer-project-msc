@@ -5,7 +5,7 @@ import { ValidColours } from "../../ColourChannel/colourChannelSlice";
 import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch } from "@mui/material";
 import Grid from '@mui/material/Grid';
 
-export function ClusterViewMappingControlPannel() {
+export function ClusterViewMappingControlPanel() {
     const xLable = useAppSelector(state => state.clusterView.x);
     const yLable = useAppSelector(state => state.clusterView.y);
     const colour = useAppSelector(state => state.clusterView.colour);
