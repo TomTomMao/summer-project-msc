@@ -25,7 +25,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+print('server starting')
 # initialise the dataset
 transactionDataset = TransactionDataset(
     os.getcwd()+'''/data/transaction_cleanedtest.csv''')

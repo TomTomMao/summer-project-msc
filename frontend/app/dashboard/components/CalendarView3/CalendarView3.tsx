@@ -218,7 +218,10 @@ export default function CalendarView3(props:
                 <thead>
                     <tr>
                         <td></td>
-                        {(Array.from(Array(31).keys())).map(i => <td key={i + 1} style={{ color: detailDay && detailDay.day === i + 1 && detailDay.year === currentYear ? 'red' : 'black' }}>{i + 1}</td>)}
+                        {(Array.from(Array(31).keys())).map(i => <td key={i + 1}
+                            style={{ color: detailDay && detailDay.day === i + 1 && detailDay.year === currentYear ? 'red' : 'black' }}>
+                            {i + 1}
+                        </td>)}
                     </tr>
                 </thead>
                 <tbody>
