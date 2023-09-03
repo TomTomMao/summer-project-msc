@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 from typing import Union
-from joblib import Parallel, delayed
 
 # for string clustering
 import numpy as np
