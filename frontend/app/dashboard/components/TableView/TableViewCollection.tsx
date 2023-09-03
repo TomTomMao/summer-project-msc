@@ -12,8 +12,10 @@ interface TableViewCollectionProps {
     handleClearBrush: () => void, // for brushedTable
     selectedGlyphTransactionNumberSet: Set<TransactionData['transactionNumber']>, // for glyphTable
     handleClearGlyph: () => void,
-    colourScale: PublicScale['colourScale'], // give it to the tables
-    colourDomainData: ColourDomainData[], // give it to the tables
+    colourScale: PublicScale['colourScale'], // give it to the brushed data table
+    colourDomainData: ColourDomainData[], // give it to the brushed data table
+    glyphColourScale: PublicScale['colourScale'], // give it to the glyph data table
+    glyphColourDomainData: ColourDomainData[], // give it to the glyph data table
 }
 
 export function TableViewCollection(props: TableViewCollectionProps) {
@@ -24,7 +26,9 @@ export function TableViewCollection(props: TableViewCollectionProps) {
         selectedGlyphTransactionNumberSet,
         handleClearGlyph,
         colourScale,
-        colourDomainData } = props
+        colourDomainData,
+        glyphColourScale,
+        glyphColourDomainData } = props
     const tableOption = <TableOption
         currentTable={currentTable}
         handleChangeCurrentTable={setCurrentTable}
@@ -47,8 +51,8 @@ export function TableViewCollection(props: TableViewCollectionProps) {
                 transactionNumberSet={selectedGlyphTransactionNumberSet}
                 clusterDataMap={clusterDataMap}
                 handleClearSelect={handleClearGlyph}
-                colourScale={colourScale}
-                colourDomainData={colourDomainData}
+                colourScale={glyphColourScale}
+                colourDomainData={glyphColourDomainData}
             >{tableOption}</TableView>}
         </div>
     )

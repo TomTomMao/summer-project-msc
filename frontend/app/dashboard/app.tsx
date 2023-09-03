@@ -42,7 +42,12 @@ export default function App() {
     const colourLabelForTable = useAppSelector(interactivitySlice.selectCurrentSelectorColourScaleType)
     const tableColourScale = colourLabelForTable === 'category' ? categoryColourScale : (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
     const tableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectTableViewColourDomainDataMemorised)
-
+    
+    /**glyph table's colour scale type, synch with glyph's colour */
+    const colourLabelForGlyphTable = useAppSelector(interactivitySlice.selectGlyphDataTableColourScaleType)
+    const glyphTableColourScale = colourLabelForGlyphTable === 'category' ? categoryColourScale : (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
+    const glyphTableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectGlyphTableViewColourDomainDataMemorised)
+    
     /**type of selector */
     const currentSelector = useAppSelector(interactivitySlice.selectCurrentSelector)
 
@@ -164,7 +169,9 @@ export default function App() {
                             handleClearBrush={handleClearBrush}
                             selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
                             handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
-                            colourScale={tableColourScale} colourDomainData={tableViewColourDomainDataArr}></TableViewCollection>
+                            colourScale={tableColourScale} colourDomainData={tableViewColourDomainDataArr}
+                            glyphColourScale={glyphTableColourScale} glyphColourDomainData={glyphTableViewColourDomainDataArr}
+                            ></TableViewCollection>
                     </div>
                 </div>
                 <Popup></Popup>

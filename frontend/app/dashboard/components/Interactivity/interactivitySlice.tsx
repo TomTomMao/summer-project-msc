@@ -305,6 +305,8 @@ export const selectCurrentSelectorColourScaleType = (state: RootState): colourCh
     }
 }
 
+export const selectGlyphDataTableColourScaleType = (state:RootState):colourChannelSlice.ValidColours => state.calendarView.glyphType === 'star' ? 'cluster' : 'category'
+
 /**it is memorised because its a plan array */
 export const selectCategoryOrderArrMemorised = (state: RootState): TransactionData['category'][] => state.interactivity.categoryOrderArr
 export const selectClusterOrderArrMemorised = (state: RootState): ClusterData['clusterId'][] => state.interactivity.clusterOrderArr

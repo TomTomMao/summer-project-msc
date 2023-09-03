@@ -258,7 +258,36 @@ const selectTableViewColourDomainData = (
       throw new Error("This should not happen");
   }
 };
-
+const selectGlyphTableViewColourDomainData = (
+  state: RootState
+): ColourDomainData[] => {
+  const colour = interactivitySlice.selectGlyphDataTableColourScaleType(state);
+  const transactionDataArr = interactivitySlice.selectTransactionDataArr(state);
+  const clusterDataArr = interactivitySlice.selectClusterDataArr(state);
+  const clusterDataMap = getClusterDataMapFromArr(clusterDataArr);
+  switch (colour) {
+    case "category":
+      return transactionDataArr.map((d) => ({
+        domain: d.category,
+        transactionNumber: d.transactionNumber,
+      }));
+    case "frequencyUniqueKey":
+      return transactionDataArr.map((d) => ({
+        domain: d.frequencyUniqueKey,
+        transactionNumber: d.transactionNumber,
+      }));
+    case "cluster":
+      return transactionDataArr.map((d) => ({
+        domain: clusterDataMap.get(
+          d.transactionNumber
+        ) as ClusterData["clusterId"],
+        transactionNumber: d.transactionNumber,
+      }));
+    default:
+      const _exhaustiveCheck: never = colour; // incase add new key, this place will automatically highlighted.
+      throw new Error("This should not happen");
+  }
+};
 const compareColourDomainData = (
   colourDomainData1: ColourDomainData,
   colourDomainData2: ColourDomainData
@@ -271,6 +300,10 @@ const compareColourDomainData = (
 const comparingColourDomainArr = createArrayComparator(compareColourDomainData);
 export const selectTableViewColourDomainDataMemorised = createMemorisedFunction(
   selectTableViewColourDomainData,
+  comparingColourDomainArr
+);
+export const selectGlyphTableViewColourDomainDataMemorised = createMemorisedFunction(
+  selectGlyphTableViewColourDomainData,
   comparingColourDomainArr
 );
 
