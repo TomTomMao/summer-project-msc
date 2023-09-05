@@ -56,7 +56,7 @@ export type FrequencyUniqueKeyConfig =
       numberOfClusterForString: number;
     };
 /**
- * update the frequency unique key, and let the server run clustering algorithm for calculating the
+ * update the frequency unique key, and let the server run clustering algorithm for calculating the frequency
  * @param metric1
  * @param metric2
  * @param numberOfCluster

@@ -255,40 +255,12 @@ class LinkageBasedStringCluster(StringCluster):
         '''
         update self.distanceMatrix based on the preprocessedStringArray and distance function
         '''
-        # create distance matrix
-        distanceFunction = self._getDistanceFunction(
-            self.distanceMetric, False)
-        # distanceMatrixParallel = self._pdistParallel(
-        #     list(self.preprocessedStringArray[:, 0]), distanceFunction=distanceFunction, num_workers=4)
         vectorisedDistanceFunction = self._getDistanceFunction(
             self.distanceMetric, True)
         distanceMatrix = pdist(self.preprocessedStringArray,
                                 metric=vectorisedDistanceFunction)
-    
-        # if self.testMode:
-        #     vectorisedDistanceFunction = self._getDistanceFunction(
-        #         self.distanceMetric, True)
-        #     distanceMatrix = pdist(self.preprocessedStringArray,
-        #                            metric=vectorisedDistanceFunction)
-        #     assert (np.array_equal(distanceMatrix, distanceMatrixParallel))
 
         self.distanceMatrix = distanceMatrix
-
-    # def _pdistParallel(self, data: list[str], distanceFunction: Callable[[str, str], float], num_workers=4):
-    #     numPoints = len(data)
-    #     distanceMatrix = np.zeros((numPoints, numPoints))
-
-    #     def calculate_distances(i):
-    #         return [distanceFunction(data[i], data[j]) for j in range(numPoints)]
-
-    #     with Parallel(n_jobs=num_workers) as parallel:
-    #         results = parallel(delayed(calculate_distances)(i)
-    #                            for i in range(numPoints))
-
-    #     for i, result in enumerate(results):
-    #         distanceMatrix[i, :] = result
-
-    #     return distanceMatrix[np.triu_indices(distanceMatrix.shape[0], k=1)]
 
     def __updateLinkageMatrix(self):
         '''
@@ -425,7 +397,8 @@ class LinkageBasedStringCluster(StringCluster):
 
     def _getDistanceFunction(self, distanceMetric, vectorise=True):
         '''
-            helper
+            Based on the distanceMetric, Return a string distance function  that compares two string
+            If vectorise is True, the returned funciton is vetorised.
         '''
         function = None
         match distanceMetric:

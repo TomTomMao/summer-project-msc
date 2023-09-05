@@ -1,0 +1,12 @@
+digraph "packages_pythonserver" {
+rankdir=BT
+charset="utf-8"
+"app" [color="black", label=<app>, shape="box", style="solid"];
+"app.Cluster" [color="black", label=<app.Cluster>, shape="box", style="solid"];
+"app.TransactionDataset" [color="black", label=<app.TransactionDataset>, shape="box", style="solid"];
+"app.main" [color="black", label=<app.main>, shape="box", style="solid"];
+"app.stringPreprocessor" [color="black", label=<app.stringPreprocessor>, shape="box", style="solid"];
+"app.TransactionDataset" -> "app.Cluster" [arrowhead="open", arrowtail="none"];
+"app.TransactionDataset" -> "app.stringPreprocessor" [arrowhead="open", arrowtail="none"];
+"app.main" -> "app.TransactionDataset" [arrowhead="open", arrowtail="none"];
+}
