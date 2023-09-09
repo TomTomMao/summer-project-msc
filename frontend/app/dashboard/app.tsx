@@ -45,9 +45,8 @@ export default function App() {
     
     /**glyph table's colour scale type, synch with glyph's colour */
     const colourLabelForGlyphTable = useAppSelector(interactivitySlice.selectGlyphDataTableColourScaleType)
-    const glyphTableColourScale = colourLabelForGlyphTable === 'category' ? categoryColourScale : (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
+    const glyphTableColourScale = colourLabelForGlyphTable === 'category' ? categoryColourScale : (colourLabelForGlyphTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
     const glyphTableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectGlyphTableViewColourDomainDataMemorised)
-    
     /**type of selector */
     const currentSelector = useAppSelector(interactivitySlice.selectCurrentSelector)
 
