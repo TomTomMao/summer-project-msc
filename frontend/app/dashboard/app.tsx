@@ -40,12 +40,14 @@ export default function App() {
 
     //**table's colour scale type */
     const colourLabelForTable = useAppSelector(interactivitySlice.selectCurrentSelectorColourScaleType)
-    const tableColourScale = colourLabelForTable === 'category' ? categoryColourScale : (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
+    const tableColourScale = colourLabelForTable === 'category' ? categoryColourScale :
+        (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
     const tableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectTableViewColourDomainDataMemorised)
-    
+
     /**glyph table's colour scale type, synch with glyph's colour */
     const colourLabelForGlyphTable = useAppSelector(interactivitySlice.selectGlyphDataTableColourScaleType)
-    const glyphTableColourScale = colourLabelForGlyphTable === 'category' ? categoryColourScale : (colourLabelForGlyphTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
+    const glyphTableColourScale = colourLabelForGlyphTable === 'category' ? categoryColourScale :
+        (colourLabelForGlyphTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
     const glyphTableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectGlyphTableViewColourDomainDataMemorised)
     /**type of selector */
     const currentSelector = useAppSelector(interactivitySlice.selectCurrentSelector)
@@ -170,7 +172,7 @@ export default function App() {
                             handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
                             colourScale={tableColourScale} colourDomainData={tableViewColourDomainDataArr}
                             glyphColourScale={glyphTableColourScale} glyphColourDomainData={glyphTableViewColourDomainDataArr}
-                            ></TableViewCollection>
+                        ></TableViewCollection>
                     </div>
                 </div>
                 <Popup></Popup>

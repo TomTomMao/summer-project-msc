@@ -3,7 +3,6 @@ import { useAppSelector } from "@/app/hooks";
 import * as d3 from "d3";
 import { useMemo } from "react";
 import * as interactivitySlice from "../components/Interactivity/interactivitySlice";
-import { assert } from "console";
 import { TransactionData } from "../utilities/DataObject";
 import { GRAY1 } from "../utilities/consts";
 

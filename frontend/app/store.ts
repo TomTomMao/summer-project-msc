@@ -3,7 +3,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import barDayViewReducer from "@/app/dashboard/components/CalendarView3/DayViews/barDayViewSlice";
 import calendarViewReducer from "@/app/dashboard/components/CalendarView3/calendarViewSlice";
 import clusterViewReducer from "./dashboard/components/ClusterView/clusterViewSlice";
-import colourLegendReducer from "./dashboard/components/ColourLegend/colourLegendSlice";
 import pieDayViewReducer from "./dashboard/components/CalendarView3/DayViews/pieDayViewSlice";
 import polarAreaDayViewReducer from "./dashboard/components/CalendarView3/DayViews/polarAreaDayViewSlice";
 import starDayViewReducer from "./dashboard/components/CalendarView3/DayViews/starDayViewSlice";
@@ -19,7 +18,6 @@ export const store = configureStore({
     starDayView: starDayViewReducer,
     calendarView: calendarViewReducer,
     clusterView: clusterViewReducer,
-    colourLegend: colourLegendReducer,
     interactivity: interactivityReducer,
     scatterPlot: scatterPlotReducer,
     colourChannel: colourChannelReducer,
