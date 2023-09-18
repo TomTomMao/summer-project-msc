@@ -49,6 +49,8 @@ export function useFrequencyUniqueKeyColourScale() {
 
 /**
  * just encapsulate the colourScale = useMemo(()=>{...},[colourDomain,colourScheme])
+ * create a colourscale for the given domain and scheme
+ * // reference: https://github.com/d3/d3-interpolate
  * @param colourDomain
  * @param colourScheme
  * @returns
