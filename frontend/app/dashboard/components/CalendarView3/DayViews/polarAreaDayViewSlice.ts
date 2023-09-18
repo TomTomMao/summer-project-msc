@@ -6,7 +6,7 @@ export interface PolarAreaDayViewState {
 }
 
 const initialState: PolarAreaDayViewState = {
-  radiusAxis: "linearLocal",
+  radiusAxis: "logGlobal",
 };
 
 export const polarAreaDayViewSlice = createSlice({

@@ -6,7 +6,7 @@ export interface StarDayViewState {
 }
 
 const initialState: StarDayViewState = {
-  radiusAxis: "linearLocal",
+  radiusAxis: "logGlobal",
 };
 
 export const starDayViewSlice = createSlice({
