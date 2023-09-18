@@ -26,6 +26,7 @@ import { StarDayView, StarDayViewProps, StarViewSharedScales } from "./DayViews/
 import { CategoryColourLegend, ClusterIdColourLegend } from "../ColourLegend/ColourLegends";
 import { Tooltip } from "@mui/material"; // reference: https://mui.com/material-ui
 import { selectTooltipContentArr } from "./calendarViewSlice";
+import * as interactivitySlice from "../Interactivity/interactivitySlice";
 
 const CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH = 150
 const CALENDAR_VIEW_FOLDED_LEGEND_WIDTH = 100
@@ -84,9 +85,10 @@ export default function CalendarView3(props:
     const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
     const dispatch = useAppDispatch()
 
-    // used when user click a day cell
+    // used when user click a day cell, automatically set the table to be the glyph table.
     function handleShowDayDetail(day: number, month: number, year: number) {
         dispatch(calendarViewSlice.setDetailDay({ day: day, month: month, year: year }))
+        dispatch(interactivitySlice.setCurrentTable('glyphTable'))
     }
 
     // used for cache, no need to loop through the entire transactionDataArr in O(n), we can get the data of a day in O(1)

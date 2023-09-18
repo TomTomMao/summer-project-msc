@@ -5,6 +5,9 @@ import TableView from "./TableView"
 import FolderableContainer from "../Containers/FolderableContainer"
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice"
 import { useClusterDataMap } from "../../hooks/useClusterData"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import * as interactivitySlice from "../Interactivity/interactivitySlice"
+import { ActionCreatorWithPayload } from "@reduxjs/toolkit"
 
 interface TableViewCollectionProps {
     transactionDataArr: TransactionData[], // give it to the tables
@@ -19,7 +22,8 @@ interface TableViewCollectionProps {
 }
 
 export function TableViewCollection(props: TableViewCollectionProps) {
-    const [currentTable, setCurrentTable] = useState<'brushedTable' | 'glyphTable'>('brushedTable')
+    const currentTable = useAppSelector(interactivitySlice.selectCurrentTable)
+    const dispatch = useAppDispatch()
     const { transactionDataArr,
         brushedTransactionNumberSet,
         handleClearBrush,
@@ -31,7 +35,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
         glyphColourDomainData } = props
     const tableOption = <TableOption
         currentTable={currentTable}
-        handleChangeCurrentTable={setCurrentTable}
+        handleChangeCurrentTable={(nextTable: 'glyphTable' | 'brushedTable') => dispatch(interactivitySlice.setCurrentTable(nextTable))}
     ></TableOption>
     const clusterDataMap = useClusterDataMap()
     return (
@@ -59,7 +63,7 @@ export function TableViewCollection(props: TableViewCollectionProps) {
 }
 
 function TableOption({ currentTable, handleChangeCurrentTable }: {
-    currentTable: 'brushedTable' | 'glyphTable', handleChangeCurrentTable: Dispatch<SetStateAction<"brushedTable" | "glyphTable">>
+    currentTable: 'brushedTable' | 'glyphTable', handleChangeCurrentTable: (nextTable: 'glyphTable' | 'brushedTable') => void
 }) {
     return (<>
         <span>

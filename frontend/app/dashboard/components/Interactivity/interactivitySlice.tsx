@@ -65,6 +65,7 @@ interface InteractivityState {
     categoryOrderArr: TransactionData['category'][],
     clusterOrderArr: ClusterData['clusterId'][]
     // clickedDetailTransactionNumberArr: TransactionData['transactionNumber'][] // future feature
+    currentTable: 'brushedTable' | 'glyphTable'
 }
 
 export type ValidAxisLabels = "transactionAmount" | "dayOfYear" | "balance" | 'frequency';
@@ -82,6 +83,7 @@ const initialState: InteractivityState = {
     categoryOrderArr: [],
     clusterOrderArr: [],
     // clickedDetailTransactionNumberArr: [],//future feature
+    currentTable: 'brushedTable'
 };
 
 
@@ -180,6 +182,7 @@ export const interactivitySlice = createSlice({
         },
         setCurrentSelector(state, action: PayloadAction<InteractivityState['currentSelector']>) {
             state.currentSelector = action.payload
+            state.currentTable = 'brushedTable'
             action.payload !== 'clusterId' && (state.selectedClusterIdArr = [])
             action.payload !== 'category' && (state.selectedCategoryArr = [])
             action.payload !== 'frequencyUniqueKey' && (state.selectedFrequencyUniqueKeyArr = [])
@@ -187,6 +190,9 @@ export const interactivitySlice = createSlice({
             action.payload !== 'scatterPlot' && (state.scatterPlotSelectedTransactionNumberArr = [])
         }, toggleShowOneTimeTransaction(state) {
             state.currentSelector = state.currentSelector === 'oneTimeTransaction' ? '' : 'oneTimeTransaction'
+        },
+        setCurrentTable(state, action: PayloadAction<InteractivityState['currentTable']>) {
+            state.currentTable = action.payload
         }
         // only for future feature maybe:
         // toggleClickedDetailTransactionByNumber(state, action: PayloadAction<TransactionData['transactionNumber']>) {
@@ -207,7 +213,8 @@ export const {
     setScatterPlotSelectedTransactionNumberArr,
     setClusterViewSelectedTransactionNumberArr,
     clearBrush,
-    setCurrentSelector, toggleShowOneTimeTransaction
+    setCurrentSelector, toggleShowOneTimeTransaction,
+    setCurrentTable
 } = interactivitySlice.actions;
 
 // export the selectors
@@ -305,11 +312,13 @@ export const selectCurrentSelectorColourScaleType = (state: RootState): colourCh
     }
 }
 
-export const selectGlyphDataTableColourScaleType = (state:RootState):colourChannelSlice.ValidColours => state.calendarView.glyphType === 'star' ? 'cluster' : 'category'
+export const selectGlyphDataTableColourScaleType = (state: RootState): colourChannelSlice.ValidColours => state.calendarView.glyphType === 'star' ? 'cluster' : 'category'
 
 /**it is memorised because its a plan array */
 export const selectCategoryOrderArrMemorised = (state: RootState): TransactionData['category'][] => state.interactivity.categoryOrderArr
 export const selectClusterOrderArrMemorised = (state: RootState): ClusterData['clusterId'][] => state.interactivity.clusterOrderArr
+
+export const selectCurrentTable = (state: RootState) => state.interactivity.currentTable
 
 export default interactivitySlice.reducer;
 
