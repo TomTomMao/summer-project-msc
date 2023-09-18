@@ -23,7 +23,7 @@ export const createTooltipContent = (content: string, colour: string) => {
 };
 
 const initialState: CalendarViewState = {
-  glyphType: "polarArea",
+  glyphType: "bar",
   // container width and height refer to the cell size of each day
   containerWidth: 25,
   containerHeight: 25,
