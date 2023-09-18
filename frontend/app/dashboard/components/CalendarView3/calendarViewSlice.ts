@@ -6,7 +6,7 @@ const MAX_YEAR = 2022;
 const MIN_YEAR = 2015;
 
 export interface CalendarViewState {
-  glyphType: "bar" | "pie" | 'polarArea' | 'star';
+  glyphType: "bar" | "pie" | "polarArea" | "star";
   containerWidth: number;
   containerHeight: number;
   expandedContainerWidth: number;
@@ -15,7 +15,12 @@ export interface CalendarViewState {
   detailDay: Day | null;
   currentYear: number;
   isSuperPositioned: boolean;
+  tooltipContentArr: TooltipContent[];
 }
+type TooltipContent = { content: string; colour: string };
+export const createTooltipContent = (content: string, colour: string) => {
+  return { content, colour };
+};
 
 const initialState: CalendarViewState = {
   glyphType: "polarArea",
@@ -28,6 +33,10 @@ const initialState: CalendarViewState = {
   detailDay: null,
   currentYear: 2016,
   isSuperPositioned: false,
+  tooltipContentArr: [
+    createTooltipContent("1: 100", "blue"),
+    createTooltipContent("2: 200", "green"),
+  ],
 };
 
 export const calendarViewSlice = createSlice({
@@ -68,9 +77,9 @@ export const calendarViewSlice = createSlice({
         state.currentYear = state.currentYear + 1;
       }
     },
-    changeCurrentYear: (state,action:PayloadAction<number>) => {
+    changeCurrentYear: (state, action: PayloadAction<number>) => {
       if (action.payload >= 2015 && action.payload <= 2022) {
-        state.currentYear = action.payload
+        state.currentYear = action.payload;
       }
     },
     enableSuperPosition: (state) => {
@@ -78,6 +87,9 @@ export const calendarViewSlice = createSlice({
     },
     disableSuperPosition: (state) => {
       state.isSuperPositioned = false;
+    },
+    setTooltipContentArr: (state, action: PayloadAction<TooltipContent[]>) => {
+      state.tooltipContentArr = action.payload;
     },
   },
 });
@@ -93,7 +105,8 @@ export const {
   decreaseCurrentYear,
   enableSuperPosition,
   disableSuperPosition,
-  changeCurrentYear
+  changeCurrentYear,
+  setTooltipContentArr
 } = calendarViewSlice.actions;
 
 // export the selectors
@@ -131,6 +144,6 @@ export const selectCurrentContainerWidth = function (state: RootState) {
     return selectContainerWidth(state);
   }
 };
-
-
+export const selectTooltipContentArr = (state: RootState) =>
+  state.calendarView.tooltipContentArr;
 export default calendarViewSlice.reducer;

@@ -10,6 +10,7 @@ type PolarAreaChartProps = {
     data: PolarAreaChartDatum[],
     radiusScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>,
     angleScale: ScaleLinear<number, number>,
+    onHover: () => void,
 }
 
 /**draw a polar area chart, the chart width and height is the same as radiusScale's range*2 
@@ -38,7 +39,8 @@ export default function PolarAreaChart(props: PolarAreaChartProps) {
     })
     return (<svg
         // ref={svgRef}
-        width={containerWidth} height={containerHeight}>
+        width={containerWidth} height={containerHeight}
+        onMouseEnter={props.onHover}>
         <g transform={`translate(${containerWidth * 0.5},${containerHeight * 0.5})`}>
             {paths}
         </g>

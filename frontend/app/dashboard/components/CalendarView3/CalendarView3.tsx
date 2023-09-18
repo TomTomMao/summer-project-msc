@@ -25,11 +25,11 @@ import useClusterOrderMap from "./useClusterOrder";
 import { StarDayView, StarDayViewProps, StarViewSharedScales } from "./DayViews/starDayView";
 import { CategoryColourLegend, ClusterIdColourLegend } from "../ColourLegend/ColourLegends";
 import { Tooltip } from "@mui/material"; // reference: https://mui.com/material-ui
+import { selectTooltipContentArr } from "./calendarViewSlice";
 
-const CALENDAR_VIEW_EXPANDED_LEGEND_HEIGHT = 550
-const CALENDAR_VIEW_FOLDED_LEGEND_HEIGHT = 370
 const CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH = 150
 const CALENDAR_VIEW_FOLDED_LEGEND_WIDTH = 100
+const MAX_TOOLTIP_ROWS = 10
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>
 type TransactionDataMapYMD = d3.InternMap<number, d3.InternMap<number, d3.InternMap<number, TransactionData[]>>>
@@ -315,6 +315,28 @@ function MonthView(props: MonthViewProps) {
     const { month, currentYear, detailDay, onShowDayDetail, highLightedCalendarDayBorderMMDDSet } = props
     const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
+    const tooltipContentArr = useAppSelector(selectTooltipContentArr)
+    let tooltipTitle = tooltipContentArr.map(({ content, colour }) => <div key={content} style={{ fontSize: '12px', display: "flex" }}>
+        <div style={{ position: 'relative', backgroundColor: '', margin: 0, padding: 0, width: '12px', height: '12px' }}>
+            <div style={{
+                backgroundColor: colour,
+                width: '12px',
+                height: '12px',
+                display: 'block',
+                marginTop: '1.6px',
+                left: '0.4em'
+            }}></div>
+        </div>
+        <div style={{ marginLeft: '2px' }}>
+            {content}
+        </div>
+    </div>)
+    if (tooltipTitle.length >= MAX_TOOLTIP_ROWS) {
+        tooltipTitle = tooltipTitle.slice(0, MAX_TOOLTIP_ROWS)
+        tooltipTitle.push(<div>...click see detail in table</div>)
+    } else if (tooltipContentArr.length === 0) {
+        tooltipTitle.push(<div>no transaction</div>)
+    }
     function handleShowDayDetail(day: number) {
         onShowDayDetail(day, month, currentYear);
     }
@@ -391,7 +413,7 @@ function MonthView(props: MonthViewProps) {
                 }
                 const _dayViewTypeCheck: JSX.Element = dayView
                 return <td key={`${month}-${i + 1}-${isSuperPositioned ? 'superpositioned' : 'notSuperPositioned'}`} onClick={() => handleShowDayDetail(i + 1)} style={{ padding: '0px' }} >
-                    <Tooltip title={isSuperPositioned ? `${MONTHS[month - 1]} ${i + 1 < 10 ? '0' + String(i + 1) : i + 1} (2015 to 2022)` : new Date(currentYear, month - 1, day).toDateString()}>
+                    <Tooltip title={tooltipTitle}>
                         <div
                             style={{ zIndex: isDayHasSelectedTransaction ? 900 : 800, borderColor: isDayHasSelectedTransaction ? 'blue' : isDetailDay ? 'red' : 'RGB(200,200,200)' }}
                         >

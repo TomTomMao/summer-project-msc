@@ -2,7 +2,7 @@ import { ScaleOrdinalWithTransactionNumber } from "@/app/dashboard/hooks/useColo
 import { Data } from "../CalendarView3";
 import { TransactionData } from "@/app/dashboard/utilities/DataObject";
 import useCalendarDayGlyphTransactionDataArr from "./useDayData";
-import { useAppSelector } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import PolarAreaChart, { PolarAreaChartDatum } from "./PolarAreaChart";
 import * as calendarViewSlice from "../calendarViewSlice";
 import { GRAY1 } from "@/app/dashboard/utilities/consts";
@@ -92,11 +92,19 @@ export function PolarAreaDayView(props: PolarAreaDayViewProps) {
                 throw new Error("_exhaustiveCheck error");
         }
     }, [linearRadiusScale, logRadiusScale, radiusScaleType, chartData, containerWidth, containerHeight])
+    const dispatch = useAppDispatch()
+    const handleHover = () => {
+        dispatch(calendarViewSlice.setTooltipContentArr(
+            chartData.filter(chartDatum=>chartDatum.value !== 0).map(chartDatum =>
+                calendarViewSlice.createTooltipContent(`${chartDatum.name}: ${chartDatum.value.toFixed(2)}`,
+                    chartDatum.colour))
+            ))
+    }
     if (radiusScale === null) {
         return <>error</>
     } else {
         return (
-            <PolarAreaChart data={chartData} radiusScale={radiusScale} angleScale={angleScale}
+            <PolarAreaChart data={chartData} radiusScale={radiusScale} angleScale={angleScale} onHover={handleHover}
             ></PolarAreaChart>
         )
     }

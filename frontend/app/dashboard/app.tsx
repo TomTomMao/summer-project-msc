@@ -105,7 +105,8 @@ export default function App() {
     }
     else {
         return (
-            <div>
+            // /* reference： https://reactgo.com/react-disable-text-selection/ */
+            <div className="disableTextSelection">
                 <div className="grid grid-cols-12">
                     <div className="col-span-5">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'scatter plot') }}

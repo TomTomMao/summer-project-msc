@@ -3,10 +3,11 @@ import { TransactionData } from "../../../utilities/DataObject";
 import * as d3 from 'd3';
 
 import { Data, getDataFromTransactionDataMapMD, getDataFromTransactionDataMapYMD } from "../CalendarView3";
-import { useAppSelector } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as barDayViewSlice from "./barDayViewSlice";
 import * as calendarViewSlice from "../calendarViewSlice";
 import { PublicScale } from "@/app/dashboard/utilities/types";
+import useCalendarDayGlyphTransactionDataArr from "./useDayData";
 
 export type BarGlyphScalesLinearHeight = {
     xScale: d3.ScaleBand<string>, // x scale should be independent between different scales.
@@ -70,10 +71,12 @@ export function BarDayView(props: BarDayViewProps) {
 
     // highLightedTransactionNumberSetByBrusher used for checking if the transaction is selected when rendering or creating rectangles
     const { transactionDataMapYMD, transactionDataMapMD, highLightedTransactionNumberSetByBrusher } = data;
-    const brushingMode = highLightedTransactionNumberSetByBrusher.size > 0; // for deciding the style of rect
     const { heightScaleLog, heightScaleLinear, colourScale } = scales; // heightScale for bar glyph, colourScale for category
     const heightScale = heightAxis === 'log' ? heightScaleLog : heightScaleLinear;
-    
+
+    const dayData = useCalendarDayGlyphTransactionDataArr(day, month, currentYear, transactionDataMapYMD, transactionDataMapMD, isSuperPositioned)
+    const sortedDayData = useMemo(() => d3.sort(dayData, comparator), [dayData])
+
 
     // cache the bars of all the years.
     const barsOfEachYear: { year: number; bars: JSX.Element[]; }[] = useMemo(() => {
@@ -93,8 +96,6 @@ export function BarDayView(props: BarDayViewProps) {
 
             const xScale = d3.scaleBand().domain(xDomain).range([0, containerHeight]);
             const bars: JSX.Element[] = dayData.map(d => {
-                let opacity: number;
-                let stroke: '' | 'black' = '';
                 const bandWidth = xScale.bandwidth();
                 const rectHeight = heightScale(valueGetter.height(d));
                 return (
@@ -112,7 +113,15 @@ export function BarDayView(props: BarDayViewProps) {
         }
         return barsOfEachYear;
     }, [data, heightAxis, colourScale, valueGetter, isSharedBandWidth, sortingKey, isDesc, containerWidth, containerHeight]);
-    return (<svg width={containerWidth} height={containerHeight}>
+    const dispatch = useAppDispatch()
+    const handleHover = () => {
+        dispatch(calendarViewSlice.setTooltipContentArr(
+            sortedDayData.map(transaction =>
+                calendarViewSlice.createTooltipContent(`${transaction.transactionDescription}: ${transaction.transactionAmount.toFixed(2)}`,
+                    colourScale.getColour(valueGetter.colour(transaction), transaction.transactionNumber))
+            )))
+    }
+    return (<svg width={containerWidth} height={containerHeight} onMouseEnter={handleHover}>
         {barsOfEachYear.map(d => {
             let shouldDisplay = false;
             if (isSuperPositioned) {

@@ -3,7 +3,7 @@ import { ClusterData } from "@/app/dashboard/utilities/clusterDataObject";
 import { Data } from "../CalendarView3";
 import { ClusterDataMap } from "@/app/dashboard/hooks/useClusterData";
 import { DayViewProps } from "./AbstractDayView"
-import { useAppSelector } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as calendarViewSlice from "../calendarViewSlice";
 import useCalendarDayGlyphTransactionDataArr from "./useDayData";
 import { useMemo } from "react";
@@ -119,10 +119,18 @@ export function StarDayView(props: StarDayViewProps) {
     // return <div onClick={() => console.log({ props, dayData, chartData, colourScale, clusterIdTransactionAmountMap, clusterOrderMap, highLightedTransactionNumberSetByBrusher })}>
     //     <StarChart data={chartData} radiusScale={logRadiusScale} angleScale={angleScale}></StarChart>
     // </div>
+    const dispatch = useAppDispatch()
+    const handleHover = () => {
+        dispatch(calendarViewSlice.setTooltipContentArr(
+            chartData.filter(chartDatum=>chartDatum.value !== 0).map(chartDatum =>
+                calendarViewSlice.createTooltipContent(`${chartDatum.name}: ${chartDatum.value.toFixed(2)}`,
+                    chartDatum.colour))
+            ))
+    }
     if (radiusScale === null) {
         return <>error</>
     }
     return <>
-         <StarChart data={chartData} radiusScale={radiusScale} angleScale={angleScale}></StarChart>
+         <StarChart onHover={handleHover} data={chartData} radiusScale={radiusScale} angleScale={angleScale}></StarChart>
     </>
 }

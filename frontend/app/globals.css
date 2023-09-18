@@ -126,3 +126,12 @@ input {
 .tableView tbody .help {
     cursor: help;
 }
+
+/* disable text select highlighting */
+/* reference： https://reactgo.com/react-disable-text-selection/ */
+.disableTextSelection{
+    -moz-user-select:none; /* firefox */
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE*/
+    user-select: none; /* Standard syntax */
+ }

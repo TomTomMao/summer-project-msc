@@ -4,7 +4,7 @@ import { Data, getDataFromTransactionAmountSumByDayMD, getDataFromTransactionAmo
 import { useMemo, useRef } from "react";
 import { PublicScale } from "../../../utilities/types";
 import { GRAY1, PUBLIC_VALUEGETTER } from "@/app/dashboard/utilities/consts";
-import { useAppSelector } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as pieDayViewSlice from "./pieDayViewSlice"
 import * as calendarViewSlice from "../calendarViewSlice"
 import useCalendarDayGlyphTransactionDataArr from "./useDayData";
@@ -101,8 +101,17 @@ export function PieDayView(props: PieDayViewProps) {
         return paths
     }, [arcs, colourScale, valueGetter, dayData])
 
+    // set tooltip content
+    const dispatch = useAppDispatch()
+    const handleHover = () => {
+        dispatch(calendarViewSlice.setTooltipContentArr(
+            dayData.map(transaction =>
+                calendarViewSlice.createTooltipContent(`${transaction.transactionDescription}: ${transaction.transactionAmount.toFixed(2)}`,
+                    colourScale.getColour(valueGetter.colour(transaction), transaction.transactionNumber))
+            )))
+    }
     return (
-        <svg width={containerWidth} height={containerHeight}>
+        <svg width={containerWidth} height={containerHeight} onMouseEnter={handleHover}>
             <g transform={`translate(${containerWidth * 0.5},${containerHeight * 0.5})`}>
                 {paths}
             </g>

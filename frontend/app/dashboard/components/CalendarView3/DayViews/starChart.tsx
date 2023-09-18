@@ -12,6 +12,7 @@ export type StarChartProps = {
     data: StarChartDatum[],
     radiusScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>,
     angleScale: ScaleLinear<number, number>,
+    onHover: ()=>void
 }
 
 type CartesianPoint = { x: number, y: number }
@@ -41,6 +42,7 @@ export default function StarChart(props: StarChartProps) {
 
     return (<svg
         onClick={() => console.log({ starAreaData, starLineData, data, radiusScale, angleScale })}
+        onMouseEnter={props.onHover}
         width={containerWidth} height={containerHeight}>
         <g transform={`translate(${containerWidth * 0.5},${containerHeight * 0.5})`}>
             {triangles}
