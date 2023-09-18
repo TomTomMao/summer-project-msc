@@ -27,6 +27,7 @@ import { CategoryColourLegend, ClusterIdColourLegend } from "../ColourLegend/Col
 import { Tooltip } from "@mui/material"; // reference: https://mui.com/material-ui
 import { selectTooltipContentArr } from "./calendarViewSlice";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
+import { GRAY1 } from "../../utilities/consts";
 
 const CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH = 150
 const CALENDAR_VIEW_FOLDED_LEGEND_WIDTH = 100
@@ -318,7 +319,9 @@ function MonthView(props: MonthViewProps) {
     const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
     const isSuperPositioned = useAppSelector(calendarViewSlice.selectIsSuperPositioned)
     const tooltipContentArr = useAppSelector(selectTooltipContentArr)
-    let tooltipTitle = tooltipContentArr.map(({ content, colour }) => <div key={content} style={{ fontSize: '12px', display: "flex" }}>
+    const tooltipContentArrColourFirst = [...tooltipContentArr.filter(({ colour }) => colour !== GRAY1),
+    ...tooltipContentArr.filter(({ colour }) => colour === GRAY1)]
+    let tooltipTitle = tooltipContentArrColourFirst.map(({ content, colour }) => <div key={content} style={{ fontSize: '12px', display: "flex" }}>
         <div style={{ position: 'relative', backgroundColor: '', margin: 0, padding: 0, width: '12px', height: '12px' }}>
             <div style={{
                 backgroundColor: colour,

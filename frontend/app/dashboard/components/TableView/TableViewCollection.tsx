@@ -1,13 +1,10 @@
-import { CSSProperties, Dispatch, SetStateAction, useState } from "react"
 import { TransactionData } from "../../utilities/DataObject"
-import { PublicScale, PublicValueGetter } from "../../utilities/types"
+import { PublicScale } from "../../utilities/types"
 import TableView from "./TableView"
-import FolderableContainer from "../Containers/FolderableContainer"
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice"
 import { useClusterDataMap } from "../../hooks/useClusterData"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import * as interactivitySlice from "../Interactivity/interactivitySlice"
-import { ActionCreatorWithPayload } from "@reduxjs/toolkit"
 
 interface TableViewCollectionProps {
     transactionDataArr: TransactionData[], // give it to the tables
@@ -67,7 +64,7 @@ function TableOption({ currentTable, handleChangeCurrentTable }: {
 }) {
     return (<>
         <span>
-            <label htmlFor="brushedTable" >Brushed Data
+            <label htmlFor="brushedTable" style={{ accentColor: 'blue' }}>Brushed Data
                 <input type="radio" name="brushedTable" id="brushedTable" value={'brushedTable'} checked={currentTable === 'brushedTable'} onChange={() => handleChangeCurrentTable('brushedTable')} />
             </label>
         </span>
