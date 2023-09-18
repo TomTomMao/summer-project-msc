@@ -1,4 +1,4 @@
-import { FormControlLabel, Switch } from "@mui/material"
+import { FormControlLabel, Switch } from "@mui/material" // reference: https://mui.com/material-ui
 
 interface LogScaleSwitcherProps {
     isLog: boolean,

@@ -1,7 +1,7 @@
 import { FrequencyControlPanel } from "./FrequencyControlPanel";
 import { Accordion, AccordionDetails, AccordionSummary} from "@/app/dashboard/utilities/styledAccordion";
-import { Typography } from "@mui/material";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Typography } from "@mui/material"; // reference: https://mui.com/material-ui // reference: https://mui.com/material-ui
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // reference: https://mui.com/material-ui
 import { ClusterViewMappingControlPanel } from "./ClusterViewMappingControlPanel";
 import { ClusterAlgorithmControlPanel } from "./ClusterAlgorithmControlPanel";
 

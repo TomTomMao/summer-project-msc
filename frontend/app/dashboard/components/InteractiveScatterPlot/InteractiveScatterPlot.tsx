@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AxisBottom, AxisLeft } from "./Axis";
 import { GRAY1 } from "../../utilities/consts";
 import { Circles } from "./CirclesGL";
-import { IconButton, Slider } from "@mui/material";
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import { IconButton, Slider } from "@mui/material"; // reference: https://mui.com/material-ui
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz'; // reference: https://mui.com/material-ui
 import { BRUSH_MODE } from "../ClusterView/ClusterView";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { ScaleOrdinalWithTransactionNumber } from "../../hooks/useColourScales";

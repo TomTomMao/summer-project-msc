@@ -2,8 +2,8 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useState } from "react";
 import * as clusterViewSlice from "../clusterViewSlice";
 import { Button } from "../../Button";
-import { FormControl, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
-import Grid from '@mui/material/Grid';
+import { FormControl, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material"; // reference: https://mui.com/material-ui
+import Grid from '@mui/material/Grid'; // reference: https://mui.com/material-ui
 import { showInvalidInputData } from "../../PopupWindow/PopupSlice";
 import { MIN_NUMBER_CLUSTER, MAX_NUMBER_CLUSTER } from "./ClusterViewControlPanel";
 

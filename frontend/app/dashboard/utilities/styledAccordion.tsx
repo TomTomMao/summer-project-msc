@@ -1,12 +1,12 @@
 // this file is modified from this page's customization section: https://mui.com/material-ui/react-accordion/
 import * as React from 'react';
-import { styled } from '@mui/material/styles';
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
-import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
+import { styled } from '@mui/material/styles'; // reference: https://mui.com/material-ui
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp'; // reference: https://mui.com/material-ui
+import MuiAccordion, { AccordionProps } from '@mui/material/Accordion'; // reference: https://mui.com/material-ui
 import MuiAccordionSummary, {
     AccordionSummaryProps,
-} from '@mui/material/AccordionSummary';
-import MuiAccordionDetails from '@mui/material/AccordionDetails';
+} from '@mui/material/AccordionSummary'; // reference: https://mui.com/material-ui
+import MuiAccordionDetails from '@mui/material/AccordionDetails'; // reference: https://mui.com/material-ui
 const ACCORDION_SUMMARY_HEIGHT = 30
 export const Accordion = styled((props: AccordionProps) => (
     <MuiAccordion disableGutters elevation={0} square {...props} />

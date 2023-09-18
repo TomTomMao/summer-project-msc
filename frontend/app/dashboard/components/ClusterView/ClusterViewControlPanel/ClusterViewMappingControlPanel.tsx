@@ -2,8 +2,8 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as clusterViewSlice from "../clusterViewSlice";
 import { ValidAxisLabels } from "../../Interactivity/interactivitySlice";
 import { ValidColours } from "../../ColourChannel/colourChannelSlice";
-import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch } from "@mui/material";
-import Grid from '@mui/material/Grid';
+import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch } from "@mui/material"; // reference: https://mui.com/material-ui
+import Grid from '@mui/material/Grid'; // reference: https://mui.com/material-ui
 
 export function ClusterViewMappingControlPanel() {
     const xLable = useAppSelector(state => state.clusterView.x);

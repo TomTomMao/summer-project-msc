@@ -78,7 +78,7 @@ const initialState: InteractivityState = {
     selectedClusterIdArr: [],
     selectedCategoryArr: [],
     selectedFrequencyUniqueKeyArr: [],
-    currentSelector: 'oneTimeTransaction',
+    currentSelector: '',
     categoryOrderArr: [],
     clusterOrderArr: [],
     // clickedDetailTransactionNumberArr: [],//future feature

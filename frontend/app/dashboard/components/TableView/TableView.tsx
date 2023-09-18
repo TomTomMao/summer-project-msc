@@ -3,7 +3,7 @@ import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObjec
 import { PublicScale } from "../../utilities/types";
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
 import { relative } from "path";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material"; // reference: https://mui.com/material-ui
 import { UPARROW, DOWNARROW } from "../../utilities/Arrows";
 import { ClusterDataMap } from "../../hooks/useClusterData";
 const DEFAULT_NUMBER_OF_ROW_PER_PAGE = 8

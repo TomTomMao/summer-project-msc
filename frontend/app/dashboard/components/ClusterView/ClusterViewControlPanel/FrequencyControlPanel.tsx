@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { FrequencyUniqueKeyConfig } from "@/app/dashboard/utilities/dataAgent";
 import { Button } from "../../Button";
 import * as popupSlice from "../../PopupWindow/PopupSlice";
-import { FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, TextField, Tooltip, Switch } from "@mui/material";
+import { FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, TextField, Tooltip, Switch } from "@mui/material"; // reference: https://mui.com/material-ui
 const MAX_NUMBER_DESCRIPTION = 400
 const MIN_NUMBER_DESCRIPTION = 50
 
@@ -61,7 +61,7 @@ export function FrequencyControlPanel() {
     return (
         <Grid container spacing={1}>
             <FrequencyUniqueKeyOption expertMode={expertMode} onToggleExpertMode={handleToggleExpertMode} frequencyUniqueKey={frequencyUniqueKey} onChangeFrequncyUniqueKey={handleChangeFrequencyUniqueKey}></FrequencyUniqueKeyOption>
-            {frequencyUniqueKey === 'clusteredTransactionDescription' &&
+            {frequencyUniqueKey === 'clusteredTransactionDescription' && expertMode && 
                 <LinkageClusteredTransactionDescriptionOption
                     expertMode={expertMode}
                     distanceMeasure={distanceMeasure}

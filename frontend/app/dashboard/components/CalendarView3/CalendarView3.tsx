@@ -24,7 +24,7 @@ import { useStarCalendarViewSharedAngleScale, useStarCalendarViewSharedRadialSca
 import useClusterOrderMap from "./useClusterOrder";
 import { StarDayView, StarDayViewProps, StarViewSharedScales } from "./DayViews/starDayView";
 import { CategoryColourLegend, ClusterIdColourLegend } from "../ColourLegend/ColourLegends";
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material"; // reference: https://mui.com/material-ui
 
 const CALENDAR_VIEW_EXPANDED_LEGEND_HEIGHT = 550
 const CALENDAR_VIEW_FOLDED_LEGEND_HEIGHT = 370

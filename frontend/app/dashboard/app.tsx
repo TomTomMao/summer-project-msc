@@ -25,8 +25,8 @@ import { ClusterView } from "./components/ClusterView/ClusterView";
 import TransactionAmountView from "./components/TransactionAmountView.tsx/TransactionAmountView";
 import * as colourChannelSlice from "./components/ColourChannel/colourChannelSlice";
 import Popup from "./components/PopupWindow/Popup";
-import Button from "@mui/material/Button"
-import { FormControlLabel, Switch } from "@mui/material";
+import Button from "@mui/material/Button" // reference: https://mui.com/material-ui
+import { FormControlLabel, Switch } from "@mui/material"; // reference: https://mui.com/material-ui
 
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
