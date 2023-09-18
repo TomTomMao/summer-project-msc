@@ -162,6 +162,7 @@ export const interactivitySlice = createSlice({
         },
         toggleFrequencyUniqueKey(state, action: PayloadAction<TransactionData['frequencyUniqueKey']>) {
             state.currentSelector = 'frequencyUniqueKey';
+            state.currentTable = 'brushedTable'
             state.selectedClusterIdArr = []
             state.selectedCategoryArr = []
             state.clusterViewSelectedTransactionNumberArr = []
