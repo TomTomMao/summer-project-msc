@@ -191,6 +191,11 @@ export const interactivitySlice = createSlice({
             action.payload !== 'scatterPlot' && (state.scatterPlotSelectedTransactionNumberArr = [])
         }, toggleShowOneTimeTransaction(state) {
             state.currentSelector = state.currentSelector === 'oneTimeTransaction' ? '' : 'oneTimeTransaction'
+            state.selectedClusterIdArr = []
+            state.selectedCategoryArr = []
+            state.selectedFrequencyUniqueKeyArr = []
+            state.clusterViewSelectedTransactionNumberArr = []
+            state.scatterPlotSelectedTransactionNumberArr = []
         },
         setCurrentTable(state, action: PayloadAction<InteractivityState['currentTable']>) {
             state.currentTable = action.payload
