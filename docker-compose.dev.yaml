@@ -1,0 +1,28 @@
+# docker-compose.dev.yaml from :https://blog.devops.dev/using-next-js-13-app-directory-with-hot-reload-enabled-in-docker-simple-guide-60de42840d7e
+
+version: "3.8"
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      target: dev
+    restart: always
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - 3000:3000
+    depends_on:
+      - serviceName
+  backend:
+    build: ./pythonServer     # Path to the directory containing backend Dockerfile
+    ports:
+      - "81:81"      # Forward container port 81 to host port 81
+    volumes:
+      - ./backend:/app   # Mount local backend directory to /app in container

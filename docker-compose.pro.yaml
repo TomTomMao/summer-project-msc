@@ -1,0 +1,19 @@
+# docker-compose.dev.yaml
+
+version: "3.8"
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      target: prod
+    restart: always
+    ports:
+      # this will run the build on port 80
+      - 80:3000
+  backend:
+    build: ./pythonServer     # Path to the directory containing backend Dockerfile
+    ports:
+      - "81:81"      # Forward container port 81 to host port 81
+    volumes:
+      - ./backend:/app   # Mount local backend directory to /app in container
