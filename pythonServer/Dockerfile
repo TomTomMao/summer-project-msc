@@ -17,3 +17,5 @@ COPY ./data /code/data
 
 # 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "81"]
+
+RUN curl http:/localhost:81 # this is for fixing a wierd bug
