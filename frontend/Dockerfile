@@ -16,7 +16,7 @@ FROM base AS deps
 COPY package.json ./
 
 # Copy available lock file
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+COPY serverConfig.json package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
 # Instal dependencies according to the lockfile
 RUN if [ -f "pnpm-lock.yaml" ]; then \
