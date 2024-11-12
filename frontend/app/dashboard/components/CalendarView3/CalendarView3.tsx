@@ -30,7 +30,7 @@ import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { GRAY1 } from "../../utilities/consts";
 
 const CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH = 150
-const CALENDAR_VIEW_FOLDED_LEGEND_WIDTH = 100
+const CALENDAR_VIEW_FOLDED_LEGEND_WIDTH = 125
 const MAX_TOOLTIP_ROWS = 10
 
 type HighLightedTransactionNumberSet = Set<TransactionData['transactionNumber']>

@@ -19,7 +19,7 @@ services:
     ports:
       - 3000:3000
     depends_on:
-      - serviceName
+      - backend
   backend:
     build: ./pythonServer     # Path to the directory containing backend Dockerfile
     ports:
