@@ -108,19 +108,7 @@ export default function App() {
             // /* reference： https://reactgo.com/react-disable-text-selection/ */
             <div className="disableTextSelection">
                 <div className="grid grid-cols-12">
-                    <div className="col-span-5">
-                        <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'scatter plot') }}
-                            initStyle={getExpandableContainerStyle('initStyle')}
-                            expandedStyle={getExpandableContainerStyle('expandedStyle')}
-                        >
-                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 4 }}>
-                            </div>
-                            <div style={{ height: '20px' }}></div>
-                            <TransactionAmountView
-                                colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
-                            ></TransactionAmountView>
-                        </ExpandableContainer>
-                    </div>
+                    
                     <div className="col-span-7">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'calendar view') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
@@ -142,9 +130,32 @@ export default function App() {
                             </div>
                         </ExpandableContainer>
                     </div>
+                    <div className="col-span-5">
+                        <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'scatter plot') }}
+                            initStyle={getExpandableContainerStyle('initStyle')}
+                            expandedStyle={getExpandableContainerStyle('expandedStyle')}
+                        >
+                            <div className="floatDiv" style={{ position: 'absolute', left: '40px', top: '3px', height: '21px', zIndex: 4 }}>
+                            </div>
+                            <div style={{ height: '20px' }}></div>
+                            <TransactionAmountView
+                                colourScales={{ categoryColourScale, clusterIdColourScale, frequencyUniqueKeyColourScale }}
+                            ></TransactionAmountView>
+                        </ExpandableContainer>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-12">
+                    <div className="col-span-7">
+                        <TableViewCollection transactionDataArr={transactionDataArr}
+                            brushedTransactionNumberSet={brushedTransactionNumberSet}
+                            handleClearBrush={handleClearBrush}
+                            selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
+                            handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
+                            colourScale={tableColourScale} colourDomainData={tableViewColourDomainDataArr}
+                            glyphColourScale={glyphTableColourScale} glyphColourDomainData={glyphTableViewColourDomainDataArr}
+                        ></TableViewCollection>
+                    </div>
                     <div className="col-span-5">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'cluster view') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
@@ -165,16 +176,7 @@ export default function App() {
                             ></ClusterView>
                         </ExpandableContainer>
                     </div>
-                    <div className="col-span-7">
-                        <TableViewCollection transactionDataArr={transactionDataArr}
-                            brushedTransactionNumberSet={brushedTransactionNumberSet}
-                            handleClearBrush={handleClearBrush}
-                            selectedGlyphTransactionNumberSet={selectedGlyphTransactionNumberSet}
-                            handleClearGlyph={() => dispatch(calendarViewSlice.clearDetailDay())}
-                            colourScale={tableColourScale} colourDomainData={tableViewColourDomainDataArr}
-                            glyphColourScale={glyphTableColourScale} glyphColourDomainData={glyphTableViewColourDomainDataArr}
-                        ></TableViewCollection>
-                    </div>
+
                 </div>
                 <Popup></Popup>
 
