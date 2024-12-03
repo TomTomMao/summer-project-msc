@@ -180,7 +180,7 @@ export default function App() {
                 </div>
                 <Popup></Popup>
 
-                <div style={{ position: 'absolute', top: 0, right: 0 }}>
+                <div style={{ position: 'absolute', top: 0, left: 400 }}>
                     <FormControlLabel
                         className=""
                         labelPlacement="end"
