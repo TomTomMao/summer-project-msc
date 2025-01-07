@@ -50,7 +50,7 @@ const initialState: ColourChannelState = {
     scaleFunction: null,
   },
   category: {
-    scheme: "Rainbow",
+    scheme: "Warm",
     scaleFunction: null,
   },
   frequencyUniqueKey: {
