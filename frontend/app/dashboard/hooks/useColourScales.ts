@@ -6,6 +6,40 @@ import * as interactivitySlice from "../components/Interactivity/interactivitySl
 import { TransactionData } from "../utilities/DataObject";
 import { GRAY1 } from "../utilities/consts";
 
+const HIERARCHICALCATEGORYCOLOURMAPPING = [
+  ["Savings", "rgb(245, 245, 115)"],
+  ["Groceries", "rgb(184, 236, 184)"],
+  ["Others", "rgb(133, 160, 221)"],
+  ["unknown", "rgb(95, 126, 198)"],
+  ["Entertainment", "rgb(140, 220, 140)"],
+  ["Services", "rgb(64, 97, 173)"],
+  ["Amazon", "rgb(92, 196, 92)"],
+  ["Investment", "rgb(255, 198, 198)"],
+  ["Supplementary Income", "rgb(255, 163, 163)"],
+  ["Dine Out", "rgb(57, 169, 57)"],
+  ["Travel", "rgb(31, 145, 31)"],
+  ["Bills", "rgb(211, 211, 71)"],
+  ["Other Shopping", "rgb(38, 74, 156)"],
+  ["Cash", "rgb(181, 181, 38)"],
+  ["Home Improvement", "rgb(255, 225, 164)"],
+  ["Hotels", "rgb(255, 207, 112)"],
+  ["Travel Reimbursement", "rgb(245, 115, 115)"],
+  ["Safety Deposit Return", "rgb(211, 71, 71)"],
+  ["Interest", "rgb(181, 38, 38)"],
+  ["Fitness", "rgb(10, 115, 10)"],
+  ["Paycheck", "rgb(143, 13, 13)"],
+  ["Food Shopping", "rgb(0, 85, 0)"],
+  ["Clothes", "rgb(0, 52, 0)"],
+  ["Services/Home Improvement", "rgb(255, 170, 0)"],
+  ["Account transfer", "rgb(143, 143, 13)"],
+  ["Mortgage", "rgb(217, 145, 0)"],
+  ["Insurance", "rgb(187, 128, 220)"],
+  ["Rent", "rgb(167, 111, 0)"],
+  ["Purchase of uk.eg.org", "rgb(106, 0, 0)"],
+  ["Groceries ", "rgb(184, 236, 184)"],
+  ["Health", "rgb(132, 58, 173)"],
+];
+
 /**
  * read only scale with transactionNumber, it has the knowledge of interactivitySlice.selectSelectedTransactionNumberArrMemorised selected from the redux store. it use d3.scaleOrdinal
  * given a domain value, if it is not in the selectedTransactionNumberArrMemorised, then it will return the colour using d3.scaleOrdinal, otherwise it will returns gray colour
@@ -30,11 +64,56 @@ export function useClusterIdColourScale() {
 
 export function useCategoryColourScale() {
   const domain = useAppSelector(colourChannelSlice.selectCategoryColourDomain);
-
   const scheme = useAppSelector(colourChannelSlice.selectCategoryColourScheme);
   const colourScale = useColourScale(domain, scheme);
   return colourScale;
 }
+
+export function useHierarchicalCategoryColourScale() {
+  const selectedTransactionNumberArr = useAppSelector(
+    interactivitySlice.selectSelectedTransactionNumberArrMemorised
+  );
+
+  const colourMapping = useMemo(() => {
+    // Convert the mapping array to a Map for efficient lookup
+    return new Map<string, string>(HIERARCHICALCATEGORYCOLOURMAPPING);
+  }, []);
+
+  const colourScaleWithTransactionNumber: ScaleOrdinalWithTransactionNumber =
+    useMemo(() => {
+      const selectedTransactionNumberSet = new Set(
+        selectedTransactionNumberArr
+      );
+
+      const getColour = function (
+        valueForColour: string,
+        transactionNumber?: TransactionData["transactionNumber"]
+      ): string {
+        // Get the color from the mapping
+        const colour = colourMapping.get(valueForColour) || GRAY1;
+
+        // Return gray if the transaction number is not in the selected set
+        if (
+          selectedTransactionNumberSet.size > 0 &&
+          transactionNumber !== undefined &&
+          !selectedTransactionNumberSet.has(transactionNumber)
+        ) {
+          return GRAY1;
+        }
+
+        return colour;
+      };
+
+      return {
+        getColour,
+        domain: () => Array.from(colourMapping.keys()),
+        range: () => Array.from(colourMapping.values()),
+      };
+    }, [colourMapping, selectedTransactionNumberArr]);
+
+  return colourScaleWithTransactionNumber;
+}
+
 
 export function useFrequencyUniqueKeyColourScale() {
   const domain = useAppSelector(

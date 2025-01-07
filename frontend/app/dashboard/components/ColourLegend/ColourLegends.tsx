@@ -2,7 +2,7 @@
 import * as colourChannelSlice from "../ColourChannel/colourChannelSlice";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
-import { useCategoryColourScale, useClusterIdColourScale, useFrequencyUniqueKeyColourScale } from "../../hooks/useColourScales";
+import { useCategoryColourScale, useClusterIdColourScale, useFrequencyUniqueKeyColourScale, useHierarchicalCategoryColourScale } from "../../hooks/useColourScales";
 import { useMemo, useState } from "react";
 import { GRAY1 } from "../../utilities/consts";
 import { COLOURLEGEND_WIDTH } from "../InteractiveScatterPlot/InteractiveScatterPlot";
@@ -19,7 +19,8 @@ export function CategoryColourLegend() {
     const highLightedDomainSet = useMemo(() => new Set(highLightedDomainArr), [highLightedDomainArr])
     const handleToggleSelect = (domainValue: string) => dispatch(toggleActionCreator(domainValue))
 
-    const colourScale = useCategoryColourScale()
+    // const colourScale = useCategoryColourScale()
+    const colourScale = useHierarchicalCategoryColourScale()
 
     const colourMappingArr = domainArr.map(domainValue => {
         return {

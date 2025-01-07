@@ -17,7 +17,7 @@ import ClusterViewControlPanel from "./components/ClusterView/ClusterViewControl
 
 import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";
 import { useTransactionDataArr } from "./hooks/useTransactionData";
-import { useClusterIdColourScale, useCategoryColourScale, useFrequencyUniqueKeyColourScale } from "./hooks/useColourScales";
+import { useHierarchicalCategoryColourScale, useClusterIdColourScale, useCategoryColourScale, useFrequencyUniqueKeyColourScale } from "./hooks/useColourScales";
 
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
@@ -33,7 +33,8 @@ export default function App() {
     const brushedTransactionNumberSet = useMemo(() => new Set(brushedTransactionNumberArr), [brushedTransactionNumberArr])
 
     useSyncTransactionDataAndClusterData(); // app is reponsible for checking the relative states in the redux store and update the transactionDataArr and Clus
-    const categoryColourScale = useCategoryColourScale()
+    // const categoryColourScale = useCategoryColourScale()
+    const categoryColourScale = useHierarchicalCategoryColourScale()
     const clusterIdColourScale = useClusterIdColourScale()
     const frequencyUniqueKeyColourScale = useFrequencyUniqueKeyColourScale()
     const transactionDataArr = useTransactionDataArr();
