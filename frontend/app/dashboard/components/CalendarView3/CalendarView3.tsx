@@ -28,6 +28,7 @@ import { Tooltip } from "@mui/material"; // reference: https://mui.com/material-
 import { selectTooltipContentArr } from "./calendarViewSlice";
 import * as interactivitySlice from "../Interactivity/interactivitySlice";
 import { GRAY1 } from "../../utilities/consts";
+import * as clusterViewSlice from "../ClusterView/clusterViewSlice";
 
 const CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH = 150
 const CALENDAR_VIEW_FOLDED_LEGEND_WIDTH = 125
@@ -85,7 +86,7 @@ export default function CalendarView3(props:
 
     const glyphType = useAppSelector(calendarViewSlice.selectGlyphType)
     const dispatch = useAppDispatch()
-
+    const numberOfClusters = useAppSelector(clusterViewSlice.selectNumberOfCluster)
     // used when user click a day cell, automatically set the table to be the glyph table.
     function handleShowDayDetail(day: number, month: number, year: number) {
         dispatch(calendarViewSlice.setDetailDay({ day: day, month: month, year: year }))
@@ -250,11 +251,12 @@ export default function CalendarView3(props:
                 position: 'absolute',
                 right: 0,
                 top: '2em',
-                overflowY: 'scroll',
                 height: 'calc(100% - 4em)',
                 width: isExpanded ? CALENDAR_VIEW_EXPANDED_LEGEND_WIDTH : CALENDAR_VIEW_FOLDED_LEGEND_WIDTH,
             }}>
-                <div style={glyphType === 'star' ? { height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' } : { height: '100%' }}>
+                <div style={(glyphType === 'star' && numberOfClusters < 18) ? { height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                overflowY: 'scroll' } : { height: '100%',
+                overflowY: 'scroll' }}>
                     <div>
                         {glyphType === 'star' ? <ClusterIdColourLegend /> : <CategoryColourLegend />}
                     </div>

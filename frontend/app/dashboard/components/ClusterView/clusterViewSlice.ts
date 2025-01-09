@@ -264,7 +264,7 @@ export const selectCurrentContainerWidth = function (state: RootState) {
   }
 };
 
-export const selectNumberOfCluster = function (state: RootState) {
+export const selectNumberOfCluster = function (state: RootState):number {
   return state.clusterView.clusterConfig.numberOfCluster;
 };
 
