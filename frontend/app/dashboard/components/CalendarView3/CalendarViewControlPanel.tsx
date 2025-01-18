@@ -163,7 +163,7 @@ function BarDayViewControlPanel() {
                         labelPlacement="end"
                         control={<Switch
                             checked={barDayViewIsSharedBandWidth}
-                            onChange={handleToggleBarDayViewShareBandwidth} />} label='Global Bandwidth' />
+                            onChange={handleToggleBarDayViewShareBandwidth} />} label='Global Barwidth' />
                 </Container>
             </Grid>
             <Grid item xs={6}>
