@@ -13,7 +13,7 @@ interface BarDayViewState {
 }
 
 const initialState: BarDayViewState = {
-  isSharedBandWidth: false,
+  isSharedBandWidth: true,
   sortingKey: "transactionAmount",
   isDesc: true,
   heightAxis: "log",
