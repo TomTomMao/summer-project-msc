@@ -99,6 +99,7 @@ export default function App() {
         })
         return setOfTheDay
     }, [detailDay, transactionDataArr, isSuperPositioned])
+
     if (transactionDataArr.length === 0) {
         return <>loading...</>
     } else if (categoryColourScale === null) {
