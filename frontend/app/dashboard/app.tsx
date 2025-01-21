@@ -182,13 +182,16 @@ export default function App() {
                 </div>
                 <Popup></Popup>
 
-                <div style={{ position: 'absolute', top: 0, left: 400 }}>
+                <div style={{ position: 'absolute', top: 5, left: 400 }}>
                     <FormControlLabel
                         className=""
                         labelPlacement="end"
                         control={<Switch
                             checked={currentSelector === 'oneTimeTransaction'}
-                            onChange={() => dispatch(interactivitySlice.toggleShowOneTimeTransaction())} />} label='Focus on One Time Transaction' />
+                            onChange={() => {
+                                dispatch(interactivitySlice.toggleShowOneTimeTransaction());
+                                dispatch(interactivitySlice.setCurrentTable('brushedTable'));
+                                }} />} label='Focus on One Time Transaction' />
                 </div>
             </div>
 
