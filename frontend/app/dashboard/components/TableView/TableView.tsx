@@ -35,6 +35,27 @@ type Props = {
     colourDomainData: ColourDomainData[];
     children: React.ReactNode;
 }
+function getTextColor(backgroundColor) {
+    /**
+     * 
+     * @param backgroundColor: the background color of the row
+     * @returns the text color that is suitable for the background color
+     */
+    function getRGBValues(str) {
+        /**
+         * reference https://stackoverflow.com/questions/34980574/how-to-extract-color-values-from-rgb-string-in-javascript by diego nunes
+        */
+        var vals = str.substring(str.indexOf('(') + 1, str.length - 1).split(', ');
+        return {
+            'r': vals[0],
+            'g': vals[1],
+            'b': vals[2]
+        };
+    }
+    const rgb = getRGBValues(backgroundColor)
+    const luminance = (rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114)/255 //https://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color by Gacek
+    return luminance > 0.5 ? 'black' : 'white'
+}
 /**
  * show the transactions that has the number in the transactionNumberSet
  * 
@@ -112,19 +133,19 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
                 }
                 return (
                     <tr key={transactionData.transactionNumber} style={{ backgroundColor: colour }}>
-                        <Tooltip title={transactionData.transactionNumber}><td className="help" style={{ overflowX: 'hidden', width: '50%', height: '4em' }}>{transactionData.transactionNumber}</td></Tooltip>
-                        <Tooltip title={String(transactionData.balance)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em' }}>{transactionData.balance}</td></Tooltip>
-                        <Tooltip title={transactionData.category}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{transactionData.category}</td></Tooltip>
-                        <Tooltip title={String(transactionData.creditAmount)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em' }}>{transactionData.creditAmount}</td></Tooltip>
-                        <Tooltip title={String(transactionData.debitAmount)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em' }}>{transactionData.debitAmount}</td></Tooltip>
-                        <Tooltip title={transactionData.locationCity}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em' }}>{transactionData.locationCity}</td></Tooltip>
-                        <Tooltip title={transactionData.locationCountry}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{transactionData.locationCountry}</td></Tooltip>
-                        <Tooltip title={transactionData.transactionDescription} ><td className="help" style={{ overflowX: 'hidden', width: '150%', height: '4em' }}>{transactionData.transactionDescription}</td></Tooltip>
-                        <Tooltip title={transactionData.transactionType}><td className="help" style={{ overflowX: 'hidden', width: '50%', height: '4em' }}>{transactionData.transactionType}</td></Tooltip>
-                        <Tooltip title={transactionData.date?.toDateString()}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{transactionData.date?.toDateString()}</td></Tooltip>
-                        <Tooltip title={String(transactionData.frequency)}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{(transactionData.frequency.toFixed(2))}</td></Tooltip>
-                        <Tooltip title={transactionData.frequencyUniqueKey}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{transactionData.frequencyUniqueKey}</td></Tooltip>
-                        <Tooltip title={clusterId}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em' }}>{clusterId}</td></Tooltip>
+                        <Tooltip title={transactionData.transactionNumber}><td className="help" style={{ overflowX: 'hidden', width: '50%', height: '4em', color: getTextColor(colour) }}>{transactionData.transactionNumber}</td></Tooltip>
+                        <Tooltip title={String(transactionData.balance)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em', color: getTextColor(colour) }}>{transactionData.balance}</td></Tooltip>
+                        <Tooltip title={transactionData.category}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em', color: getTextColor(colour) }}>{transactionData.category}</td></Tooltip>
+                        <Tooltip title={String(transactionData.creditAmount)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em', color: getTextColor(colour) }}>{transactionData.creditAmount}</td></Tooltip>
+                        <Tooltip title={String(transactionData.debitAmount)}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em', color: getTextColor(colour) }}>{transactionData.debitAmount}</td></Tooltip>
+                        <Tooltip title={transactionData.locationCity}><td className="help" style={{ overflowX: 'hidden', width: '70%', height: '4em', color: getTextColor(colour) }}>{transactionData.locationCity}</td></Tooltip>
+                        <Tooltip title={transactionData.locationCountry}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em', color: getTextColor(colour) }}>{transactionData.locationCountry}</td></Tooltip>
+                        <Tooltip title={transactionData.transactionDescription} ><td className="help" style={{ overflowX: 'hidden', width: '150%', height: '4em', color: getTextColor(colour) }}>{transactionData.transactionDescription}</td></Tooltip>
+                        <Tooltip title={transactionData.transactionType}><td className="help" style={{ overflowX: 'hidden', width: '50%', height: '4em', color: getTextColor(colour) }}>{transactionData.transactionType}</td></Tooltip>
+                        <Tooltip title={transactionData.date?.toDateString()}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em', color: getTextColor(colour) }}>{transactionData.date?.toDateString()}</td></Tooltip>
+                        <Tooltip title={String(transactionData.frequency)}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em', color: getTextColor(colour) }}>{(transactionData.frequency.toFixed(2))}</td></Tooltip>
+                        <Tooltip title={transactionData.frequencyUniqueKey}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em', color: getTextColor(colour) }}>{transactionData.frequencyUniqueKey}</td></Tooltip>
+                        <Tooltip title={clusterId}><td className="help" style={{ overflowX: 'hidden', width: '100%', height: '4em', color: getTextColor(colour) }}>{clusterId}</td></Tooltip>
                     </tr>)
             })
         )
