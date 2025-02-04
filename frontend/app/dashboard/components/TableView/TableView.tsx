@@ -105,6 +105,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
         return (
             currentPageTransactionDataArr.map(transactionData => {
                 const colour = colourForTransactionNumberMap.get(transactionData.transactionNumber);
+                console.log(colour)
                 const clusterId = clusterDataMap.get(transactionData.transactionNumber)
                 if (clusterId === undefined) {
                     throw new Error(`clusterData does not have transactionNumber:${transactionData.transactionNumber}`);

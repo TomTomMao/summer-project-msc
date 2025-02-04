@@ -92,7 +92,7 @@ export function BarDayView(props: BarDayViewProps) {
                 const domainLength = xDomain.length;
                 const numberOfBars = year !== -1 ? maxTransactionCountOfDay : maxTransactionCountOfDaySuperpositioned // if -1 , then it is calculating the domain for superpositioned bar glyphs.
                 for (let i = 0; i < numberOfBars - domainLength; i++) { xDomain.push(`fill-${i}`); }
-                console.log('isSharedBandWidth = True',  numberOfBars, domainLength)
+                // console.log('isSharedBandWidth = True',  numberOfBars, domainLength)
             }
 
             const xScale = d3.scaleBand().domain(xDomain).range([0, containerHeight]);
