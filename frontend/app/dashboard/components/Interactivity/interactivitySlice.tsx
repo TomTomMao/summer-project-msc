@@ -325,7 +325,6 @@ export const selectCategoryOrderArrMemorised = (state: RootState): TransactionDa
 export const selectClusterOrderArrMemorised = (state: RootState): ClusterData['clusterId'][] => state.interactivity.clusterOrderArr
 
 export const selectCurrentTable = (state: RootState) => state.interactivity.currentTable
-
 export default interactivitySlice.reducer;
 
 

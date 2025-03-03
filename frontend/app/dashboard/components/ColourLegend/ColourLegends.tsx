@@ -8,6 +8,9 @@ import { GRAY1 } from "../../utilities/consts";
 import { COLOURLEGEND_WIDTH } from "../InteractiveScatterPlot/InteractiveScatterPlot";
 import { isNumber } from "../../utilities/isNumeric";
 import { DOWNARROW, UPARROW } from "../../utilities/Arrows";
+import { useTransactionDataArr } from "../../hooks/useTransactionData";
+import { ClusterData } from "../../utilities/clusterDataObject";
+import { TransactionData } from "../../utilities/DataObject";
 
 export function CategoryColourLegend() {
     const dispatch = useAppDispatch()
@@ -63,21 +66,25 @@ export function ClusterIdColourLegend() {
     const highLightedDomainArr = useAppSelector(interactivitySlice.selectSelectedClusterIdArr)
     const domainArr = useAppSelector(colourChannelSlice.selectClusterIdColourIdDomain)
     const toggleActionCreator = interactivitySlice.toggleClusterId
-
     const highLightedDomainSet = useMemo(() => new Set(highLightedDomainArr), [highLightedDomainArr])
     const handleToggleSelect = (domainValue: string) => dispatch(toggleActionCreator(domainValue))
 
     const colourScale = useClusterIdColourScale()
-
+    
+    const transactionArr = useTransactionDataArr()
+    const clusterDataArr = useAppSelector(interactivitySlice.selectClusterDataArr)
+    const clusterFrequencyMap = getClusterFrequencyRange(clusterDataArr, transactionArr)
+    
     const colourMappingArr = domainArr.map(domainValue => {
         return {
             domain: domainValue,
             value: colourScale.getColour(domainValue),
-            highLighted: highLightedDomainSet.has(domainValue)
+            highLighted: highLightedDomainSet.has(domainValue),
+            frequencyRange: clusterFrequencyMap.get(domainValue)
         }
     })
     return (
-        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'Cluster ID'}></LegendList>
+        <LegendList colourMappingArr={colourMappingArr} onToggleSelect={handleToggleSelect} label={'Cluster ID (Frequency Range)'}></LegendList>
     )
 }
 
@@ -109,12 +116,38 @@ function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
             break;
         case 'colour':
             break;
+        case 'frequencyRangeAscending':
+            sortedColourMappingArr.sort((a, b) => {
+                if (a.frequencyRange === undefined || b.frequencyRange === undefined) {
+                    throw new Error('frequencyRange is undefined')
+                }
+                return a.frequencyRange.min - b.frequencyRange.min
+            }
+            )
+            break;
+        case 'frequencyRangeDescending':
+            sortedColourMappingArr.sort((a, b) => {
+                if (a.frequencyRange === undefined || b.frequencyRange === undefined) {
+                    throw new Error('frequencyRange is undefined')
+                }
+                return b.frequencyRange.min - a.frequencyRange.min
+            }
+            )
+            break;
         default:
             const _exhaustiveCheck: never = sortBy
             throw new Error("exhaustive check error");
     }
     function handleToggleSortting() {
-        if (sortBy === 'colour') {
+        if (label === 'Cluster ID (Frequency Range)') {
+            if (sortBy === 'frequencyRangeAscending') {
+                setSortBy('frequencyRangeDescending')
+            } else if (sortBy === 'frequencyRangeDescending') {
+                setSortBy('colour')
+            } else {
+                setSortBy('frequencyRangeAscending')
+            }
+        } else if (sortBy === 'colour') {
             setSortBy('domainAscending')
         } else if (sortBy === 'domainAscending') {
             setSortBy('domainDescending')
@@ -129,7 +162,7 @@ function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
     return (
         <>
             <div style={{ cursor: 'pointer', position: 'absolute', backgroundColor: 'white', zIndex: 3, width: COLOURLEGEND_WIDTH - 16.5, lineHeight: '1em' }} onClick={handleToggleSortting}>{label}{Arrow}</div>
-            <div style={{ height: `${label.length / 10}em` }} />
+            <div style={{ height: `${label.length / 8}em` }} />
             {sortedColourMappingArr.map(colourMapping => {
                 return (
                     <div onClick={() => onToggleSelect(colourMapping.domain)} key={colourMapping.domain} style={{ fontSize: '12px', display: "flex" }}>
@@ -144,10 +177,47 @@ function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
                             }}></div>
                         </div>
                         <div style={{ marginLeft: '2px' }}>
-                            {colourMapping.domain === '' ? 'unknown' : colourMapping.domain}
+                            {colourMapping.domain === '' ? 'unknown' : colourMapping.domain+ (colourMapping.frequencyRange ? ` (${colourMapping.frequencyRange.min.toFixed(2)} - ${colourMapping.frequencyRange.max.toFixed(2)})` : '')}
                         </div>
                     </div>)
             })}
         </>
     )
+}
+
+function getClusterFrequencyRange(clusterDataArr: ClusterData[], transactionArr: TransactionData[]): Map<string, { min: number, max: number }> {
+    /**
+     * @param clusterDataArr: ClusterData[] {clusterId: string, transactionNumber: string}
+     * @param transactionArr: TransactionData[] {..., transactionNumber: string, frequency: number}
+     * @returns {clusterId: string, frequencyRange: [number, number]}
+     */
+
+    const clusterDataMap: Map<string, string> = new Map()
+    clusterDataArr.forEach(clusterData => {
+        clusterDataMap.set(clusterData.transactionNumber, clusterData.clusterId)
+    })
+
+    const transactionArrWithClusterId = transactionArr.map(transactionData => {
+        const clusterId = clusterDataMap.get(transactionData.transactionNumber)
+        if (clusterId === undefined) {
+            throw new Error('clusterId is undefined')
+        }
+        return { ...transactionData, clusterId }
+    })
+
+    const clusterFrequencyMap: Map<string, { min: number, max: number }> = new Map()
+    transactionArrWithClusterId.forEach(transactionData => {
+        const clusterId = transactionData.clusterId
+        const frequency = transactionData.frequency
+        const clusterFrequency = clusterFrequencyMap.get(clusterId)
+        if (clusterFrequency === undefined) {
+            clusterFrequencyMap.set(clusterId, { min: frequency, max: frequency })
+        } else {
+            clusterFrequency.min = Math.min(clusterFrequency.min, frequency)
+            clusterFrequency.max = Math.max(clusterFrequency.max, frequency)
+        }
+    })
+    
+    return clusterFrequencyMap
+
 }
