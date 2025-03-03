@@ -105,7 +105,7 @@ function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
         ((a: ColourMapping, b: ColourMapping) => parseFloat(a.domain) - parseFloat(b.domain)) :
         ((a: ColourMapping, b: ColourMapping) => a.domain > b.domain ? 1 : -1)
     const comparatorDescending = (a: ColourMapping, b: ColourMapping) => -comparatorAscending(a, b)
-    const [sortBy, setSortBy] = useState<'domainDescending' | 'domainAscending' | 'colour'>('domainDescending')
+    const [sortBy, setSortBy] = useState<'domainDescending' | 'domainAscending' | 'colour'>(label === 'Cluster ID (Frequency Range)' ? 'frequencyRangeDescending' : 'domainDescending')
     let sortedColourMappingArr: ColourMapping[] = [...colourMappingArr]
     switch (sortBy) {
         case 'domainAscending':
@@ -158,7 +158,7 @@ function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
             throw new Error("exhaustive check error");
         }
     }
-    const Arrow = (sortBy === 'colour' ? <span></span> : sortBy === 'domainAscending' ? DOWNARROW : UPARROW)
+    const Arrow = (sortBy === 'colour' ? <span></span> : (sortBy === 'domainAscending' || sortBy === 'frequencyRangeAscending') ? DOWNARROW : UPARROW)
     return (
         <>
             <div style={{ cursor: 'pointer', position: 'absolute', backgroundColor: 'white', zIndex: 3, width: COLOURLEGEND_WIDTH - 16.5, lineHeight: '1em' }} onClick={handleToggleSortting}>{label}{Arrow}</div>

@@ -56,7 +56,7 @@ export type ScaleOrdinalWithTransactionNumber = {
 export function useClusterIdColourScale() {
   const domain = useAppSelector(
     colourChannelSlice.selectClusterIdColourIdDomain
-  );
+  ).sort();
   const scheme = useAppSelector(colourChannelSlice.selectClusterIdColourScheme);
   const colourScale = useColourScale(domain, scheme);
   return colourScale;
