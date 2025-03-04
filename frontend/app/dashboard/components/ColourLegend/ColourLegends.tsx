@@ -89,6 +89,7 @@ export function ClusterIdColourLegend() {
 }
 
 type ColourMapping = {
+    frequencyRange: undefined | { min: number, max: number };
     domain: string;
     value: string;
     highLighted: boolean;
@@ -105,7 +106,7 @@ function LegendList({ colourMappingArr, onToggleSelect, label, children }: {
         ((a: ColourMapping, b: ColourMapping) => parseFloat(a.domain) - parseFloat(b.domain)) :
         ((a: ColourMapping, b: ColourMapping) => a.domain > b.domain ? 1 : -1)
     const comparatorDescending = (a: ColourMapping, b: ColourMapping) => -comparatorAscending(a, b)
-    const [sortBy, setSortBy] = useState<'domainDescending' | 'domainAscending' | 'colour'>(label === 'Cluster ID (Frequency Range)' ? 'frequencyRangeDescending' : 'domainDescending')
+    const [sortBy, setSortBy] = useState<'domainDescending' | 'domainAscending' | 'colour' | 'frequencyRangeDescending' | 'frequencyRangeAscending'>(label === 'Cluster ID (Frequency Range)' ? 'frequencyRangeDescending' : 'domainDescending')
     let sortedColourMappingArr: ColourMapping[] = [...colourMappingArr]
     switch (sortBy) {
         case 'domainAscending':
