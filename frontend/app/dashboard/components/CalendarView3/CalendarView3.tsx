@@ -615,13 +615,13 @@ export function CalendarViewYearController() {
         }}>
             <input type="checkbox" name="" id="isSuperPositioned" value='isSuperPositioned' checked={isSuperPositioned} onChange={handleChangeIsSuperpositioned} />
             <label htmlFor="isSuperPositioned" style={{ marginRight: '2px' }}>Super Positioned</label>
-            <input style={{ width: '60px', height: '100%', border: isSuperPositioned ? '1px gray solid' : '1px black solid', color: isSuperPositioned ? 'gray' : 'black' }}
+            {!isSuperPositioned && <input style={{ width: '60px', height: '100%', border: isSuperPositioned ? '1px gray solid' : '1px black solid', color: isSuperPositioned ? 'gray' : 'black' }}
                 disabled={isSuperPositioned}
                 type="number"
                 name=""
                 id=""
                 value={currentYear}
-                onChange={e => handleChangeCurrentYear(parseInt(e.target.value))} />
+                onChange={e => handleChangeCurrentYear(parseInt(e.target.value))} />}
         </div>
     )
 }
