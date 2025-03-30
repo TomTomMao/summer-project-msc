@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useReducer } from "react";
+import { ChangeEvent, useEffect, useMemo, useReducer, useState } from "react";
 import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObject";
 import { PublicScale } from "../../utilities/types";
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
@@ -69,9 +69,20 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
     // when the component mount or the filteredDescriptionAndIsCreditArr Changes, change it. the time complexity is transactionDataArr.length * filteredDescriptionAndIsCreditArr; can be improved in the future.[performance improvement]
 
     const [sortingConfig, dispatch] = useReducer(sortingConfigReducer, initialSortingConfig)
+    const [searchQuery, setSearchQuery] = useState(""); // State for search query
+
     const sortingKey = sortingConfig.sortingKey;
     const isDesc = sortingConfig.isDesc
-    const filteredTransactionDataArr = useMemo(() => transactionDataArr.filter(transactionData => transactionNumberSet.has(transactionData.transactionNumber)), [transactionDataArr, transactionNumberSet])
+    const filteredTransactionDataArr = useMemo(
+        () => transactionDataArr.filter(transactionData => transactionNumberSet.has(transactionData.transactionNumber)).filter(
+            transactionData => {
+                const transactionDescription = transactionData.transactionDescription.toLowerCase(); // Convert to lowercase for case-insensitive search
+                return transactionDescription.includes(searchQuery); // Check if the description includes the search query
+            }
+        )
+        , [transactionDataArr, transactionNumberSet, searchQuery]
+    )
+    console.log('filteredTransactionDataArr', filteredTransactionDataArr)
     useEffect(() => dispatch({ type: 'init' }), [filteredTransactionDataArr])
     const sortedFilteredTransactionDataArr = useMemo(() => {
         if (sortingKey !== 'clusterId') {
@@ -112,7 +123,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
     const startIndex = (currentPageNumber - 1) * numberOfRowPerPage
     const endIndex = startIndex + numberOfRowPerPage >= numberOfRow ? numberOfRow - 1 : startIndex + numberOfRowPerPage - 1// >= because it is index
     const currentPageTransactionDataArr = sortedFilteredTransactionDataArr.slice(startIndex, endIndex + 1) // +1 because end is exclusive 
-
+    
     // focus on the table head
     useEffect(() => {
         const tableViewDiv = document.getElementById('tableView')
@@ -183,10 +194,15 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
             dispatch({ type: 'change page', nextPage: nextPage })
         }
     }
+    function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
+        const value = event.target.value.toLowerCase(); // Convert to lowercase for case-insensitive search
+        setSearchQuery(value);
+    }
     return (<>
         <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", marginRight: '16.5px' }}>
 
             <div>{children}</div>
+            
             {numberOfRow > 0 && <>
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                     <label style={{ paddingTop: '2px', height: '22px', paddingRight: '5px' }} htmlFor=""> show </label>
@@ -210,6 +226,17 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
                     </div>
                 </div></>
             }
+            <div>
+                <input
+                        type="text"
+                        placeholder="Search description..."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        style={{ marginRight: "10px", padding: "5px" }}
+                        disabled={numberOfRow === 0} // Disable the input when there are no rows to search
+                        className="disabled:cursor-not-allowed"
+                    />
+            </div>
         </div>
         <table className="infoTable">
             <thead>
