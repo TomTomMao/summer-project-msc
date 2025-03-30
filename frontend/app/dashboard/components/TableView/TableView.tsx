@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useReducer, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { TransactionData, TransactionDataAttrs } from "../../utilities/DataObject";
 import { PublicScale } from "../../utilities/types";
 import { ColourDomainData } from "../ColourChannel/colourChannelSlice";
@@ -53,7 +53,7 @@ function getTextColor(backgroundColor) {
         };
     }
     const rgb = getRGBValues(backgroundColor)
-    const luminance = (rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114)/255 //https://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color by Gacek
+    const luminance = (rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114) / 255 //https://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color by Gacek
     return luminance > 0.5 ? 'black' : 'white'
 }
 /**
@@ -71,6 +71,8 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
     const [sortingConfig, dispatch] = useReducer(sortingConfigReducer, initialSortingConfig)
     const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
+    const searchRef = useRef<HTMLInputElement>(null); // Ref for the search input
+
     const sortingKey = sortingConfig.sortingKey;
     const isDesc = sortingConfig.isDesc
     const filteredTransactionDataArr = useMemo(
@@ -83,6 +85,13 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
         , [transactionDataArr, transactionNumberSet, searchQuery]
     )
     console.log('filteredTransactionDataArr', filteredTransactionDataArr)
+    useEffect(() => {
+        setSearchQuery("") // Reset the search query when transactionNumberSet changes
+        if (searchRef.current) {
+        // Remove focus from the search input when transactionNumberSet changes
+            searchRef.current.blur();
+        }
+    }, [transactionDataArr, transactionNumberSet])
     useEffect(() => dispatch({ type: 'init' }), [filteredTransactionDataArr])
     const sortedFilteredTransactionDataArr = useMemo(() => {
         if (sortingKey !== 'clusterId') {
@@ -123,7 +132,7 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
     const startIndex = (currentPageNumber - 1) * numberOfRowPerPage
     const endIndex = startIndex + numberOfRowPerPage >= numberOfRow ? numberOfRow - 1 : startIndex + numberOfRowPerPage - 1// >= because it is index
     const currentPageTransactionDataArr = sortedFilteredTransactionDataArr.slice(startIndex, endIndex + 1) // +1 because end is exclusive 
-    
+
     // focus on the table head
     useEffect(() => {
         const tableViewDiv = document.getElementById('tableView')
@@ -199,14 +208,17 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
         setSearchQuery(value);
     }
     return (<>
-        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", marginRight: '16.5px' }}>
-
+        <div className="flex flex-row justify-between items-center">
             <div>{children}</div>
-            
-            {numberOfRow > 0 && <>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <label style={{ paddingTop: '2px', height: '22px', paddingRight: '5px' }} htmlFor=""> show </label>
-                    <select name="" id="" value={numberOfRowPerPage === numberOfRow ? 'all' : numberOfRowPerPage} onChange={(event) => handleChangeNumberOfRowsPerPage(event)}>
+            {numberOfRow > 0 &&
+                <div className="flex items-center space-x-2">
+                    <label htmlFor="rowsPerPage" className="text-sm">Show</label>
+                    <select
+                        id="rowsPerPage"
+                        value={numberOfRowPerPage === numberOfRow ? 'all' : numberOfRowPerPage}
+                        onChange={handleChangeNumberOfRowsPerPage}
+                        className="border rounded px-2 py-1 text-sm"
+                    >
                         <option value={DEFAULT_NUMBER_OF_ROW_PER_PAGE}>{DEFAULT_NUMBER_OF_ROW_PER_PAGE}</option>
                         <option value="17">17</option>
                         <option value="50">50</option>
@@ -214,28 +226,42 @@ export default function TableView({ transactionDataArr, transactionNumberSet, cl
                         <option value="200">200</option>
                         <option value="all">{numberOfRow}</option>
                     </select>
-                    <span style={{ paddingTop: '2px', paddingRight: '8px', paddingLeft: '5px' }}>rows</span>
+                    <span className="text-sm">rows</span>
 
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <label htmlFor="" style={{ paddingTop: '2px' }}>{startIndex + 1}-{endIndex + 1} of {numberOfRow} Current Page:</label>
-                        {/* input height is mannualy set to be the same as the clear all button */}
-                        <input style={{ height: '22px', position: 'relative', top: '2.7px' }} type="number" name="" id="" value={currentPageNumber} min={1} max={maxPageNumber} onChange={(e) => handleChangePage(parseInt(e.target.value))} />
+                    <div className="flex items-center space-x-2 pl-2">
+                        <label htmlFor="currentPage" className="text-sm">
+                            {startIndex + 1}-{endIndex + 1} of {numberOfRow} Page:
+                        </label>
+                        <input
+                            id="currentPage"
+                            type="number"
+                            value={currentPageNumber}
+                            min={1}
+                            max={maxPageNumber}
+                            onChange={(e) => handleChangePage(parseInt(e.target.value))}
+                            className="border rounded px-2 py-1 text-sm w-16"
+                        />
                     </div>
-                    <div>
-                        <button onClick={handleClearSelect}>Clear All</button>
-                    </div>
-                </div></>
+
+                    <button
+                        onClick={handleClearSelect}
+                        className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 text-sm"
+                    >
+                        Clear All
+                    </button>
+                </div>
             }
             <div>
                 <input
-                        type="text"
-                        placeholder="Search description..."
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        style={{ marginRight: "10px", padding: "5px" }}
-                        disabled={numberOfRow === 0} // Disable the input when there are no rows to search
-                        className="disabled:cursor-not-allowed"
-                    />
+                    ref={searchRef} // Attach the ref to the input element
+                    type="text"
+                    placeholder="Search description..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    style={{ marginRight: "17px", padding: "5px" }}
+                    disabled={transactionNumberSet.size === 0} // Disable the input when there are no rows to search
+                    className="border rounded px-4 py-1 text-sm disabled:cursor-not-allowed disabled:bg-gray-200"
+                />
             </div>
         </div>
         <table className="infoTable">

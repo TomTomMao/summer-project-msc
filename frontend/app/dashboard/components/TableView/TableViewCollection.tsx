@@ -62,15 +62,36 @@ export function TableViewCollection(props: TableViewCollectionProps) {
 function TableOption({ currentTable, handleChangeCurrentTable }: {
     currentTable: 'brushedTable' | 'glyphTable', handleChangeCurrentTable: (nextTable: 'glyphTable' | 'brushedTable') => void
 }) {
-    return (<>
-        <span>
-            <label htmlFor="brushedTable" style={{ accentColor: 'blue' }}>Brushed Data
-                <input type="radio" name="brushedTable" id="brushedTable" value={'brushedTable'} checked={currentTable === 'brushedTable'} onChange={() => handleChangeCurrentTable('brushedTable')} />
-            </label>
-        </span>
-        <span>
-            <label htmlFor="glyphTable" style={{ accentColor: 'red', paddingLeft: '1em' }}> Selected Glyph Data
-                <input type="radio" name="glyphTable" id="glyphTable" value={'glyphTable'} checked={currentTable === 'glyphTable'} onChange={() => handleChangeCurrentTable('glyphTable')} />
-            </label>
-        </span></>)
+    return (
+        <div className="flex flex-row justify-center items-center gap-2">
+            <span className="flex items-center">
+                <label htmlFor="brushedTable" style={{ accentColor: 'blue', marginRight: '0.5em' }}>
+                    Brushed Data
+                </label>
+                <input
+                    type="radio"
+                    name="brushedTable"
+                    id="brushedTable"
+                    value="brushedTable"
+                    checked={currentTable === 'brushedTable'}
+                    onChange={() => handleChangeCurrentTable('brushedTable')}
+                    style={{ marginTop: '2px' }} // Adjusted to align with the label
+                />
+            </span>
+            <span className="flex items-center">
+                <label htmlFor="glyphTable" style={{ accentColor: 'red', marginRight: '0.5em', paddingLeft: '1em' }}>
+                    Selected Glyph Data
+                </label>
+                <input
+                    type="radio"
+                    name="glyphTable"
+                    id="glyphTable"
+                    value="glyphTable"
+                    checked={currentTable === 'glyphTable'}
+                    onChange={() => handleChangeCurrentTable('glyphTable')}
+                    style={{ marginTop: '2px', accentColor: 'red' }} // Adjusted to align with the label
+                />
+            </span>
+        </div>
+    );
 }
