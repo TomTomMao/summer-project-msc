@@ -1,8 +1,7 @@
-'use client'
+"use client"
 import { useEffect, useMemo } from "react"
 import { TransactionData } from "./utilities/DataObject";
 import CalendarView3, { CalendarViewYearController } from "./components/CalendarView3/CalendarView3";
-
 import CalendarViewControlPanel from "./components/CalendarView3/CalendarViewControlPanel";
 import FolderableContainer from "./components/Containers/FolderableContainer";
 import { PUBLIC_VALUEGETTER } from "./utilities/consts";
@@ -11,14 +10,10 @@ import { useAppDispatch, useAppSelector } from "../hooks";
 import * as calendarViewSlice from "./components/CalendarView3/calendarViewSlice"
 import * as scatterPlotSlice from "./components/TransactionAmountView.tsx/scatterPlotSlice";
 import * as clusterViewSlice from "./components/ClusterView/clusterViewSlice";
-
 import ClusterViewControlPanel from "./components/ClusterView/ClusterViewControlPanel/ClusterViewControlPanel";
-
-
 import useSyncTransactionDataAndClusterData from "./hooks/useSyncTransactionDataAndClusterData";
 import { useTransactionDataArr } from "./hooks/useTransactionData";
 import { useHierarchicalCategoryColourScale, useClusterIdColourScale, useCategoryColourScale, useFrequencyUniqueKeyColourScale } from "./hooks/useColourScales";
-
 import { TableViewCollection } from "./components/TableView/TableViewCollection";
 import * as interactivitySlice from "./components/Interactivity/interactivitySlice";
 import { ClusterView } from "./components/ClusterView/ClusterView";
@@ -28,11 +23,14 @@ import Popup from "./components/PopupWindow/Popup";
 import Button from "@mui/material/Button" // reference: https://mui.com/material-ui
 import { FormControlLabel, Switch } from "@mui/material"; // reference: https://mui.com/material-ui
 
+// Import the new selector to read the current search term.
+import { selectTransactionDescriptionSearchTerm } from "./components/Interactivity/interactivitySlice";
+
 export default function App() {
     const brushedTransactionNumberArr = useAppSelector(interactivitySlice.selectSelectedTransactionNumberArrMemorised)
     const brushedTransactionNumberSet = useMemo(() => new Set(brushedTransactionNumberArr), [brushedTransactionNumberArr])
 
-    useSyncTransactionDataAndClusterData(); // app is reponsible for checking the relative states in the redux store and update the transactionDataArr and Clus
+    useSyncTransactionDataAndClusterData(); // app is responsible for checking the relative states in the redux store and update the transactionDataArr and Clus
     // const categoryColourScale = useCategoryColourScale()
     const categoryColourScale = useHierarchicalCategoryColourScale()
     const clusterIdColourScale = useClusterIdColourScale()
@@ -45,13 +43,16 @@ export default function App() {
         (colourLabelForTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
     const tableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectTableViewColourDomainDataMemorised)
 
-    /**glyph table's colour scale type, synch with glyph's colour */
+    /**glyph table's colour scale type, sync with glyph's colour */
     const colourLabelForGlyphTable = useAppSelector(interactivitySlice.selectGlyphDataTableColourScaleType)
     const glyphTableColourScale = colourLabelForGlyphTable === 'category' ? categoryColourScale :
         (colourLabelForGlyphTable === 'cluster' ? clusterIdColourScale : frequencyUniqueKeyColourScale)
     const glyphTableViewColourDomainDataArr = useAppSelector(colourChannelSlice.selectGlyphTableViewColourDomainDataMemorised)
     /**type of selector */
     const currentSelector = useAppSelector(interactivitySlice.selectCurrentSelector)
+
+    // Read the transaction description search term from redux.
+    const transactionDescriptionSearchTerm = useAppSelector(selectTransactionDescriptionSearchTerm);
 
     // set the state store
     const dispatch = useAppDispatch()
@@ -110,7 +111,7 @@ export default function App() {
             // /* reference： https://reactgo.com/react-disable-text-selection/ */
             <div className="disableTextSelection">
                 <div className="grid grid-cols-12">
-                    
+
                     <div className="col-span-7">
                         <ExpandableContainer onSetExpand={(nextIsExpand) => { handleSetExpand(nextIsExpand, 'calendar view') }}
                             initStyle={getExpandableContainerStyle('initStyle')}
@@ -149,6 +150,7 @@ export default function App() {
 
                 <div className="grid grid-cols-12">
                     <div className="col-span-7">
+
                         <TableViewCollection transactionDataArr={transactionDataArr}
                             brushedTransactionNumberSet={brushedTransactionNumberSet}
                             handleClearBrush={handleClearBrush}
@@ -178,11 +180,10 @@ export default function App() {
                             ></ClusterView>
                         </ExpandableContainer>
                     </div>
-
                 </div>
                 <Popup></Popup>
 
-                <div style={{ position: 'absolute', top: 5, left: 400 }}>
+                <div style={{ position: 'absolute', top: 5, left: 400 }} className="flex flex-row items-center">
                     <FormControlLabel
                         className=""
                         labelPlacement="end"
@@ -191,15 +192,25 @@ export default function App() {
                             onChange={() => {
                                 dispatch(interactivitySlice.toggleShowOneTimeTransaction());
                                 dispatch(interactivitySlice.setCurrentTable('brushedTable'));
-                                }} />} label='Focus on One Time Transaction' />
+                            }} />} label='Focus on One Time Transaction' />
+                    {/* ---------------------- Transaction Description Search Bar ---------------------- */}
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Search description"
+                            value={transactionDescriptionSearchTerm}
+                            onChange={(e) =>
+                                dispatch(interactivitySlice.setTransactionDescriptionSearchTerm(e.target.value))
+                            }
+                            className="border rounded px-1 py-1 w-52 text-sm disabled:cursor-not-allowed disabled:bg-gray-200"
+                        />
+                    </div>
                 </div>
-            </div>
 
+            </div>
         )
     }
-
 }
-
 
 function getExpandableContainerStyle(styleType: 'initStyle' | 'expandedStyle'): React.CSSProperties {
     if (styleType === 'initStyle') {
@@ -218,4 +229,4 @@ function getExpandableContainerStyle(styleType: 'initStyle' | 'expandedStyle'): 
         }
     }
 }
-
+// reference the document of redux: https://react-redux.js.org/tutorials/typescript-quick-start
